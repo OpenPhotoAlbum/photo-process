@@ -1,0 +1,1 @@
+clear && tsc && clear && node /mnt/hdd/photo-process/build/index.js $@

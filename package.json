@@ -1,0 +1,32 @@
+{
+  "name": "photo-process",
+  "version": "0.0.1",
+  "description": "Processes photos",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Stephen Young <stephen@theyoungs.cloud>",
+  "license": "ISC",
+  "dependencies": {
+    "color": "^5.0.0",
+    "dotenv": "^16.5.0",
+    "exiftool-vendored": "^29.3.0",
+    "express": "^5.1.0",
+    "form-data": "^4.0.2",
+    "knex": "^3.1.0",
+    "mime-types": "^3.0.1",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.14.1",
+    "node-fetch": "^2.7.0",
+    "nodemon": "^3.1.10",
+    "sharp": "^0.34.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^22.15.17",
+    "@types/node-fetch": "^2.6.12"
+  }
+}
