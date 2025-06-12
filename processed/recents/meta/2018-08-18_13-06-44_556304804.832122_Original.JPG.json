@@ -1,0 +1,212 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2018-08-18_13-06-44_556304804.832122_Original.JPG",
+    "errors": [],
+    "Orientation": 1,
+    "ExifToolVersion": 13.26,
+    "FileName": "2018-08-18_13-06-44_556304804.832122_Original.JPG",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "424 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 17,
+      "minute": 6,
+      "second": 44,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2018:08:18 17:06:44Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2025,
+      "month": 5,
+      "day": 21,
+      "hour": 2,
+      "minute": 19,
+      "second": 22,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2025:05:21 02:19:22Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 17,
+      "minute": 6,
+      "second": 44,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2018:08:18 17:06:44Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rw-r--r--",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "Software": "GooglePhotoScan",
+    "ExifVersion": "0220",
+    "DateTimeOriginal": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 13,
+      "minute": 6,
+      "second": 44,
+      "rawValue": "2018:08:18 13:06:44",
+      "inferredZone": false
+    },
+    "CreateDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 13,
+      "minute": 6,
+      "second": 44,
+      "rawValue": "2018:08:18 13:06:44",
+      "inferredZone": false
+    },
+    "ColorSpace": "sRGB",
+    "ExifImageWidth": 2120,
+    "ExifImageHeight": 3000,
+    "ImageUniqueID": "739b78713e73ff7a0000000000000000",
+    "Compression": "JPEG (old-style)",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ResolutionUnit": "inches",
+    "ThumbnailOffset": 354,
+    "ThumbnailLength": 7181,
+    "XMPToolkit": "XMP Core 5.5.0",
+    "CreatorTool": "GooglePhotoScan",
+    "DateCreated": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 13,
+      "minute": 6,
+      "second": 44,
+      "rawValue": "2018:08:18 13:06:44",
+      "inferredZone": false
+    },
+    "CurrentIPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "IPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "ImageWidth": 2120,
+    "ImageHeight": 3000,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "ImageSize": "2120x3000",
+    "Megapixels": 6.4,
+    "ThumbnailImage": {
+      "_ctor": "BinaryField",
+      "bytes": 7181,
+      "rawValue": "(Binary data 7181 bytes, use -b option to extract)"
+    },
+    "warnings": []
+  },
+  "dominantColor": "#786c69",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2018-08-18_13-06-44_556304804.832122_Original__face_0.JPG": {
+      "age": {
+        "probability": 0.9413816928863525,
+        "high": 6,
+        "low": 4
+      },
+      "gender": {
+        "probability": 0.9999953508377075,
+        "value": "male"
+      },
+      "pose": {
+        "pitch": -2.046790363010274,
+        "roll": 13.13793470261436,
+        "yaw": -30.55753497540147
+      },
+      "box": {
+        "probability": 0.9974386692047119,
+        "x_max": 1776,
+        "y_max": 1650,
+        "x_min": 1246,
+        "y_min": 1073
+      },
+      "landmarks": [
+        [
+          1471,
+          1307
+        ],
+        [
+          1631,
+          1279
+        ],
+        [
+          1617,
+          1364
+        ],
+        [
+          1528,
+          1490
+        ],
+        [
+          1664,
+          1462
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/2018-08-18_13-06-44_556304804.832122_Original__face_1.JPG": {
+      "age": {
+        "probability": 0.9997889399528503,
+        "high": 6,
+        "low": 4
+      },
+      "gender": {
+        "probability": 0.5317458510398865,
+        "value": "male"
+      },
+      "pose": {
+        "pitch": 8.766299591916976,
+        "roll": -9.666290788898095,
+        "yaw": -0.23367011251909092
+      },
+      "box": {
+        "probability": 0.9998499155044556,
+        "x_max": 1106,
+        "y_max": 1560,
+        "x_min": 614,
+        "y_min": 1031
+      },
+      "landmarks": [
+        [
+          825,
+          1246
+        ],
+        [
+          975,
+          1275
+        ],
+        [
+          914,
+          1303
+        ],
+        [
+          829,
+          1396
+        ],
+        [
+          946,
+          1415
+        ]
+      ]
+    }
+  }
+}

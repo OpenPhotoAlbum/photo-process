@@ -1,0 +1,241 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/1989-09-19_07-00-00_scan-61_32169814763_o_Original.JPG",
+    "errors": [],
+    "Orientation": 1,
+    "ExifToolVersion": 13.26,
+    "FileName": "1989-09-19_07-00-00_scan-61_32169814763_o_Original.JPG",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "821 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 1989,
+      "month": 9,
+      "day": 19,
+      "hour": 11,
+      "minute": 0,
+      "second": 0,
+      "tzoffsetMinutes": 0,
+      "rawValue": "1989:09:19 11:00:00Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2025,
+      "month": 5,
+      "day": 21,
+      "hour": 2,
+      "minute": 19,
+      "second": 22,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2025:05:21 02:19:22Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 1989,
+      "month": 9,
+      "day": 19,
+      "hour": 11,
+      "minute": 0,
+      "second": 0,
+      "tzoffsetMinutes": 0,
+      "rawValue": "1989:09:19 11:00:00Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rw-r--r--",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "Make": "EPSON",
+    "Model": "XP-540/640 Series",
+    "XResolution": 600,
+    "YResolution": 600,
+    "ResolutionUnit": "inches",
+    "Software": "Apple Image Capture",
+    "HostComputer": "Apple Mac OS X",
+    "ExifVersion": "0220",
+    "ColorSpace": "sRGB",
+    "ExifImageWidth": 2080,
+    "ExifImageHeight": 2924,
+    "InteropIndex": "R98 - DCF basic file (sRGB)",
+    "InteropVersion": "0100",
+    "ImageUniqueID": "52aa1477c8f4fe980000000000000000",
+    "Compression": "JPEG (old-style)",
+    "ThumbnailOffset": 476,
+    "ThumbnailLength": 5732,
+    "XMPToolkit": "XMP Core 5.5.0",
+    "ProfileCMMType": "",
+    "ProfileVersion": "2.0.0",
+    "ProfileClass": "Display Device Profile",
+    "ColorSpaceData": "RGB ",
+    "ProfileConnectionSpace": "XYZ ",
+    "ProfileDateTime": {
+      "_ctor": "ExifDateTime",
+      "year": 2009,
+      "month": 3,
+      "day": 27,
+      "hour": 21,
+      "minute": 36,
+      "second": 31,
+      "rawValue": "2009:03:27 21:36:31",
+      "inferredZone": false
+    },
+    "ProfileFileSignature": "acsp",
+    "PrimaryPlatform": "Unknown ()",
+    "CMMFlags": "Not Embedded, Independent",
+    "DeviceManufacturer": "",
+    "DeviceModel": "",
+    "DeviceAttributes": "Reflective, Glossy, Positive, Color",
+    "RenderingIntent": "Perceptual",
+    "ConnectionSpaceIlluminant": "0.9642 1 0.82491",
+    "ProfileCreator": "",
+    "ProfileID": "29f83ddeaff255ae7842fae4ca83390d",
+    "ProfileDescription": "sRGB IEC61966-2-1 black scaled",
+    "BlueMatrixColumn": "0.14307 0.06061 0.7141",
+    "BlueTRC": {
+      "_ctor": "BinaryField",
+      "bytes": 2060,
+      "rawValue": "(Binary data 2060 bytes, use -b option to extract)"
+    },
+    "DeviceModelDesc": "IEC 61966-2-1 Default RGB Colour Space - sRGB",
+    "GreenMatrixColumn": "0.38515 0.71687 0.09708",
+    "GreenTRC": {
+      "_ctor": "BinaryField",
+      "bytes": 2060,
+      "rawValue": "(Binary data 2060 bytes, use -b option to extract)"
+    },
+    "Luminance": "0 80 0",
+    "MeasurementObserver": "CIE 1931",
+    "MeasurementBacking": "0 0 0",
+    "MeasurementGeometry": "Unknown",
+    "MeasurementFlare": "0%",
+    "MeasurementIlluminant": "D65",
+    "MediaBlackPoint": "0.01205 0.0125 0.01031",
+    "RedMatrixColumn": "0.43607 0.22249 0.01392",
+    "RedTRC": {
+      "_ctor": "BinaryField",
+      "bytes": 2060,
+      "rawValue": "(Binary data 2060 bytes, use -b option to extract)"
+    },
+    "Technology": "Cathode Ray Tube Display",
+    "ViewingCondDesc": "Reference Viewing Condition in IEC 61966-2-1",
+    "MediaWhitePoint": "0.9642 1 0.82491",
+    "ProfileCopyright": "Copyright International Color Consortium, 2009",
+    "ChromaticAdaptation": "1.04791 0.02293 -0.0502 0.0296 0.99046 -0.01707 -0.00925 0.01506 0.75179",
+    "CurrentIPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "IPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "ImageWidth": 2080,
+    "ImageHeight": 2924,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "ImageSize": "2080x2924",
+    "Megapixels": 6.1,
+    "ThumbnailImage": {
+      "_ctor": "BinaryField",
+      "bytes": 5732,
+      "rawValue": "(Binary data 5732 bytes, use -b option to extract)"
+    },
+    "warnings": []
+  },
+  "dominantColor": "#a67f84",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/1989-09-19_07-00-00_scan-61_32169814763_o_Original__face_0.JPG": {
+      "age": {
+        "probability": 0.9718078970909119,
+        "high": 32,
+        "low": 25
+      },
+      "gender": {
+        "probability": 0.9851491451263428,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": -15.863882041782972,
+        "roll": -1.3982809243944985,
+        "yaw": -2.0745989692576345
+      },
+      "box": {
+        "probability": 0.999869704246521,
+        "x_max": 1247,
+        "y_max": 1471,
+        "x_min": 479,
+        "y_min": 607
+      },
+      "landmarks": [
+        [
+          785,
+          1023
+        ],
+        [
+          1037,
+          1014
+        ],
+        [
+          941,
+          1178
+        ],
+        [
+          767,
+          1251
+        ],
+        [
+          1009,
+          1247
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/1989-09-19_07-00-00_scan-61_32169814763_o_Original__face_1.JPG": {
+      "age": {
+        "probability": 0.9999988079071045,
+        "high": 2,
+        "low": 0
+      },
+      "gender": {
+        "probability": 0.9999959468841553,
+        "value": "male"
+      },
+      "pose": {
+        "pitch": 0.03565251419556148,
+        "roll": -9.144693374773425,
+        "yaw": 28.06609972413053
+      },
+      "box": {
+        "probability": 0.92424476146698,
+        "x_max": 1498,
+        "y_max": 1366,
+        "x_min": 1032,
+        "y_min": 822
+      },
+      "landmarks": [
+        [
+          1178,
+          1046
+        ],
+        [
+          1334,
+          1064
+        ],
+        [
+          1224,
+          1142
+        ],
+        [
+          1169,
+          1228
+        ],
+        [
+          1274,
+          1242
+        ]
+      ]
+    }
+  }
+}

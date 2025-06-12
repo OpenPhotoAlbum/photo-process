@@ -1,0 +1,250 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2021-08-24_16-20-07_8683cbfd-8fb7-45bb-a316-1d9b9cbf587c.jpg",
+    "errors": [],
+    "ExifToolVersion": 13.26,
+    "FileName": "2021-08-24_16-20-07_8683cbfd-8fb7-45bb-a316-1d9b9cbf587c.jpg",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "428 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "hour": 20,
+      "minute": 20,
+      "second": 7,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2021:08:24 20:20:07Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2024,
+      "month": 10,
+      "day": 25,
+      "hour": 9,
+      "minute": 53,
+      "second": 26,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2024:10:25 09:53:26Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "hour": 20,
+      "minute": 20,
+      "second": 7,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2021:08:24 20:20:07Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rwxrwxrwx",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ResolutionUnit": "None",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "Software": "GooglePhotoScan",
+    "ExifVersion": "0220",
+    "DateTimeOriginal": {
+      "_ctor": "ExifDateTime",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "hour": 15,
+      "minute": 20,
+      "second": 7,
+      "rawValue": "2021:08:24 15:20:07",
+      "inferredZone": false
+    },
+    "CreateDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "hour": 15,
+      "minute": 20,
+      "second": 7,
+      "rawValue": "2021:08:24 15:20:07",
+      "inferredZone": false
+    },
+    "ColorSpace": "sRGB",
+    "ExifImageWidth": 3000,
+    "ExifImageHeight": 1827,
+    "ImageUniqueID": "50442f4ce44892aa0000000000000000",
+    "CurrentIPTCDigest": "60bc8647d6608c904b06e011b54d6060",
+    "CodedCharacterSet": "UTF8",
+    "ApplicationRecordVersion": 2,
+    "DigitalCreationTime": {
+      "_ctor": "ExifTime",
+      "hour": 15,
+      "minute": 20,
+      "second": 7,
+      "rawValue": "15:20:07+00:00",
+      "zone": "UTC",
+      "inferredZone": false
+    },
+    "DigitalCreationDate": {
+      "_ctor": "ExifDate",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "rawValue": "2021:08:24"
+    },
+    "DateCreated": {
+      "_ctor": "ExifDate",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "rawValue": "2021:08:24"
+    },
+    "TimeCreated": {
+      "_ctor": "ExifTime",
+      "hour": 15,
+      "minute": 20,
+      "second": 7,
+      "rawValue": "15:20:07+00:00",
+      "zone": "UTC",
+      "inferredZone": false
+    },
+    "IPTCDigest": "60bc8647d6608c904b06e011b54d6060",
+    "ImageWidth": 3000,
+    "ImageHeight": 1827,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "ImageSize": "3000x1827",
+    "Megapixels": 5.5,
+    "DateTimeCreated": {
+      "_ctor": "ExifDateTime",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "hour": 15,
+      "minute": 20,
+      "second": 7,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2021:08:24 15:20:07+00:00",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "DigitalCreationDateTime": {
+      "_ctor": "ExifDateTime",
+      "year": 2021,
+      "month": 8,
+      "day": 24,
+      "hour": 15,
+      "minute": 20,
+      "second": 7,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2021:08:24 15:20:07+00:00",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "warnings": []
+  },
+  "dominantColor": "#a18f7f",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2021-08-24_16-20-07_8683cbfd-8fb7-45bb-a316-1d9b9cbf587c__face_0.jpg": {
+      "age": {
+        "probability": 0.9999395608901978,
+        "high": 6,
+        "low": 4
+      },
+      "gender": {
+        "probability": 0.9988435506820679,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 3.7279211868451796,
+        "roll": 18.978037814358885,
+        "yaw": -1.6767204868995897
+      },
+      "box": {
+        "probability": 0.9912672638893127,
+        "x_max": 2343,
+        "y_max": 1429,
+        "x_min": 1396,
+        "y_min": 309
+      },
+      "landmarks": [
+        [
+          1682,
+          825
+        ],
+        [
+          1968,
+          740
+        ],
+        [
+          1823,
+          956
+        ],
+        [
+          1771,
+          1115
+        ],
+        [
+          2057,
+          1035
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/2021-08-24_16-20-07_8683cbfd-8fb7-45bb-a316-1d9b9cbf587c__face_1.jpg": {
+      "age": {
+        "probability": 0.9999994039535522,
+        "high": 6,
+        "low": 4
+      },
+      "gender": {
+        "probability": 1,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 15.229418424826491,
+        "roll": 0.70941845020036,
+        "yaw": 4.675765990469919
+      },
+      "box": {
+        "probability": 0.999754011631012,
+        "x_max": 1335,
+        "y_max": 1378,
+        "x_min": 515,
+        "y_min": 543
+      },
+      "landmarks": [
+        [
+          801,
+          909
+        ],
+        [
+          1064,
+          914
+        ],
+        [
+          918,
+          1035
+        ],
+        [
+          820,
+          1157
+        ],
+        [
+          1040,
+          1162
+        ]
+      ]
+    }
+  }
+}

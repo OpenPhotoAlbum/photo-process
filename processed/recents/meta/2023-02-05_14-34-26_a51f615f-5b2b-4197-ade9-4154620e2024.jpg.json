@@ -1,0 +1,404 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2023-02-05_14-34-26_a51f615f-5b2b-4197-ade9-4154620e2024.jpg",
+    "errors": [],
+    "GPSLatitude": 42.816397,
+    "GPSLongitude": -71.063836,
+    "GPSLatitudeRef": "N",
+    "GPSLongitudeRef": "W",
+    "tz": "UTC-5",
+    "tzSource": "OffsetTimeOriginal",
+    "GPSAltitude": 242.9060288,
+    "GPSPosition": "42.8163972222222 -71.0638361111111",
+    "GeolocationPosition": "42.8366 -71.0949",
+    "Orientation": 1,
+    "ExifToolVersion": 13.26,
+    "FileName": "2023-02-05_14-34-26_a51f615f-5b2b-4197-ade9-4154620e2024.jpg",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "1975 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 19,
+      "minute": 34,
+      "second": 26,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:05 19:34:26Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2024,
+      "month": 10,
+      "day": 25,
+      "hour": 9,
+      "minute": 53,
+      "second": 40,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2024:10:25 09:53:40Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 19,
+      "minute": 34,
+      "second": 26,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:05 19:34:26Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rwxrwxrwx",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "Make": "Apple",
+    "Model": "iPhone 11 Pro Max",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ResolutionUnit": "inches",
+    "Software": 15.6,
+    "ModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 14,
+      "minute": 34,
+      "second": 26,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:02:05 14:34:26",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "HostComputer": "iPhone 11 Pro Max",
+    "YCbCrPositioning": "Centered",
+    "ExposureTime": "1/63",
+    "FNumber": 1.8,
+    "ExposureProgram": "Program AE",
+    "ISO": 1250,
+    "ExifVersion": "0232",
+    "DateTimeOriginal": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 14,
+      "minute": 34,
+      "second": 26,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:02:05 14:34:26",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "CreateDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 14,
+      "minute": 34,
+      "second": 26,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:02:05 14:34:26",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "OffsetTime": "-05:00",
+    "OffsetTimeOriginal": "-05:00",
+    "OffsetTimeDigitized": "-05:00",
+    "ComponentsConfiguration": "Y, Cb, Cr, -",
+    "ShutterSpeedValue": "1/63",
+    "ApertureValue": 1.8,
+    "BrightnessValue": -0.06946292488,
+    "ExposureCompensation": 0,
+    "MeteringMode": "Multi-segment",
+    "Flash": "Off, Did not fire",
+    "FocalLength": "4.2 mm",
+    "SubjectArea": "1921 1078 2428 1088",
+    "MakerNoteVersion": 14,
+    "RunTimeFlags": "Valid",
+    "RunTimeValue": "1215792602076625",
+    "RunTimeScale": 1000000000,
+    "RunTimeEpoch": 0,
+    "AEStable": "Yes",
+    "AETarget": 203,
+    "AEAverage": 205,
+    "AFStable": "Yes",
+    "AccelerationVector": "-0.9812616698 -0.06716497988 0.1298755407",
+    "FocusDistanceRange": "0.37 - 4.80 m",
+    "ImageCaptureType": "ProRAW",
+    "LivePhotoVideoIndex": 0,
+    "PhotosAppFeatureFlags": 0,
+    "AFPerformance": "48 1 96",
+    "SignalToNoiseRatio": 15.98719692,
+    "PhotoIdentifier": "639BFE45-6262-43C8-BEDF-812651E2C8D1",
+    "ColorTemperature": 3630,
+    "CameraType": "Back Normal",
+    "FocusPosition": 74,
+    "SemanticStyleRenderingVer": true,
+    "SubSecTimeOriginal": 537,
+    "SubSecTimeDigitized": 537,
+    "FlashpixVersion": "0100",
+    "ColorSpace": "sRGB",
+    "ExifImageWidth": 3840,
+    "ExifImageHeight": 2160,
+    "SensingMethod": "One-chip color area",
+    "SceneType": "Directly photographed",
+    "ExposureMode": "Auto",
+    "WhiteBalance": "Auto",
+    "DigitalZoomRatio": 1.045498548,
+    "FocalLengthIn35mmFormat": "31 mm",
+    "SceneCaptureType": "Standard",
+    "LensInfo": "4.25mm f/1.8",
+    "LensMake": "Apple",
+    "LensModel": "iPhone 11 Pro Max back camera 4.25mm f/1.8",
+    "GPSAltitudeRef": "Above Sea Level",
+    "GPSSpeedRef": "km/h",
+    "GPSSpeed": 0,
+    "GPSDateStamp": {
+      "_ctor": "ExifDate",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "rawValue": "2023:02:05"
+    },
+    "GPSHPositioningError": "7.993548428 m",
+    "Compression": "JPEG (old-style)",
+    "ThumbnailOffset": 2490,
+    "ThumbnailLength": 6395,
+    "XMPToolkit": "XMP Core 6.0.0",
+    "CreatorTool": 15.6,
+    "RegionInfo": {
+      "AppliedToDimensions": {
+        "H": 2160,
+        "Unit": "pixel",
+        "W": 3840
+      },
+      "RegionList": [
+        {
+          "Area": {
+            "H": "0.17365730880929336",
+            "Unit": "normalized",
+            "W": "0.097724550898203588",
+            "X": "0.32724224278715297",
+            "Y": "0.16754501452081322"
+          },
+          "Extensions": {
+            "XMP-apple-fi:AngleInfoRoll": 0,
+            "XMP-apple-fi:AngleInfoYaw": 45,
+            "XMP-apple-fi:ConfidenceLevel": 748,
+            "XMP-apple-fi:FaceID": 25
+          },
+          "Type": "Face"
+        },
+        {
+          "Area": {
+            "H": "0.14375605033881894",
+            "Unit": "normalized",
+            "W": "0.081628742514970043",
+            "X": "0.45026020685900925",
+            "Y": "0.35500290416263314"
+          },
+          "Extensions": {
+            "XMP-apple-fi:AngleInfoRoll": 30,
+            "XMP-apple-fi:AngleInfoYaw": 45,
+            "XMP-apple-fi:ConfidenceLevel": 419,
+            "XMP-apple-fi:FaceID": 24
+          },
+          "Type": "Face"
+        }
+      ]
+    },
+    "DateCreated": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 14,
+      "minute": 34,
+      "second": 26,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:02:05 14:34:26",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "ImageWidth": 3840,
+    "ImageHeight": 2160,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "GeolocationCity": "Plaistow",
+    "GeolocationRegion": "New Hampshire",
+    "GeolocationSubregion": "Rockingham County",
+    "GeolocationCountryCode": "US",
+    "GeolocationCountry": "United States",
+    "GeolocationTimeZone": "America/New_York",
+    "GeolocationFeatureCode": "PPL",
+    "GeolocationFeatureType": "Populated Place",
+    "GeolocationPopulation": 7900,
+    "GeolocationDistance": "3.39 km",
+    "GeolocationBearing": 303,
+    "RunTimeSincePowerUp": "14 days 1:43:13",
+    "Aperture": 1.8,
+    "ImageSize": "3840x2160",
+    "Megapixels": 8.3,
+    "ScaleFactor35efl": 7.3,
+    "ShutterSpeed": "1/63",
+    "SubSecCreateDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 14,
+      "minute": 34,
+      "second": 26,
+      "millisecond": 537,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:02:05 14:34:26.537-05:00",
+      "zoneName": "UTC-5",
+      "inferredZone": false
+    },
+    "SubSecDateTimeOriginal": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 14,
+      "minute": 34,
+      "second": 26,
+      "millisecond": 537,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:02:05 14:34:26.537-05:00",
+      "zoneName": "UTC-5",
+      "inferredZone": false
+    },
+    "SubSecModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 5,
+      "hour": 14,
+      "minute": 34,
+      "second": 26,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:02:05 14:34:26-05:00",
+      "zoneName": "UTC-5",
+      "inferredZone": false
+    },
+    "ThumbnailImage": {
+      "_ctor": "BinaryField",
+      "bytes": 6395,
+      "rawValue": "(Binary data 6395 bytes, use -b option to extract)"
+    },
+    "CircleOfConfusion": "0.004 mm",
+    "FOV": "60.3 deg",
+    "FocalLength35efl": "4.2 mm (35 mm equivalent: 31.0 mm)",
+    "HyperfocalDistance": "2.44 m",
+    "LightValue": 4,
+    "LensID": "iPhone 11 Pro Max back camera 4.25mm f/1.8",
+    "warnings": []
+  },
+  "dominantColor": "#93897a",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-02-05_14-34-26_a51f615f-5b2b-4197-ade9-4154620e2024__face_0.jpg": {
+      "age": {
+        "probability": 0.9999996423721313,
+        "high": 2,
+        "low": 0
+      },
+      "gender": {
+        "probability": 0.9955859184265137,
+        "value": "male"
+      },
+      "pose": {
+        "pitch": 28.67969422157708,
+        "roll": -15.719519188917275,
+        "yaw": -23.34216401733094
+      },
+      "box": {
+        "probability": 0.9993537068367004,
+        "x_max": 1494,
+        "y_max": 678,
+        "x_min": 936,
+        "y_min": 30
+      },
+      "landmarks": [
+        [
+          1206,
+          294
+        ],
+        [
+          1368,
+          300
+        ],
+        [
+          1326,
+          390
+        ],
+        [
+          1200,
+          480
+        ],
+        [
+          1350,
+          480
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-02-05_14-34-26_a51f615f-5b2b-4197-ade9-4154620e2024__face_1.jpg": {
+      "age": {
+        "probability": 1,
+        "high": 2,
+        "low": 0
+      },
+      "gender": {
+        "probability": 0.9983502626419067,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 28.861494184438016,
+        "roll": -23.739896187699827,
+        "yaw": -28.43232224328162
+      },
+      "box": {
+        "probability": 0.9999990463256836,
+        "x_max": 1914,
+        "y_max": 1008,
+        "x_min": 1464,
+        "y_min": 510
+      },
+      "landmarks": [
+        [
+          1686,
+          702
+        ],
+        [
+          1818,
+          726
+        ],
+        [
+          1776,
+          786
+        ],
+        [
+          1668,
+          846
+        ],
+        [
+          1782,
+          864
+        ]
+      ]
+    }
+  }
+}

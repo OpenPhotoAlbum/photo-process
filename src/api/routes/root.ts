@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import DB from '../conn';
+import path from 'path';
 
 export const Root = async (request: Request, response: Response) => {
-  const faces = await DB('media').select('*');
-  response.send(faces);
+  response.sendFile(path.join(__dirname, '../../../public/index.html'));
 };

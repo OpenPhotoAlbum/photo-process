@@ -1,0 +1,182 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/1996-07-19_04-14-00_32158214044_a8b1faca96_o_Original.JPG",
+    "errors": [],
+    "Orientation": 1,
+    "ExifToolVersion": 13.26,
+    "FileName": "1996-07-19_04-14-00_32158214044_a8b1faca96_o_Original.JPG",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "89 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 1996,
+      "month": 7,
+      "day": 19,
+      "hour": 8,
+      "minute": 14,
+      "second": 0,
+      "tzoffsetMinutes": 0,
+      "rawValue": "1996:07:19 08:14:00Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2025,
+      "month": 5,
+      "day": 21,
+      "hour": 2,
+      "minute": 19,
+      "second": 19,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2025:05:21 02:19:19Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 1996,
+      "month": 7,
+      "day": 19,
+      "hour": 8,
+      "minute": 14,
+      "second": 0,
+      "tzoffsetMinutes": 0,
+      "rawValue": "1996:07:19 08:14:00Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rw-r--r--",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ResolutionUnit": "inches",
+    "Software": "Picasa",
+    "YCbCrPositioning": "Centered",
+    "ExifVersion": "0221",
+    "ComponentsConfiguration": "Y, Cb, Cr, -",
+    "FlashpixVersion": "0100",
+    "ColorSpace": "sRGB",
+    "ExifImageWidth": 402,
+    "ExifImageHeight": 603,
+    "SceneCaptureType": "Standard",
+    "ImageUniqueID": "1e69b2c12bc82cad0000000000000000",
+    "Compression": "JPEG (old-style)",
+    "ThumbnailOffset": 382,
+    "ThumbnailLength": 6115,
+    "XMPToolkit": "XMP Core 5.5.0",
+    "CurrentIPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "IPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "ImageWidth": 402,
+    "ImageHeight": 603,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:4:4 (1 1)",
+    "ImageSize": "402x603",
+    "Megapixels": 0.242,
+    "ThumbnailImage": {
+      "_ctor": "BinaryField",
+      "bytes": 6115,
+      "rawValue": "(Binary data 6115 bytes, use -b option to extract)"
+    },
+    "warnings": []
+  },
+  "dominantColor": "#3e464a",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/1996-07-19_04-14-00_32158214044_a8b1faca96_o_Original__face_0.JPG": {
+      "age": {
+        "probability": 0.9956610798835754,
+        "high": 32,
+        "low": 25
+      },
+      "gender": {
+        "probability": 1,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 10.236277291470316,
+        "roll": -1.9068578500142621,
+        "yaw": 14.233649918359983
+      },
+      "box": {
+        "probability": 0.9999555349349976,
+        "x_max": 252,
+        "y_max": 135,
+        "x_min": 169,
+        "y_min": 41
+      },
+      "landmarks": [
+        [
+          199,
+          83
+        ],
+        [
+          227,
+          84
+        ],
+        [
+          212,
+          101
+        ],
+        [
+          199,
+          110
+        ],
+        [
+          224,
+          111
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/1996-07-19_04-14-00_32158214044_a8b1faca96_o_Original__face_1.JPG": {
+      "age": {
+        "probability": 0.9999958276748657,
+        "high": 43,
+        "low": 38
+      },
+      "gender": {
+        "probability": 1,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": -12.30778695803943,
+        "roll": -24.47284915080772,
+        "yaw": 0.42232051563554823
+      },
+      "box": {
+        "probability": 0.9974204301834106,
+        "x_max": 248,
+        "y_max": 262,
+        "x_min": 170,
+        "y_min": 180
+      },
+      "landmarks": [
+        [
+          201,
+          210
+        ],
+        [
+          225,
+          221
+        ],
+        [
+          208,
+          232
+        ],
+        [
+          192,
+          235
+        ],
+        [
+          212,
+          245
+        ]
+      ]
+    }
+  }
+}

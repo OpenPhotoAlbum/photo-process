@@ -1,0 +1,429 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2023-03-06_07-42-43_e17545b3-94f6-4949-8fa6-e1fff8094baa.jpg",
+    "errors": [],
+    "GPSLatitude": 42.816422,
+    "GPSLongitude": -71.063842,
+    "GPSLatitudeRef": "N",
+    "GPSLongitudeRef": "W",
+    "tz": "UTC-5",
+    "tzSource": "OffsetTimeOriginal",
+    "GPSAltitude": 313.4912451,
+    "GPSPosition": "42.8164222222222 -71.0638416666667",
+    "GeolocationPosition": "42.8366 -71.0949",
+    "Orientation": 1,
+    "ExifToolVersion": 13.26,
+    "FileName": "2023-03-06_07-42-43_e17545b3-94f6-4949-8fa6-e1fff8094baa.jpg",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "3.6 MB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 12,
+      "minute": 42,
+      "second": 43,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:03:06 12:42:43Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2024,
+      "month": 10,
+      "day": 25,
+      "hour": 9,
+      "minute": 53,
+      "second": 53,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2024:10:25 09:53:53Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 12,
+      "minute": 42,
+      "second": 43,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:03:06 12:42:43Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rwxrwxrwx",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "Make": "Apple",
+    "Model": "iPhone 11 Pro Max",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ResolutionUnit": "inches",
+    "Software": 16.3,
+    "ModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 7,
+      "minute": 42,
+      "second": 43,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:03:06 07:42:43",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "HostComputer": "iPhone 11 Pro Max",
+    "YCbCrPositioning": "Centered",
+    "ExposureTime": "1/104",
+    "FNumber": 2,
+    "ExposureProgram": "Program AE",
+    "ISO": 160,
+    "ExifVersion": "0232",
+    "DateTimeOriginal": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 7,
+      "minute": 42,
+      "second": 43,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:03:06 07:42:43",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "CreateDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 7,
+      "minute": 42,
+      "second": 43,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:03:06 07:42:43",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "OffsetTime": "-05:00",
+    "OffsetTimeOriginal": "-05:00",
+    "OffsetTimeDigitized": "-05:00",
+    "ComponentsConfiguration": "Y, Cb, Cr, -",
+    "ShutterSpeedValue": "1/104",
+    "ApertureValue": 2,
+    "BrightnessValue": 3.826648262,
+    "ExposureCompensation": 0,
+    "MeteringMode": "Multi-segment",
+    "Flash": "Off, Did not fire",
+    "FocalLength": "6.0 mm",
+    "SubjectArea": "1564 1309 223 234",
+    "MakerNoteVersion": 14,
+    "RunTimeFlags": "Valid",
+    "RunTimeValue": 124600453231125,
+    "RunTimeScale": 1000000000,
+    "RunTimeEpoch": 0,
+    "AEStable": "Yes",
+    "AETarget": 183,
+    "AEAverage": 196,
+    "AFStable": "Yes",
+    "AccelerationVector": "-0.9293936487 0.06806524097 -0.3614066541",
+    "FocusDistanceRange": "0.48 - 0.91 m",
+    "ImageCaptureType": "Scene",
+    "LivePhotoVideoIndex": 575676416,
+    "PhotosAppFeatureFlags": 0,
+    "HDRHeadroom": 0.5,
+    "AFPerformance": "333 1 157",
+    "SignalToNoiseRatio": 32.92451474,
+    "PhotoIdentifier": "6226C591-229E-4A5E-B57A-CD97DC3D657F",
+    "ColorTemperature": 4501,
+    "CameraType": "Back Normal",
+    "FocusPosition": 53,
+    "SubSecTimeOriginal": 329,
+    "SubSecTimeDigitized": 329,
+    "FlashpixVersion": "0100",
+    "ColorSpace": "Uncalibrated",
+    "ExifImageWidth": 4032,
+    "ExifImageHeight": 3024,
+    "SensingMethod": "One-chip color area",
+    "SceneType": "Directly photographed",
+    "ExposureMode": "Auto",
+    "WhiteBalance": "Auto",
+    "FocalLengthIn35mmFormat": "52 mm",
+    "SceneCaptureType": "Standard",
+    "LensInfo": "1.539999962-6mm f/1.8-2.4",
+    "LensMake": "Apple",
+    "LensModel": "iPhone 11 Pro Max back triple camera 6mm f/2",
+    "CompositeImage": "General Composite Image",
+    "GPSAltitudeRef": "Above Sea Level",
+    "GPSSpeedRef": "km/h",
+    "GPSSpeed": 0,
+    "GPSImgDirectionRef": "True North",
+    "GPSImgDirection": 190.5394286,
+    "GPSDestBearingRef": "True North",
+    "GPSDestBearing": 190.5394286,
+    "GPSDateStamp": {
+      "_ctor": "ExifDate",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "rawValue": "2023:03:06"
+    },
+    "GPSHPositioningError": "9.266163668 m",
+    "Compression": "JPEG (old-style)",
+    "ThumbnailOffset": 2494,
+    "ThumbnailLength": 9724,
+    "XMPToolkit": "XMP Core 6.0.0",
+    "CreatorTool": 16.3,
+    "DateCreated": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 7,
+      "minute": 42,
+      "second": 43,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:03:06 07:42:43",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "RegionInfo": {
+      "AppliedToDimensions": {
+        "H": 3024,
+        "Unit": "pixel",
+        "W": 4032
+      },
+      "RegionList": [
+        {
+          "Area": {
+            "H": "0.069142857142857117",
+            "Unit": "normalized",
+            "W": "0.049238095238095192",
+            "X": "0.48376190476190478",
+            "Y": "0.46371957671957664"
+          },
+          "Extensions": {
+            "XMP-apple-fi:AngleInfoRoll": 0,
+            "XMP-apple-fi:AngleInfoYaw": 45,
+            "XMP-apple-fi:ConfidenceLevel": 325,
+            "XMP-apple-fi:FaceID": 3
+          },
+          "Type": "Face"
+        },
+        {
+          "Area": {
+            "H": "0.060761904761904795",
+            "Unit": "normalized",
+            "W": "0.044000000000000039",
+            "X": "0.55552380952380953",
+            "Y": "0.47943386243386243"
+          },
+          "Extensions": {
+            "XMP-apple-fi:AngleInfoRoll": 90,
+            "XMP-apple-fi:AngleInfoYaw": 270,
+            "XMP-apple-fi:ConfidenceLevel": 331,
+            "XMP-apple-fi:FaceID": 4
+          },
+          "Type": "Face"
+        },
+        {
+          "Area": {
+            "H": "0.079619047619047589",
+            "Unit": "normalized",
+            "W": "0.05657142857142855",
+            "X": "0.38895238095238094",
+            "Y": "0.43438624338624338"
+          },
+          "Extensions": {
+            "XMP-apple-fi:AngleInfoRoll": 0,
+            "XMP-apple-fi:AngleInfoYaw": 0,
+            "XMP-apple-fi:ConfidenceLevel": 800,
+            "XMP-apple-fi:FaceID": 1
+          },
+          "Type": "Face"
+        }
+      ]
+    },
+    "ProfileCMMType": "Apple Computer Inc.",
+    "ProfileVersion": "4.0.0",
+    "ProfileClass": "Display Device Profile",
+    "ColorSpaceData": "RGB ",
+    "ProfileConnectionSpace": "XYZ ",
+    "ProfileDateTime": {
+      "_ctor": "ExifDateTime",
+      "year": 2022,
+      "month": 1,
+      "day": 1,
+      "hour": 0,
+      "minute": 0,
+      "second": 0,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2022:01:01 00:00:00",
+      "zoneName": "UTC-5",
+      "inferredZone": true
+    },
+    "ProfileFileSignature": "acsp",
+    "PrimaryPlatform": "Apple Computer Inc.",
+    "CMMFlags": "Not Embedded, Independent",
+    "DeviceManufacturer": "Apple Computer Inc.",
+    "DeviceModel": "",
+    "DeviceAttributes": "Reflective, Glossy, Positive, Color",
+    "RenderingIntent": "Perceptual",
+    "ConnectionSpaceIlluminant": "0.9642 1 0.82491",
+    "ProfileCreator": "Apple Computer Inc.",
+    "ProfileID": "ecfda38e388547c36db4bd4f7ada182f",
+    "ProfileDescription": "Display P3",
+    "ProfileCopyright": "Copyright Apple Inc., 2022",
+    "MediaWhitePoint": "0.96419 1 0.82489",
+    "RedMatrixColumn": "0.51512 0.2412 -0.00105",
+    "GreenMatrixColumn": "0.29198 0.69225 0.04189",
+    "BlueMatrixColumn": "0.1571 0.06657 0.78407",
+    "RedTRC": {
+      "_ctor": "BinaryField",
+      "bytes": 32,
+      "rawValue": "(Binary data 32 bytes, use -b option to extract)"
+    },
+    "ChromaticAdaptation": "1.04788 0.02292 -0.0502 0.02959 0.99048 -0.01706 -0.00923 0.01508 0.75168",
+    "BlueTRC": {
+      "_ctor": "BinaryField",
+      "bytes": 32,
+      "rawValue": "(Binary data 32 bytes, use -b option to extract)"
+    },
+    "GreenTRC": {
+      "_ctor": "BinaryField",
+      "bytes": 32,
+      "rawValue": "(Binary data 32 bytes, use -b option to extract)"
+    },
+    "ImageWidth": 4032,
+    "ImageHeight": 3024,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "GeolocationCity": "Plaistow",
+    "GeolocationRegion": "New Hampshire",
+    "GeolocationSubregion": "Rockingham County",
+    "GeolocationCountryCode": "US",
+    "GeolocationCountry": "United States",
+    "GeolocationTimeZone": "America/New_York",
+    "GeolocationFeatureCode": "PPL",
+    "GeolocationFeatureType": "Populated Place",
+    "GeolocationPopulation": 7900,
+    "GeolocationDistance": "3.39 km",
+    "GeolocationBearing": 303,
+    "RunTimeSincePowerUp": "1 days 10:36:40",
+    "Aperture": 2,
+    "ImageSize": "4032x3024",
+    "Megapixels": 12.2,
+    "ScaleFactor35efl": 8.7,
+    "ShutterSpeed": "1/104",
+    "SubSecCreateDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 7,
+      "minute": 42,
+      "second": 43,
+      "millisecond": 329,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:03:06 07:42:43.329-05:00",
+      "zoneName": "UTC-5",
+      "inferredZone": false
+    },
+    "SubSecDateTimeOriginal": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 7,
+      "minute": 42,
+      "second": 43,
+      "millisecond": 329,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:03:06 07:42:43.329-05:00",
+      "zoneName": "UTC-5",
+      "inferredZone": false
+    },
+    "SubSecModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 3,
+      "day": 6,
+      "hour": 7,
+      "minute": 42,
+      "second": 43,
+      "tzoffsetMinutes": -300,
+      "rawValue": "2023:03:06 07:42:43-05:00",
+      "zoneName": "UTC-5",
+      "inferredZone": false
+    },
+    "ThumbnailImage": {
+      "_ctor": "BinaryField",
+      "bytes": 9724,
+      "rawValue": "(Binary data 9724 bytes, use -b option to extract)"
+    },
+    "CircleOfConfusion": "0.003 mm",
+    "FOV": "38.2 deg",
+    "FocalLength35efl": "6.0 mm (35 mm equivalent: 52.0 mm)",
+    "HyperfocalDistance": "5.19 m",
+    "LightValue": 8,
+    "LensID": "iPhone 11 Pro Max back triple camera 6mm f/2",
+    "warnings": []
+  },
+  "dominantColor": "#928577",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-03-06_07-42-43_e17545b3-94f6-4949-8fa6-e1fff8094baa__face_0.jpg": {
+      "age": {
+        "probability": 0.9999388456344604,
+        "high": 2,
+        "low": 0
+      },
+      "gender": {
+        "probability": 1,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 19.468682174537065,
+        "roll": -3.808007741803067,
+        "yaw": -0.1671558889553046
+      },
+      "box": {
+        "probability": 0.9990347623825073,
+        "x_max": 1745,
+        "y_max": 1474,
+        "x_min": 1398,
+        "y_min": 1121
+      },
+      "landmarks": [
+        [
+          1518,
+          1278
+        ],
+        [
+          1638,
+          1285
+        ],
+        [
+          1575,
+          1335
+        ],
+        [
+          1518,
+          1379
+        ],
+        [
+          1625,
+          1386
+        ]
+      ]
+    }
+  }
+}

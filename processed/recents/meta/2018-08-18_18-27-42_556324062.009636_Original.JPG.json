@@ -1,0 +1,167 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2018-08-18_18-27-42_556324062.009636_Original.JPG",
+    "errors": [],
+    "Orientation": 1,
+    "ExifToolVersion": 13.26,
+    "FileName": "2018-08-18_18-27-42_556324062.009636_Original.JPG",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "330 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 22,
+      "minute": 27,
+      "second": 42,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2018:08:18 22:27:42Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2025,
+      "month": 5,
+      "day": 21,
+      "hour": 2,
+      "minute": 19,
+      "second": 21,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2025:05:21 02:19:21Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 22,
+      "minute": 27,
+      "second": 42,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2018:08:18 22:27:42Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rw-r--r--",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "Software": "GooglePhotoScan",
+    "ExifVersion": "0220",
+    "DateTimeOriginal": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 18,
+      "minute": 27,
+      "second": 42,
+      "rawValue": "2018:08:18 18:27:42",
+      "inferredZone": false
+    },
+    "CreateDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 18,
+      "minute": 27,
+      "second": 42,
+      "rawValue": "2018:08:18 18:27:42",
+      "inferredZone": false
+    },
+    "ColorSpace": "sRGB",
+    "ExifImageWidth": 3000,
+    "ExifImageHeight": 2128,
+    "ImageUniqueID": "7d0e0a5acbdebbd60000000000000000",
+    "Compression": "JPEG (old-style)",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ResolutionUnit": "inches",
+    "ThumbnailOffset": 354,
+    "ThumbnailLength": 4870,
+    "XMPToolkit": "XMP Core 5.5.0",
+    "CreatorTool": "GooglePhotoScan",
+    "DateCreated": {
+      "_ctor": "ExifDateTime",
+      "year": 2018,
+      "month": 8,
+      "day": 18,
+      "hour": 18,
+      "minute": 27,
+      "second": 42,
+      "rawValue": "2018:08:18 18:27:42",
+      "inferredZone": false
+    },
+    "CurrentIPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "IPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "ImageWidth": 3000,
+    "ImageHeight": 2128,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "ImageSize": "3000x2128",
+    "Megapixels": 6.4,
+    "ThumbnailImage": {
+      "_ctor": "BinaryField",
+      "bytes": 4870,
+      "rawValue": "(Binary data 4870 bytes, use -b option to extract)"
+    },
+    "warnings": []
+  },
+  "dominantColor": "#7e6c6b",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2018-08-18_18-27-42_556324062.009636_Original__face_0.JPG": {
+      "age": {
+        "probability": 0.9975250363349915,
+        "high": 6,
+        "low": 4
+      },
+      "gender": {
+        "probability": 1,
+        "value": "male"
+      },
+      "pose": {
+        "pitch": -4.023146966416789,
+        "roll": 4.963228754964831,
+        "yaw": -5.863696781035041
+      },
+      "box": {
+        "probability": 0.9842594265937805,
+        "x_max": 1823,
+        "y_max": 984,
+        "x_min": 1026,
+        "y_min": 154
+      },
+      "landmarks": [
+        [
+          1284,
+          492
+        ],
+        [
+          1546,
+          468
+        ],
+        [
+          1429,
+          665
+        ],
+        [
+          1298,
+          726
+        ],
+        [
+          1579,
+          703
+        ]
+      ]
+    }
+  }
+}

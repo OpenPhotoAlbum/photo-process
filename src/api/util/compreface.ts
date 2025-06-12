@@ -69,7 +69,9 @@ export const extractFaces = async (imagepath: string, dest: string): Promise<Rec
             height: box.y_max - box.y_min,
         };
 
-        const filename = `${dest}${path.dirname(imagepath)}/faces/${path.basename(imagepath, path.extname(imagepath))}__face_${i}${path.extname(imagepath)}`;
+        // Create a relative path structure under dest directory
+        const relativePath = path.relative('/mnt/sg1/uploads/stephen/iphone', imagepath);
+        const filename = `${dest}/${path.dirname(relativePath)}/faces/${path.basename(imagepath, path.extname(imagepath))}__face_${i}${path.extname(imagepath)}`;
         fs.mkdirSync(path.dirname(filename), { recursive: true });
         await s.extract(extract).toFile(filename);
 

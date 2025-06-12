@@ -1,0 +1,209 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2023-02-12_14-48-15_93f8331a-7064-4cbd-9dce-658b58290158.jpg",
+    "errors": [],
+    "ExifToolVersion": 13.26,
+    "FileName": "2023-02-12_14-48-15_93f8331a-7064-4cbd-9dce-658b58290158.jpg",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "158 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 12,
+      "hour": 19,
+      "minute": 48,
+      "second": 15,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:12 19:48:15Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2025,
+      "month": 5,
+      "day": 10,
+      "hour": 20,
+      "minute": 37,
+      "second": 37,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2025:05:10 20:37:37Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 12,
+      "hour": 19,
+      "minute": 48,
+      "second": 15,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:12 19:48:15Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rwxrwxrwx",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ResolutionUnit": "None",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ExifByteOrder": "Big-endian (Motorola, MM)",
+    "ExifImageWidth": 600,
+    "ExifImageHeight": 800,
+    "CurrentIPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "IPTCDigest": "d41d8cd98f00b204e9800998ecf8427e",
+    "ProfileCMMType": "Apple Computer Inc.",
+    "ProfileVersion": "4.0.0",
+    "ProfileClass": "Input Device Profile",
+    "ColorSpaceData": "RGB ",
+    "ProfileConnectionSpace": "XYZ ",
+    "ProfileDateTime": {
+      "_ctor": "ExifDateTime",
+      "year": 2016,
+      "month": 1,
+      "day": 1,
+      "hour": 0,
+      "minute": 0,
+      "second": 0,
+      "rawValue": "2016:01:01 00:00:00",
+      "inferredZone": false
+    },
+    "ProfileFileSignature": "acsp",
+    "PrimaryPlatform": "Apple Computer Inc.",
+    "CMMFlags": "Not Embedded, Independent",
+    "DeviceManufacturer": "Apple Computer Inc.",
+    "DeviceModel": "",
+    "DeviceAttributes": "Reflective, Glossy, Positive, Color",
+    "RenderingIntent": "Perceptual",
+    "ConnectionSpaceIlluminant": "0.9642 1 0.82491",
+    "ProfileCreator": "Apple Computer Inc.",
+    "ProfileID": "09a72bcf796cf3543b61a77f1ae38acc",
+    "ProfileDescription": "Apple Wide Color Sharing Profile",
+    "ProfileCopyright": "Copyright Apple Inc., 2016",
+    "MediaWhitePoint": "0.9642 1 0.8251",
+    "AToB2": {
+      "_ctor": "BinaryField",
+      "bytes": 29772,
+      "rawValue": "(Binary data 29772 bytes, use -b option to extract)"
+    },
+    "ChromaticAdaptation": "1.04781 0.02289 -0.05017 0.02953 0.99051 -0.01706 -0.00925 0.01506 0.75191",
+    "AToB0": {
+      "_ctor": "BinaryField",
+      "bytes": 29772,
+      "rawValue": "(Binary data 29772 bytes, use -b option to extract)"
+    },
+    "AToB1": {
+      "_ctor": "BinaryField",
+      "bytes": 29772,
+      "rawValue": "(Binary data 29772 bytes, use -b option to extract)"
+    },
+    "ImageWidth": 600,
+    "ImageHeight": 800,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "ImageSize": "600x800",
+    "Megapixels": 0.48,
+    "warnings": []
+  },
+  "dominantColor": "#555253",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-02-12_14-48-15_93f8331a-7064-4cbd-9dce-658b58290158__face_0.jpg": {
+      "age": {
+        "probability": 0.3933575451374054,
+        "high": 6,
+        "low": 4
+      },
+      "gender": {
+        "probability": 0.9999996423721313,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": -8.811711068137328,
+        "roll": -0.6548741486357983,
+        "yaw": 28.635191060154064
+      },
+      "box": {
+        "probability": 0.9974785447120667,
+        "x_max": 322,
+        "y_max": 411,
+        "x_min": 257,
+        "y_min": 343
+      },
+      "landmarks": [
+        [
+          277,
+          368
+        ],
+        [
+          300,
+          367
+        ],
+        [
+          286,
+          382
+        ],
+        [
+          281,
+          392
+        ],
+        [
+          297,
+          392
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-02-12_14-48-15_93f8331a-7064-4cbd-9dce-658b58290158__face_1.jpg": {
+      "age": {
+        "probability": 0.9996973276138306,
+        "high": 12,
+        "low": 8
+      },
+      "gender": {
+        "probability": 1,
+        "value": "male"
+      },
+      "pose": {
+        "pitch": -19.67568527839913,
+        "roll": -4.251859495374532,
+        "yaw": 1.3576684578795781
+      },
+      "box": {
+        "probability": 0.999915361404419,
+        "x_max": 243,
+        "y_max": 405,
+        "x_min": 175,
+        "y_min": 341
+      },
+      "landmarks": [
+        [
+          203,
+          368
+        ],
+        [
+          226,
+          368
+        ],
+        [
+          216,
+          382
+        ],
+        [
+          202,
+          388
+        ],
+        [
+          221,
+          388
+        ]
+      ]
+    }
+  }
+}

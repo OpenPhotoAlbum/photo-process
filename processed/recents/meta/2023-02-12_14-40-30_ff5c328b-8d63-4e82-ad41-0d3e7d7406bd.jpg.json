@@ -1,0 +1,114 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2023-02-12_14-40-30_ff5c328b-8d63-4e82-ad41-0d3e7d7406bd.jpg",
+    "errors": [],
+    "ExifToolVersion": 13.26,
+    "FileName": "2023-02-12_14-40-30_ff5c328b-8d63-4e82-ad41-0d3e7d7406bd.jpg",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "94 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 12,
+      "hour": 19,
+      "minute": 40,
+      "second": 30,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:12 19:40:30Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2025,
+      "month": 5,
+      "day": 10,
+      "hour": 20,
+      "minute": 37,
+      "second": 36,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2025:05:10 20:37:36Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 12,
+      "hour": 19,
+      "minute": 40,
+      "second": 30,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:12 19:40:30Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rwxrwxrwx",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ResolutionUnit": "None",
+    "XResolution": 1,
+    "YResolution": 1,
+    "ImageWidth": 767,
+    "ImageHeight": 1019,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "ImageSize": "767x1019",
+    "Megapixels": 0.782,
+    "warnings": []
+  },
+  "dominantColor": "#a2867d",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-02-12_14-40-30_ff5c328b-8d63-4e82-ad41-0d3e7d7406bd__face_0.jpg": {
+      "age": {
+        "probability": 0.9999995231628418,
+        "high": 2,
+        "low": 0
+      },
+      "gender": {
+        "probability": 0.9999998807907104,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 1.9099810081314956,
+        "roll": -23.13957768398609,
+        "yaw": -16.455659562076296
+      },
+      "box": {
+        "probability": 0.9976363182067871,
+        "x_max": 767,
+        "y_max": 579,
+        "x_min": 391,
+        "y_min": 186
+      },
+      "landmarks": [
+        [
+          555,
+          340
+        ],
+        [
+          670,
+          382
+        ],
+        [
+          597,
+          421
+        ],
+        [
+          514,
+          453
+        ],
+        [
+          614,
+          491
+        ]
+      ]
+    }
+  }
+}

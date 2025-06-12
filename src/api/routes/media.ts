@@ -11,7 +11,7 @@ export const Media = async (request: Request, response: Response) => {
     console.log(request.query, 'bang');
     const { thumb } = request.query;
 
-    const imagePath = `${MEDIA_SOURCE}${request.params[0]}`;
+    const imagePath = `${MEDIA_SOURCE}/${request.params.path || ''}`;
 
     const image = Image(imagePath);
 

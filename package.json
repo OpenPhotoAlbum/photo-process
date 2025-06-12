@@ -10,6 +10,8 @@
   "author": "Stephen Young <stephen@theyoungs.cloud>",
   "license": "ISC",
   "dependencies": {
+    "@tensorflow-models/coco-ssd": "^2.2.3",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "color": "^5.0.0",
     "dotenv": "^16.5.0",
     "exiftool-vendored": "^29.3.0",
@@ -26,7 +28,8 @@
   "devDependencies": {
     "@types/express": "^5.0.2",
     "@types/mime-types": "^2.1.4",
-    "@types/node": "^22.15.17",
-    "@types/node-fetch": "^2.6.12"
+    "@types/node": "^22.15.31",
+    "@types/node-fetch": "^2.6.12",
+    "typescript": "^5.8.3"
   }
 }

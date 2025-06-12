@@ -1,0 +1,159 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2023-02-12_14-40-30_1aee6f05-7a14-4429-bc26-1a39fdb69ae9.jpg",
+    "errors": [],
+    "ExifToolVersion": 13.26,
+    "FileName": "2023-02-12_14-40-30_1aee6f05-7a14-4429-bc26-1a39fdb69ae9.jpg",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "113 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 12,
+      "hour": 19,
+      "minute": 40,
+      "second": 30,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:12 19:40:30Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2024,
+      "month": 10,
+      "day": 25,
+      "hour": 9,
+      "minute": 53,
+      "second": 47,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2024:10:25 09:53:47Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2023,
+      "month": 2,
+      "day": 12,
+      "hour": 19,
+      "minute": 40,
+      "second": 30,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2023:02:12 19:40:30Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rwxrwxrwx",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ResolutionUnit": "None",
+    "XResolution": 1,
+    "YResolution": 1,
+    "ImageWidth": 767,
+    "ImageHeight": 1019,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:2:0 (2 2)",
+    "ImageSize": "767x1019",
+    "Megapixels": 0.782,
+    "warnings": []
+  },
+  "dominantColor": "#8b7973",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-02-12_14-40-30_1aee6f05-7a14-4429-bc26-1a39fdb69ae9__face_0.jpg": {
+      "age": {
+        "probability": 0.9887652397155762,
+        "high": 32,
+        "low": 25
+      },
+      "gender": {
+        "probability": 0.9031096696853638,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 21.380906293847886,
+        "roll": 16.40013815093053,
+        "yaw": 59.65516624928231
+      },
+      "box": {
+        "probability": 0.9999203681945801,
+        "x_max": 163,
+        "y_max": 320,
+        "x_min": 6,
+        "y_min": 146
+      },
+      "landmarks": [
+        [
+          47,
+          219
+        ],
+        [
+          95,
+          219
+        ],
+        [
+          60,
+          249
+        ],
+        [
+          50,
+          273
+        ],
+        [
+          92,
+          275
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/2023-02-12_14-40-30_1aee6f05-7a14-4429-bc26-1a39fdb69ae9__face_1.jpg": {
+      "age": {
+        "probability": 0.9999992847442627,
+        "high": 2,
+        "low": 0
+      },
+      "gender": {
+        "probability": 0.999998927116394,
+        "value": "male"
+      },
+      "pose": {
+        "pitch": -2.696752302375387,
+        "roll": -10.567434455493952,
+        "yaw": 41.760199987572534
+      },
+      "box": {
+        "probability": 0.9998472929000854,
+        "x_max": 581,
+        "y_max": 445,
+        "x_min": 433,
+        "y_min": 283
+      },
+      "landmarks": [
+        [
+          468,
+          350
+        ],
+        [
+          506,
+          361
+        ],
+        [
+          469,
+          378
+        ],
+        [
+          463,
+          402
+        ],
+        [
+          493,
+          412
+        ]
+      ]
+    }
+  }
+}

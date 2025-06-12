@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .header {
+            padding: 20px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #333;
+        }
+        
+        .header h1 {
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #333;
+        }
+        
+        .btn {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #005a9e;
+        }
+        
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .photo-card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .photo-card:hover {
+            transform: translateY(-2px);
+            border-color: #007acc;
+        }
+        
+        .photo-preview {
+            background: #1a1a1a;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .photo-info {
+            padding: 15px;
+        }
+        
+        .photo-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .photo-meta {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        
+        .face-count {
+            display: inline-block;
+            background: #007acc;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2a2a2a;
+            border-radius: 8px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
+        .close:hover {
+            color: #fff;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .metadata-section {
+            margin-bottom: 20px;
+        }
+        
+        .metadata-section h3 {
+            margin-bottom: 10px;
+            color: #007acc;
+        }
+        
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .metadata-label {
+            color: #888;
+        }
+        
+        .metadata-value {
+            color: #fff;
+        }
+        
+        .faces-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+        
+        .face-card {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .face-placeholder {
+            background: #333;
+            height: 80px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        /* Search Interface Styles */
+        .search-section {
+            background: #2a2a2a;
+            border-bottom: 1px solid #333;
+            padding: 20px;
+        }
+        
+        .search-section h3 {
+            margin: 0 0 15px 0;
+            color: #007acc;
+            font-size: 18px;
+        }
+        
+        .search-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .search-group label {
+            color: #ccc;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .search-input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .search-input-group input:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+        
+        .search-btn {
+            padding: 8px 16px;
+            margin: 0;
+        }
+        
+        .quick-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            background: #333;
+            color: #ccc;
+            border: 1px solid #555;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-btn:hover {
+            background: #007acc;
+            color: white;
+            border-color: #007acc;
+        }
+        
+        .filter-btn.active {
+            background: #007acc;
+            color: white;
+            border-color: #007acc;
+        }
+        
+        .search-suggestions {
+            display: none;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #444;
+            font-size: 14px;
+        }
+        
+        .suggestion-item:hover {
+            background: #444;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-results-header {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            color: #007acc;
+            font-weight: 600;
+        }
+        
+        @media (min-width: 768px) {
+            .search-controls {
+                flex-direction: row;
+                align-items: end;
+                gap: 30px;
+            }
+            
+            .search-group {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Photo Gallery</h1>
+        <div class="stats" id="stats">Loading...</div>
+    </div>
+    
+    <div class="controls">
+        <button class="btn" id="refreshBtn" onclick="loadPhotos()">Refresh</button>
+        
+        <div style="display: inline-block; margin-right: 10px;">
+            <label for="scanLimit" style="color: #888; margin-right: 5px;">Scan limit:</label>
+            <select id="scanLimit" style="background: #333; color: #fff; border: 1px solid #555; padding: 5px; border-radius: 3px;">
+                <option value="4">4 photos</option>
+                <option value="10">10 photos</option>
+                <option value="25">25 photos</option>
+                <option value="50">50 photos</option>
+                <option value="100">100 photos</option>
+                <option value="-1">All photos</option>
+            </select>
+        </div>
+        
+        <button class="btn" id="scanBtn" onclick="startScan()">Start Scan</button>
+    </div>
+    
+    <!-- Search Controls -->
+    <div class="search-section">
+        <h3>🔍 Smart Search</h3>
+        <div class="search-controls">
+            <div class="search-group">
+                <label>Search by Objects:</label>
+                <div class="search-input-group">
+                    <input type="text" id="objectSearch" placeholder="e.g., person, car, dog, food..." />
+                    <button class="btn search-btn" onclick="searchByObjects()">Search</button>
+                </div>
+                <div class="search-suggestions" id="objectSuggestions"></div>
+            </div>
+            
+            <div class="search-group">
+                <label>Quick Filters:</label>
+                <div class="quick-filters">
+                    <button class="filter-btn" onclick="searchByObjects('person')">👥 People</button>
+                    <button class="filter-btn" onclick="searchByObjects('car')">🚗 Cars</button>
+                    <button class="filter-btn" onclick="searchByObjects('dog')">🐕 Dogs</button>
+                    <button class="filter-btn" onclick="searchByObjects('cat')">🐱 Cats</button>
+                    <button class="filter-btn" onclick="searchByObjects('food')">🍽️ Food</button>
+                    <button class="filter-btn" onclick="searchByObjects('dining table')">🪑 Dining</button>
+                    <button class="filter-btn" onclick="showAllPhotos()">📷 All Photos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="content">
+        <div class="loading">Loading photos...</div>
+    </div>
+    
+    <!-- Modal for photo details -->
+    <div id="photoModal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="modalTitle">Photo Details</h2>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Loading...
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let photos = [];
+        
+        async function loadPhotos() {
+            const content = document.getElementById('content');
+            const stats = document.getElementById('stats');
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            refreshBtn.disabled = true;
+            content.innerHTML = '<div class="loading">Loading photos...</div>';
+            
+            try {
+                const response = await fetch('/api/gallery');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                photos = data.photos;
+                stats.textContent = `${data.count} processed photos`;
+                
+                renderPhotos(photos);
+            } catch (error) {
+                console.error('Error loading photos:', error);
+                content.innerHTML = '<div class="error">Failed to load photos</div>';
+                stats.textContent = 'Error loading photos';
+            } finally {
+                refreshBtn.disabled = false;
+            }
+        }
+        
+        function renderPhotos(photos) {
+            const content = document.getElementById('content');
+            
+            if (photos.length === 0) {
+                content.innerHTML = '<div class="loading">No photos found. Run a scan to process photos.</div>';
+                return;
+            }
+            
+            const grid = document.createElement('div');
+            grid.className = 'photo-grid';
+            
+            photos.forEach(photo => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+                card.onclick = () => showPhotoDetails(photo);
+                
+                // Construct the original image path from the processed metadata
+                const originalImagePath = photo.filename.replace('.json', '');
+                const imageUrl = `/media/recents/${originalImagePath}`;
+                
+                card.innerHTML = `
+                    <div class="photo-preview">
+                        <img src="${imageUrl}?thumb=1" 
+                             alt="${photo.filename}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.parentElement.innerHTML='📸 Image not found'">
+                    </div>
+                    <div class="photo-info">
+                        <div class="photo-title">${photo.filename}</div>
+                        <div class="photo-meta">Metadata: ${photo.metadataPath}</div>
+                        ${photo.faceCount > 0 ? `<span class="face-count">${photo.faceCount} faces</span>` : ''}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            content.innerHTML = '';
+            content.appendChild(grid);
+        }
+        
+        async function showPhotoDetails(photo) {
+            const modal = document.getElementById('photoModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = photo.filename;
+            modalBody.innerHTML = 'Loading metadata...';
+            modal.style.display = 'block';
+            
+            try {
+                const encodedPath = encodeURIComponent(photo.metadataPath);
+                const response = await fetch(`/api/metadata?path=${encodedPath}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const metadata = await response.json();
+                
+                renderMetadata(metadata, photo);
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+                modalBody.innerHTML = '<div class="error">Failed to load metadata</div>';
+            }
+        }
+        
+        function renderMetadata(metadata, photo) {
+            const modalBody = document.getElementById('modalBody');
+            
+            const exif = metadata.exif;
+            const dominantColor = metadata.dominantColor;
+            const people = metadata.people;
+            
+            let html = '';
+            
+            // Basic info section
+            html += '<div class="metadata-section">';
+            html += '<h3>Basic Information</h3>';
+            html += '<div class="metadata-grid">';
+            html += `<div class="metadata-label">Filename:</div><div class="metadata-value">${exif.FileName || 'Unknown'}</div>`;
+            html += `<div class="metadata-label">File Size:</div><div class="metadata-value">${exif.FileSize || 'Unknown'}</div>`;
+            html += `<div class="metadata-label">Dimensions:</div><div class="metadata-value">${exif.ImageWidth}x${exif.ImageHeight}</div>`;
+            html += `<div class="metadata-label">Dominant Color:</div><div class="metadata-value"><span style="background:${dominantColor}; padding:2px 8px; border-radius:3px;">${dominantColor}</span></div>`;
+            html += '</div></div>';
+            
+            // Date information
+            if (exif.DateTimeOriginal) {
+                html += '<div class="metadata-section">';
+                html += '<h3>Date Information</h3>';
+                html += '<div class="metadata-grid">';
+                html += `<div class="metadata-label">Date Taken:</div><div class="metadata-value">${exif.DateTimeOriginal.rawValue}</div>`;
+                if (exif.ModifyDate) {
+                    html += `<div class="metadata-label">Modified:</div><div class="metadata-value">${exif.ModifyDate.rawValue}</div>`;
+                }
+                html += '</div></div>';
+            }
+            
+            // Location information
+            if (exif.City || exif['Province-State'] || exif['Country-PrimaryLocationName']) {
+                html += '<div class="metadata-section">';
+                html += '<h3>Location</h3>';
+                html += '<div class="metadata-grid">';
+                if (exif.City) html += `<div class="metadata-label">City:</div><div class="metadata-value">${exif.City}</div>`;
+                if (exif['Province-State']) html += `<div class="metadata-label">State:</div><div class="metadata-value">${exif['Province-State']}</div>`;
+                if (exif['Country-PrimaryLocationName']) html += `<div class="metadata-label">Country:</div><div class="metadata-value">${exif['Country-PrimaryLocationName']}</div>`;
+                html += '</div></div>';
+            }
+            
+            // Camera information
+            if (exif.Make || exif.Model) {
+                html += '<div class="metadata-section">';
+                html += '<h3>Camera</h3>';
+                html += '<div class="metadata-grid">';
+                if (exif.Make) html += `<div class="metadata-label">Make:</div><div class="metadata-value">${exif.Make}</div>`;
+                if (exif.Model) html += `<div class="metadata-label">Model:</div><div class="metadata-value">${exif.Model}</div>`;
+                if (exif.Software) html += `<div class="metadata-label">Software:</div><div class="metadata-value">${exif.Software}</div>`;
+                html += '</div></div>';
+            }
+            
+            // Face detection results
+            if (people && Object.keys(people).length > 0) {
+                html += '<div class="metadata-section">';
+                html += '<h3>Detected Faces</h3>';
+                html += '<div class="faces-grid">';
+                
+                Object.entries(people).forEach(([facePath, faceData], index) => {
+                    const face = faceData;
+                    const faceImageUrl = facePath.replace('/mnt/hdd/photo-process/processed/', '/processed/');
+                    
+                    html += '<div class="face-card">';
+                    html += `<img src="${faceImageUrl}" alt="Face ${index + 1}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`;
+                    html += `<div class="face-placeholder" style="display: none;">Face ${index + 1}</div>`;
+                    if (face.gender) html += `<div class="metadata-label">${face.gender.value} (${Math.round(face.gender.probability * 100)}%)</div>`;
+                    if (face.age) html += `<div class="metadata-label">Age: ${face.age.low}-${face.age.high}</div>`;
+                    html += '</div>';
+                });
+                
+                html += '</div></div>';
+            }
+            
+            modalBody.innerHTML = html;
+        }
+        
+        function closeModal(event) {
+            if (!event || event.target.id === 'photoModal' || event.target.classList.contains('close')) {
+                document.getElementById('photoModal').style.display = 'none';
+            }
+        }
+        
+        async function startScan() {
+            const scanBtn = document.getElementById('scanBtn');
+            const scanLimit = document.getElementById('scanLimit').value;
+            
+            scanBtn.disabled = true;
+            scanBtn.textContent = 'Scanning...';
+            
+            try {
+                const url = scanLimit === '-1' ? '/scan' : `/scan?limit=${scanLimit}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                
+                // Auto-refresh after scan
+                setTimeout(() => {
+                    loadPhotos();
+                    scanBtn.disabled = false;
+                    scanBtn.textContent = 'Start Scan';
+                }, 2000);
+            } catch (error) {
+                console.error('Error starting scan:', error);
+                scanBtn.disabled = false;
+                scanBtn.textContent = 'Start Scan';
+            }
+        }
+        
+        // Object-based search functionality
+        let currentSearchQuery = '';
+        let availableObjects = [];
+        
+        async function searchByObjects(objectQuery) {
+            const query = objectQuery || document.getElementById('objectSearch').value.trim();
+            if (!query) {
+                showAllPhotos();
+                return;
+            }
+            
+            currentSearchQuery = query;
+            const content = document.getElementById('content');
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            refreshBtn.disabled = true;
+            content.innerHTML = '<div class="loading">Searching for photos with "' + query + '"...</div>';
+            
+            // Add search results header
+            const searchHeader = document.createElement('div');
+            searchHeader.className = 'search-results-header';
+            searchHeader.textContent = '🔍 Search Results for: "' + query + '"';
+            content.appendChild(searchHeader);
+            
+            try {
+                const response = await fetch(`/api/search/objects?q=${encodeURIComponent(query)}&confidence=0.5`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.images && data.images.length > 0) {
+                    searchHeader.textContent = `🔍 Found ${data.images.length} photos with "${query}"`;
+                    renderPhotos(data.images);
+                    updateFilterButtons(query);
+                } else {
+                    content.innerHTML = `
+                        <div class="search-results-header">🔍 Search Results for: "${query}"</div>
+                        <div class="loading">No photos found with "${query}". Try searching for: person, car, dog, cat, food, or dining table</div>
+                    `;
+                    clearFilterButtons();
+                }
+                
+            } catch (error) {
+                console.error('Error searching photos:', error);
+                content.innerHTML = `
+                    <div class="search-results-header">🔍 Search Results for: "${query}"</div>
+                    <div class="error">Failed to search photos</div>
+                `;
+                clearFilterButtons();
+            } finally {
+                refreshBtn.disabled = false;
+            }
+        }
+        
+        function showAllPhotos() {
+            currentSearchQuery = '';
+            document.getElementById('objectSearch').value = '';
+            clearFilterButtons();
+            loadPhotos();
+        }
+        
+        function updateFilterButtons(activeQuery) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                const btnText = btn.textContent.toLowerCase();
+                if (btnText.includes(activeQuery.toLowerCase())) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        function clearFilterButtons() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        
+        // Load available object types for suggestions
+        async function loadObjectSuggestions() {
+            try {
+                const response = await fetch('/api/objects/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    availableObjects = data.objects || [];
+                }
+            } catch (error) {
+                console.error('Error loading object suggestions:', error);
+            }
+        }
+        
+        // Add search functionality to Enter key
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('objectSearch');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        searchByObjects();
+                    }
+                });
+            }
+            
+            loadObjectSuggestions();
+            loadPhotos();
+        });
+
+        // Make functions global so they can be called from onclick handlers
+        window.loadPhotos = loadPhotos;
+        window.startScan = startScan;
+        window.showPhotoDetails = showPhotoDetails;
+        window.closeModal = closeModal;
+        window.searchByObjects = searchByObjects;
+        window.showAllPhotos = showAllPhotos;
+    </script>
+</body>
+</html>

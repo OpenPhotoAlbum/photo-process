@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import { readdir } from 'fs/promises'
 import mime from 'mime-types';
 import path from 'path';
-import { generateImageDataJson } from '../util/process-source';
+import { generateImageDataJson, getImageMetaFilename } from '../util/process-source';
 
 const blacklist_doesnt_start_with: string[] = [
     // '/home/uploads/cayce',
@@ -16,11 +16,7 @@ const blacklist_doesnt_start_with: string[] = [
 const supportedMIMEtypeInput = [
     "image/jpeg",
     "image/jpg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-    "image/svg",
-    "image/tiff"
+    "image/png"
 ]
 
 export enum ScanStatus {
@@ -54,22 +50,43 @@ const getDirectories = async (source: string) =>
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name)
 
-const run = (fileToScan: string, dest: string) => {
-    return new Promise((resolve) => {
-        const jsonData = generateImageDataJson(fileToScan, dest);
-        console.log(`Extracting JSON Data & Faces: ${fileToScan}`)
-        resolve(jsonData);
-    });
+const run = async (fileToScan: string, dest: string) => {
+    try {
+        console.log(`[Extracting JSON Data & Faces]: ${fileToScan}`)
+        const jsonData = await generateImageDataJson(fileToScan, dest);
+        return jsonData;
+    } catch (error) {
+        console.error(`[Error processing ${fileToScan}]:`, error);
+        throw error;
+    }
 }
 
-export const Start = async (scanDir: string, dest: string) => {
+export const Start = async (scanDir: string, dest: string, limit?: number) => {
     const processed: unknown[] = [];
     const files: any[] = []
     let total_files = 0;
+    
+    // Handle both directory structure and flat structure
     const dirs = await getDirectories(scanDir);
+    console.log(`Found directories in ${scanDir}:`, dirs);
+    
+    if (dirs.length > 0) {
+        // Original behavior - scan subdirectories
+        for (const d of dirs) {
+            for await (const f of getFiles(scanDir + '/' + d)) {
+                total_files++;
+                const mt = mime.lookup(f);
 
-    for (const d of dirs) {
-        for await (const f of getFiles(scanDir + '/' + d)) {
+                const mimeTypeChecks = mt && supportedMIMEtypeInput.includes(mt as string)
+                
+                if (mimeTypeChecks) {
+                    files.push(f)
+                }
+            }
+        }
+    } else {
+        // Flat directory - scan files directly
+        for await (const f of getFiles(scanDir)) {
             total_files++;
             const mt = mime.lookup(f);
 
@@ -81,9 +98,12 @@ export const Start = async (scanDir: string, dest: string) => {
         }
     }
 
-    const numFilesToScan = files.filter(blacklist).length;
+    console.log(`Found ${files.length} total files`);
+    const filteredFiles = files.filter(blacklist);
+    console.log(`After blacklist filter: ${filteredFiles.length} files`);
+    const numFilesToScan = filteredFiles.length;
 
-    const groupedFiles = files.filter(blacklist).reduce((acc, cur) => {
+    const groupedFiles = filteredFiles.reduce((acc, cur) => {
         if (!acc[path.parse(cur).dir]) {
             acc[path.parse(cur).dir] = [cur]
         } else {
@@ -97,20 +117,27 @@ export const Start = async (scanDir: string, dest: string) => {
     for (const file of Object.keys(groupedFiles)) { 
 
         const unscannedOnly = (f: string) => {
-            const json_file = `${dest}meta/${f}.json`
-            console.log(json_file);
+            const json_file = getImageMetaFilename(f, dest);
             const scan_file_exists = fs.existsSync(json_file);
             return !scan_file_exists
         };
 
         const groupsOfFiles = groupedFiles[file].filter(unscannedOnly);
 
-        const batch = 5;
-        const chunkedFiles = chunk(groupsOfFiles, batch);
+        // Apply limit if specified
+        const limitedFiles = limit && limit > 0 ? groupsOfFiles.slice(0, limit) : groupsOfFiles;
+        console.log(`Processing ${limitedFiles.length} files${limit ? ` (limited to ${limit})` : ''} from ${groupsOfFiles.length} unscanned files in ${file}`);
+
+        const batch = 2;
+        const chunkedFiles = chunk(limitedFiles, batch);
 
         for await (const a of chunkedFiles) {
-            const contents = await Promise.all(a.map(i => run(i, dest)));
-            processed.push(contents);
+            try {
+                const contents = await Promise.allSettled(a.map(i => run(i, dest)));
+                processed.push(contents);
+            } catch (error) {
+                console.error('Error processing batch:', error);
+            }
         }
     }
 

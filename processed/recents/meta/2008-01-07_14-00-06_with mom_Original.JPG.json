@@ -1,0 +1,222 @@
+{
+  "exif": {
+    "SourceFile": "/mnt/sg1/uploads/stephen/iphone/recents/2008-01-07_14-00-06_with mom_Original.JPG",
+    "errors": [],
+    "ExifToolVersion": 13.26,
+    "FileName": "2008-01-07_14-00-06_with mom_Original.JPG",
+    "Directory": "/mnt/sg1/uploads/stephen/iphone/recents",
+    "FileSize": "65 kB",
+    "FileModifyDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2008,
+      "month": 1,
+      "day": 7,
+      "hour": 19,
+      "minute": 0,
+      "second": 6,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2008:01:07 19:00:06Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileAccessDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2025,
+      "month": 5,
+      "day": 21,
+      "hour": 2,
+      "minute": 19,
+      "second": 19,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2025:05:21 02:19:19Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FileInodeChangeDate": {
+      "_ctor": "ExifDateTime",
+      "year": 2008,
+      "month": 1,
+      "day": 7,
+      "hour": 19,
+      "minute": 0,
+      "second": 6,
+      "tzoffsetMinutes": 0,
+      "rawValue": "2008:01:07 19:00:06Z",
+      "zoneName": "UTC",
+      "inferredZone": false
+    },
+    "FilePermissions": "-rw-r--r--",
+    "FileType": "JPEG",
+    "FileTypeExtension": "jpg",
+    "MIMEType": "image/jpeg",
+    "JFIFVersion": 1.01,
+    "ExifByteOrder": "Little-endian (Intel, II)",
+    "Software": "Picasa",
+    "ExifVersion": "0220",
+    "ColorSpace": "sRGB",
+    "ExifImageWidth": 600,
+    "ExifImageHeight": 401,
+    "InteropIndex": "R98 - DCF basic file (sRGB)",
+    "InteropVersion": "0100",
+    "ImageUniqueID": "a7e78bbbdb3efb6b0000000000000000",
+    "Compression": "JPEG (old-style)",
+    "XResolution": 72,
+    "YResolution": 72,
+    "ResolutionUnit": "inches",
+    "ThumbnailOffset": 312,
+    "ThumbnailLength": 6602,
+    "XMPToolkit": "XMP Core 5.5.0",
+    "ImageWidth": 600,
+    "ImageHeight": 401,
+    "EncodingProcess": "Baseline DCT, Huffman coding",
+    "BitsPerSample": 8,
+    "ColorComponents": 3,
+    "YCbCrSubSampling": "YCbCr4:4:4 (1 1)",
+    "ImageSize": "600x401",
+    "Megapixels": 0.241,
+    "ThumbnailImage": {
+      "_ctor": "BinaryField",
+      "bytes": 6602,
+      "rawValue": "(Binary data 6602 bytes, use -b option to extract)"
+    },
+    "warnings": []
+  },
+  "dominantColor": "#857c5e",
+  "people": {
+    "/mnt/hdd/photo-process/processed/recents/faces/2008-01-07_14-00-06_with mom_Original__face_0.JPG": {
+      "age": {
+        "probability": 0.6277004480361938,
+        "high": 20,
+        "low": 15
+      },
+      "gender": {
+        "probability": 1,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 2.6155294559393667,
+        "roll": -1.0132321340445003,
+        "yaw": -11.49128167897409
+      },
+      "box": {
+        "probability": 0.9995689988136292,
+        "x_max": 191,
+        "y_max": 200,
+        "x_min": 25,
+        "y_min": 15
+      },
+      "landmarks": [
+        [
+          93,
+          93
+        ],
+        [
+          145,
+          88
+        ],
+        [
+          131,
+          125
+        ],
+        [
+          93,
+          143
+        ],
+        [
+          146,
+          137
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/2008-01-07_14-00-06_with mom_Original__face_1.JPG": {
+      "age": {
+        "probability": 0.9993682503700256,
+        "high": 43,
+        "low": 38
+      },
+      "gender": {
+        "probability": 1,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 7.836633565848217,
+        "roll": 12.898750052719777,
+        "yaw": 1.1782131986989188
+      },
+      "box": {
+        "probability": 0.9983705878257751,
+        "x_max": 545,
+        "y_max": 222,
+        "x_min": 393,
+        "y_min": 44
+      },
+      "landmarks": [
+        [
+          432,
+          121
+        ],
+        [
+          478,
+          114
+        ],
+        [
+          445,
+          146
+        ],
+        [
+          437,
+          170
+        ],
+        [
+          487,
+          163
+        ]
+      ]
+    },
+    "/mnt/hdd/photo-process/processed/recents/faces/2008-01-07_14-00-06_with mom_Original__face_2.JPG": {
+      "age": {
+        "probability": 0.999995231628418,
+        "high": 53,
+        "low": 48
+      },
+      "gender": {
+        "probability": 1,
+        "value": "female"
+      },
+      "pose": {
+        "pitch": 19.03383632742296,
+        "roll": -6.761686781120176,
+        "yaw": -19.533105333168972
+      },
+      "box": {
+        "probability": 0.9989194869995117,
+        "x_max": 354,
+        "y_max": 204,
+        "x_min": 215,
+        "y_min": 42
+      },
+      "landmarks": [
+        [
+          267,
+          104
+        ],
+        [
+          313,
+          105
+        ],
+        [
+          295,
+          132
+        ],
+        [
+          265,
+          153
+        ],
+        [
+          313,
+          153
+        ]
+      ]
+    }
+  }
+}
