@@ -1,6 +1,7 @@
 import { Job, JobHandler } from '../util/job-queue';
 import { FaceRepository } from '../models/database';
 import { Logger } from '../logger';
+import { configManager } from '../util/config-manager';
 
 const logger = Logger.getInstance();
 
@@ -14,9 +15,10 @@ export const faceRecognitionJobHandler: JobHandler<FaceRecognitionJobData> = asy
     job: Job<FaceRecognitionJobData>,
     updateProgress
 ) => {
+    const faceRecognitionConfig = configManager.getFaceRecognitionConfig();
     const { 
         limit = 50, 
-        confidenceThreshold = 0.75,
+        confidenceThreshold = faceRecognitionConfig.confidence.review,
         imageIds 
     } = job.data;
     
@@ -83,7 +85,7 @@ export const faceRecognitionJobHandler: JobHandler<FaceRecognitionJobData> = asy
                             const topSubject = bestMatch.subjects[0];
                             const confidence = topSubject.similarity;
                             
-                            if (confidence >= 0.99) {
+                            if (confidence >= faceRecognitionConfig.confidence.autoAssign) {
                                 // High confidence - automatically assign
                                 const { FaceRepository, PersonRepository } = await import('../models/database');
                                 const person = await PersonRepository.getPersonByComprefaceId(topSubject.subject);

@@ -6,16 +6,34 @@ import * as routes from './routes';
 import { searchByObjects, getObjectStats, advancedSearch } from './routes/search';
 import { ImageServer } from './util/image-server';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
+import { requestLogger, errorLogger } from './middleware/request-logger';
 import * as Junk from './routes/junk';
 import * as Jobs from './routes/jobs';
+import { StartupValidator } from './util/startup-validator';
 
 const logger = Logger.getInstance();
-logger.info('Starting API...');
-dotenv.config({ path: '/mnt/hdd/photo-process/.env' });
+dotenv.config({ path: require('path').join(__dirname, '../../.env') });
 
-const main = () => {
+const main = async () => {
+    // Run startup validation before initializing the application
+    const validator = new StartupValidator();
+    const validationReport = await validator.validateStartup();
+    
+    StartupValidator.printReport(validationReport);
+    
+    // Exit if critical issues found
+    if (!validationReport.success) {
+        logger.error('Critical startup validation issues found. Exiting.');
+        process.exit(1);
+    }
+    
+    logger.info('Starting API...');
+    
     const app = express()
     const port = process.env.PORT || 9000
+
+    // Request logging middleware (before all routes)
+    app.use(requestLogger);
 
     // Serve static files for frontend
     app.use('/static', express.static(path.join(__dirname, '../../public')));
@@ -102,9 +120,10 @@ const main = () => {
 
     // Error handling middleware (must be last)
     app.use(notFoundHandler);
+    app.use(errorLogger);  // Log errors before handling
     app.use(errorHandler);
 
-    app.listen(port, () => logger.info(`listening on port: ${port}`))
+    app.listen(port, () => logger.info(`Server started`, { port, environment: process.env.NODE_ENV || 'development' }))
 }
 
 export default main;

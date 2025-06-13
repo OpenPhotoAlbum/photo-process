@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '/mnt/hdd/photo-process/.env' });
+dotenv.config({ path: require('path').join(__dirname, '../../../.env') });
 
 const config = {
     client: 'mysql2',
