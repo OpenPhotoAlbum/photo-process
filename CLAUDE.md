@@ -28,24 +28,39 @@ sleep 3 && curl -s http://localhost:9000/api/persons/unidentified?limit=1 > /dev
 - `curl http://localhost:9000/scan/status` - Check processing status
 - Process photos directly: `node -e "import('./build/api/scanner/scan.js').then(({Start}) => Start('/source/path', '/dest/path'))"`
 
-### Feature Migrations (for new processing features)
-- `node migrate-features.js --status` - Check migration status for all features
-- `node migrate-features.js --feature=object_detection` - Run specific feature migration
-- `node migrate-features.js --force` - Force re-migration of all existing images
+### Maintenance & Migration Tools
+- `npm run maintenance:migrate-features` - Check migration status for all features
+- `npm run maintenance:retroactive` - Add missing features to existing photos
+- `npm run maintenance:fix-dates` - Fix date issues in processed images
+- `npm run maintenance:update-objects` - Update object detection data
+- `npm run maintenance:import-faces` - Import face data
+- `npm run maintenance:import-missing` - Import missing data
+- `npm run maintenance:check-missing` - Check for missing files
 
-### Retroactive Processing (for adding new features to existing photos)
-- `node retroactive-process.js --feature=object_detection --limit=50` - Add object detection to 50 existing photos
-- `node retroactive-process.js --feature=all --limit=25` - Add all missing features to 25 photos
-- `node retroactive-process.js --status` - Check what features are missing from existing photos
+### Cleanup Tools
+- `npm run cleanup:menu` - Interactive cleanup menu
+- `npm run cleanup:compreface` - Clean CompreFace data
+- `npm run cleanup:fresh-start` - Complete system reset
+- `npm run cleanup:local-data` - Clean local processing data
+- `npm run cleanup:low-confidence` - Remove low confidence detections
+
+### Testing & Development
+- `npm run test:full-processing` - Test complete processing pipeline
+- `npm run test:object-detection` - Test object detection
+- `npm run test:single-file` - Test single file processing
+
+**Note**: Direct script access available in `tools/` subdirectories if needed
 
 **Pattern**: Whenever we add new processing features, always create retroactive scripts to update existing images.
 
 ### Database Management
-- `./database.sh` - Start MySQL database using Docker Compose
-- `./migrate.sh` - Run Knex migrations (creates media table)
-- `./seed.sh` - Run database seeds
-- `./create-migration.sh` - Create new Knex migration
-- `./create-seed.sh` - Create new Knex seed
+- `npm run db:start` - Start MySQL database using Docker Compose
+- `npm run db:migrate` - Run Knex migrations (creates media table)
+- `npm run db:seed` - Run database seeds
+- `npm run db:create-migration` - Create new Knex migration
+- `npm run db:create-seed` - Create new Knex seed
+
+**Note**: Direct script access available at `tools/database/` if needed
 
 ### Services
 - `docker compose -f services/CompreFace/docker-compose.yaml up -d` - Start CompreFace AI service
@@ -147,3 +162,97 @@ JPEG_QUALITY=85                       # JPEG compression quality (1-100)
 - **Memory Creation**: Automatically create "memories" from photos taken on the same day in previous years
 
 **Reminder**: Always make sure the server is running when you are finished
+
+## Project Reorganization Plan
+
+### Current Issues
+The project has grown organically and suffers from organizational issues that impact maintainability and professionalism:
+
+1. **Root Directory Chaos**: 25+ files scattered in root (scripts, logs, configs, data)
+2. **Data Storage Strategy**: Processed photos (potentially GBs) mixed with source code 
+3. **Script Proliferation**: 15+ utility scripts with no clear organization
+4. **Configuration Scattered**: Multiple config approaches across files
+5. **Runtime vs Development**: No clear separation of concerns
+
+### Proposed Directory Structure
+```
+/mnt/hdd/photo-process/
+├── README.md                    # Main project documentation
+├── package.json                 
+├── tsconfig.json
+├── .env                         # Environment config only
+├── 
+├── src/                         # Application source code
+├── build/                       # Compiled TypeScript
+├── 
+├── tools/                       # Development & maintenance tools
+│   ├── database/
+│   │   ├── migrate.sh
+│   │   ├── seed.sh
+│   │   └── create-*.sh
+│   ├── cleanup/
+│   │   └── cleanup-*.js
+│   ├── maintenance/
+│   │   ├── fix-dates.js
+│   │   ├── migrate-*.js
+│   │   └── retroactive-process.js
+│   └── testing/
+│       └── test-*.js
+├── 
+├── config/                      # All configuration
+│   ├── knexfile.js
+│   ├── database.js
+│   └── docker/
+│       └── docker-compose.*.yml
+├── 
+├── database/                    # Schema & migrations
+│   ├── migrations/
+│   └── seeds/
+├── 
+├── public/                      # Web interface
+└── docs/                        # All documentation
+    ├── SETUP.md
+    ├── API.md
+    └── DEPLOYMENT.md
+```
+
+### External Data Strategy
+**Move data outside project directory**:
+```
+/var/lib/photo-process/          # or /mnt/data/photo-process/
+├── source/                      # Input photos
+├── processed/                   # Processed outputs  
+├── thumbnails/                  # Generated thumbnails
+├── cache/                       # Temporary processing files
+└── logs/                        # All application logs
+    ├── app.log
+    ├── scan.log
+    └── error.log
+```
+
+### Implementation Phases
+
+**Phase 1 (High Impact, Low Risk)**:
+1. Move all scripts to `tools/` directory
+2. Move logs to external `logs/` directory 
+3. Organize documentation in `docs/`
+4. Add npm scripts for common operations
+
+**Phase 2 (Medium Impact, Medium Risk)**:
+1. Move processed data to external location
+2. Consolidate configuration system
+3. Enhance Docker Compose setup
+4. Add comprehensive .env.example
+
+**Phase 3 (High Impact, Higher Risk)**:
+1. Implement structured logging
+2. Add configuration validation
+3. Create deployment scripts
+4. Add automated testing workflow
+
+### Key Benefits
+- **Professionalism**: Clean, standard project structure
+- **Maintainability**: Clear separation of concerns
+- **Scalability**: Easy to add new features without clutter
+- **Team Collaboration**: Standard structure any developer can understand
+- **Deployment**: Clear separation of code vs. data for production

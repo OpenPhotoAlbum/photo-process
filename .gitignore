@@ -20,6 +20,8 @@ dest/
 processed/
 # Test output directories
 test-*/
+# Tools output directories
+tools/testing/test-*/
 # Temporary files
 *.tmp
 *.temp
