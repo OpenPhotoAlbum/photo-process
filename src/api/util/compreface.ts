@@ -5,6 +5,7 @@ import fs from 'fs';
 import sharp from 'sharp';
 
 import { Logger } from '../logger';
+import { configManager } from './config-manager';
 
 const logger = Logger.getInstance();
 
@@ -29,7 +30,9 @@ const comprefaceApi = async (service: ComprefaceService, imagepath: string): Pro
     const formData = new FormData();
     formData.append('file', fs.createReadStream(imagepath));
 
-    const query = '?limit=20&det_prob_threshold=0.8&face_plugins=landmarks&face_plugins=gender&face_plugins=age&face_plugins=pose';
+    const faceDetectionConfig = configManager.getProcessing().faceDetection;
+    const detectionThreshold = faceDetectionConfig.confidence.detection;
+    const query = `?limit=20&det_prob_threshold=${detectionThreshold}&face_plugins=landmarks&face_plugins=gender&face_plugins=age&face_plugins=pose`;
     const url = `${COMPREFACE_API_URL}${ComprefaceRoutes[service]}${query}`;
     const response = await fetch(url, {
         method: 'POST',

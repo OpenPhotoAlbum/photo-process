@@ -115,7 +115,22 @@ export const Start = async (scanDir: string, dest: string, limit?: number) => {
             return !scan_file_exists
         };
 
-        const groupsOfFiles = groupedFiles[file].filter(unscannedOnly);
+        const validFileOnly = (f: string) => {
+            try {
+                const stats = fs.statSync(f);
+                // Skip zero-byte files and files that can't be accessed
+                if (stats.size === 0) {
+                    console.log(`Skipping zero-byte file: ${f}`);
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.log(`Skipping inaccessible file: ${f}`);
+                return false;
+            }
+        };
+
+        const groupsOfFiles = groupedFiles[file].filter(unscannedOnly).filter(validFileOnly);
 
         // Apply limit if specified
         const limitedFiles = limit && limit > 0 ? groupsOfFiles.slice(0, limit) : groupsOfFiles;

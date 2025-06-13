@@ -3,12 +3,16 @@ import { PersonRepository, FaceRepository, ImageRepository, db } from '../models
 import { createComprefaceSubject, addFaceToSubject, recognizeFacesFromImage, deleteFaceFromSubject, recognizeFacesFromImagesBatch, addFacesToSubjectBatch } from '../util/compreface';
 import { ConsistencyManager } from '../util/consistency-manager';
 import { AppError, asyncHandler, validatePersonId, validateFaceId, validateImageId, validateRequired, validateArray } from '../middleware/error-handler';
+import { configManager } from '../util/config-manager';
+import { Logger } from '../logger';
 import fetch from 'node-fetch';
+
+const logger = Logger.getInstance();
 
 // Get all persons with face thumbnails
 export const getAllPersons = async (req: Request, res: Response) => {
     try {
-        console.log('TEST: getAllPersons called - console.log is working');
+        req.logger.debug('Getting all persons with face thumbnails');
         const persons = await PersonRepository.getAllPersons();
         
         // Enrich each person with a sample face image
@@ -28,7 +32,7 @@ export const getAllPersons = async (req: Request, res: Response) => {
         
         res.json({ persons: enrichedPersons });
     } catch (error) {
-        console.error('Error getting persons:', error);
+        req.logger.error('Failed to get persons', error);
         res.status(500).json({ error: 'Failed to get persons' });
     }
 };
@@ -66,7 +70,7 @@ export const createPerson = asyncHandler(async (req: Request, res: Response) => 
     try {
         comprefaceSubjectId = await createComprefaceSubject(name);
     } catch (comprefaceError: any) {
-        console.warn('CompreFace subject creation failed, continuing without:', comprefaceError?.message || comprefaceError);
+        req.logger.warn('CompreFace subject creation failed, continuing without', comprefaceError);
         // Continue without CompreFace integration
     }
     
@@ -155,7 +159,7 @@ export const assignFaceToPerson = asyncHandler(async (req: Request, res: Respons
     // Add face to CompreFace for training (async, non-blocking)
     if (person.compreface_subject_id && face.face_image_path) {
         // Don't await this - run in background
-        const fullFacePath = `/mnt/hdd/photo-process/processed/${face.face_image_path}`;
+        const fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
         console.log(`Adding face to CompreFace: ${person.compreface_subject_id}, path: ${fullFacePath}`);
         addFaceToSubject(person.compreface_subject_id, fullFacePath)
             .then(() => {
@@ -333,7 +337,7 @@ export const batchAssignFacesToPerson = asyncHandler(async (req: Request, res: R
             
             // Collect face path for batch upload to CompreFace
             if (person.compreface_subject_id && face.face_image_path) {
-                const fullFacePath = `/mnt/hdd/photo-process/processed/${face.face_image_path}`;
+                const fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
                 facePaths.push(fullFacePath);
             }
 
@@ -604,8 +608,9 @@ export const batchAutoRecognizeInternal = async (options: {
     const results: any[] = [];
     const confirmationNeeded: any[] = [];
     
-    const HIGH_CONFIDENCE_THRESHOLD = 0.99;  // Auto-assign if ≥99%
-    const MIN_CONFIRMATION_THRESHOLD = 0.75; // Show for confirmation if ≥75%
+    const faceRecognitionConfig = configManager.getFaceRecognitionConfig();
+    const HIGH_CONFIDENCE_THRESHOLD = faceRecognitionConfig.confidence.autoAssign;  // Auto-assign threshold from config
+    const MIN_CONFIRMATION_THRESHOLD = faceRecognitionConfig.confidence.review; // Review threshold from config
     
     // Group faces by image to enable batch processing
     const facesByImage = new Map<number, any[]>();
@@ -672,7 +677,7 @@ export const batchAutoRecognizeInternal = async (options: {
                             
                             // Collect faces for batch upload to CompreFace
                             if (person.compreface_subject_id && face.face_image_path) {
-                                const fullFacePath = `/mnt/hdd/photo-process/processed/${face.face_image_path}`;
+                                const fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
                                 
                                 if (!faceAssignmentsByPerson.has(person.compreface_subject_id)) {
                                     faceAssignmentsByPerson.set(person.compreface_subject_id, {
@@ -694,7 +699,15 @@ export const batchAutoRecognizeInternal = async (options: {
                                 action: 'auto_assigned'
                             });
                             
-                            console.log(`Auto-recognized face ${face.id} as ${person.name} (confidence: ${bestMatch.similarity})`);
+                            // Log face recognition success
+        logger.logFaceRecognition({
+            imageId: face.image_id,
+            faceId: face.id,
+            personId: person.id!,
+            personName: person.name,
+            confidence: bestMatch.similarity,
+            method: 'auto_compreface'
+        });
                         } else {
                             // Medium confidence - needs user confirmation
                             needsConfirmation++;
@@ -800,7 +813,8 @@ export const recognizeFacesInImage = async (req: Request, res: Response) => {
                 // Find person by CompreFace subject ID
                 const person = await PersonRepository.getPersonByComprefaceId(bestMatch.subject);
                 
-                if (person && bestMatch.similarity > 0.9) { // High confidence threshold
+                const faceRecognitionConfig = configManager.getFaceRecognitionConfig();
+                if (person && bestMatch.similarity >= faceRecognitionConfig.confidence.autoAssign) { // High confidence threshold from config
                     await FaceRepository.assignFaceToPerson(
                         face.id!, 
                         person.id!, 

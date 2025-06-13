@@ -6,7 +6,7 @@ import { jobQueue } from '../util/job-queue';
 
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '/mnt/hdd/photo-process/.env' });
+dotenv.config({ path: require('path').join(__dirname, '../../../.env') });
 
 const logger = Logger.getInstance();
 const MEDIA_SOURCE_DIR = process.env.media_source_dir || '';

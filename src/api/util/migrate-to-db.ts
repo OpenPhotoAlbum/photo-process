@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { ImageRepository, FaceRepository, MetadataRepository, ObjectRepository, Image, DetectedFace, ImageMetadata, DetectedObject } from '../models/database';
+import { config } from '../../config';
 
 interface ProcessedPhotoData {
     exif: any;
@@ -174,8 +175,9 @@ export class DataMigrator {
     ): Promise<void> {
         for (const [facePath, faceData] of Object.entries(peopleData)) {
             // Check if face image file exists
-            const faceImagePath = facePath.replace('/mnt/hdd/photo-process/processed/', '');
-            const fullFacePath = path.join('/mnt/hdd/photo-process/processed', faceImagePath);
+            const processedDir = config.getStorage().processedDir;
+            const faceImagePath = facePath.replace(processedDir + '/', '');
+            const fullFacePath = path.join(processedDir, faceImagePath);
             
             if (!fs.existsSync(fullFacePath)) {
                 console.warn(`Face image not found: ${fullFacePath}`);

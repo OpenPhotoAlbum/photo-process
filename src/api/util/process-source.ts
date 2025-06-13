@@ -6,6 +6,9 @@ import { exifFromImage } from './exif';
 import { extractFaces } from './compreface';
 import { detectObjects, filterByConfidence } from './object-detection';
 import { ScreenshotDetector } from './screenshot-detector';
+import { Logger } from '../logger';
+
+const logger = Logger.getInstance();
 
 export const getImageMetaFilename = (imagepath: string, dest: string): string => {
     // Create a relative path structure under dest directory
@@ -15,11 +18,34 @@ export const getImageMetaFilename = (imagepath: string, dest: string): string =>
 };
 
 export const generateImageDataJson = async (imagepath: string, dest: string): Promise<string> => {
+    const processingStart = Date.now();
+    const correlationId = logger.startOperation(`process-image-${path.basename(imagepath)}`);
+    
+    // Track individual operation timings
+    const timings = {
+        exif: { start: Date.now(), end: 0 },
+        color: { start: Date.now(), end: 0 },
+        faces: { start: Date.now(), end: 0 },
+        objects: { start: Date.now(), end: 0 }
+    };
+    
     const [exif, dominantColor, faces, allObjects] = await Promise.all([
-        exifFromImage(imagepath),
-        dominantColorFromImage(imagepath),
-        extractFaces(imagepath, dest),
-        detectObjects(imagepath)
+        exifFromImage(imagepath).then(result => {
+            timings.exif.end = Date.now();
+            return result;
+        }),
+        dominantColorFromImage(imagepath).then(result => {
+            timings.color.end = Date.now();
+            return result;
+        }),
+        extractFaces(imagepath, dest).then(result => {
+            timings.faces.end = Date.now();
+            return result;
+        }),
+        detectObjects(imagepath).then(result => {
+            timings.objects.end = Date.now();
+            return result;
+        })
     ]);
     
     // Filter objects by confidence threshold (0.75)
@@ -69,6 +95,41 @@ export const generateImageDataJson = async (imagepath: string, dest: string): Pr
         objects: objects,
         screenshotDetection: screenshotDetection
     }, null, 2), {});
+    
+    // Log the completed processing with detailed metrics
+    const processingTime = Date.now() - processingStart;
+    logger.logImageProcessed({
+        imagePath: imagepath,
+        processingTime,
+        operations: {
+            exif: { 
+                success: true, 
+                duration: timings.exif.end - timings.exif.start 
+            },
+            thumbnail: { 
+                success: true, 
+                duration: 0 // Thumbnail generation happens separately
+            },
+            faceDetection: { 
+                success: true, 
+                faces: Object.keys(faces).length,
+                duration: timings.faces.end - timings.faces.start 
+            },
+            objectDetection: { 
+                success: true, 
+                objects: objects.length,
+                duration: timings.objects.end - timings.objects.start 
+            }
+        },
+        output: {
+            metadataPath: outputFilename,
+            thumbnailPath: '', // Set by thumbnail generation
+            faceCount: Object.keys(faces).length
+        }
+    });
+    
+    correlationId.end({ processingTime, faceCount: Object.keys(faces).length, objectCount: objects.length });
+    
     return outputFilename;
 };
 

@@ -1,6 +1,7 @@
 import { Logger } from '../logger';
 import { PersonRepository, FaceRepository } from '../models/database';
 import { addFaceToSubject, getComprefaceSubjects } from './compreface';
+import { config } from '../../config';
 import fetch from 'node-fetch';
 import fs from 'fs';
 
@@ -85,7 +86,7 @@ export class ConsistencyManager {
                     const dbFacesForPerson = assignedFaces.filter((f: any) => f.person_id === person.id);
                     if (comprefaceFacesForSubject.length < dbFacesForPerson.length * 0.5) {
                         // Check if face file exists
-                        const faceFilePath = `/mnt/hdd/photo-process/processed/${face.face_image_path}`;
+                        const faceFilePath = `${config.getStorage().processedDir}/${face.face_image_path}`;
                         if (fs.existsSync(faceFilePath)) {
                             orphanedFaces.push({
                                 faceId: face.id,
