@@ -5,13 +5,7 @@ import mime from 'mime-types';
 import path from 'path';
 import { generateImageDataJson, getImageMetaFilename } from '../util/process-source';
 
-const blacklist_doesnt_start_with: string[] = [
-    // '/home/uploads/cayce',
-    // '/home/uploads/stephen/'
-    // '/home/uploads/cayce/iPhone/Recents',
-    // '/home/uploads/google/cayce',
-    // '/home/uploads/google/stephen-iphone'
-]
+const blacklist_doesnt_start_with: string[] = []
 
 const supportedMIMEtypeInput = [
     "image/jpeg",
@@ -29,7 +23,7 @@ export enum ScanStatus {
 const blacklist = (f:string) => blacklist_doesnt_start_with.map(i => !f.startsWith(i)).every(a => a)
 
 const chunk = (arr: any[], size: number) =>
-    Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+    Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
         arr.slice(i * size, i * size + size)
     );
 
@@ -101,7 +95,6 @@ export const Start = async (scanDir: string, dest: string, limit?: number) => {
     console.log(`Found ${files.length} total files`);
     const filteredFiles = files.filter(blacklist);
     console.log(`After blacklist filter: ${filteredFiles.length} files`);
-    const numFilesToScan = filteredFiles.length;
 
     const groupedFiles = filteredFiles.reduce((acc, cur) => {
         if (!acc[path.parse(cur).dir]) {

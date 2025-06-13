@@ -1,4 +1,5 @@
 import knex from 'knex';
+import appConfig from '../../config';
 const config = require('../../../knexfile');
 
 export const db = knex(config);
@@ -22,6 +23,11 @@ export interface Image {
     date_processed?: Date;
     created_at?: Date;
     updated_at?: Date;
+    is_screenshot?: boolean;
+    screenshot_confidence?: number;
+    screenshot_reasons?: string;
+    junk_status?: 'unreviewed' | 'confirmed_junk' | 'confirmed_important';
+    junk_reviewed_at?: Date;
 }
 
 export interface ImageMetadata {
@@ -72,6 +78,7 @@ export interface DetectedFace {
     face_embedding?: any;
     person_id?: number;
     person_confidence?: number;
+    recognition_method?: string;
     created_at?: Date;
     updated_at?: Date;
 }
@@ -80,9 +87,11 @@ export interface Person {
     id?: number;
     name: string;
     notes?: string;
+    compreface_subject_id?: string;
     primary_face_path?: string;
     average_embedding?: any;
     face_count: number;
+    auto_recognize?: boolean;
     created_at?: Date;
     updated_at?: Date;
 }
@@ -161,6 +170,14 @@ export class ImageRepository {
             .offset(offset);
     }
     
+    static async getImagesWithObjects(): Promise<Image[]> {
+        const images = await db('images')
+            .join('detected_objects', 'images.id', 'detected_objects.image_id')
+            .select('images.*')
+            .distinct('images.id');
+        return images;
+    }
+
     static async searchImages(filters: {
         dateFrom?: Date;
         dateTo?: Date;
@@ -200,6 +217,63 @@ export class ImageRepository {
         
         return query.groupBy('images.id').orderBy('images.date_taken', 'desc');
     }
+    
+    static async updateScreenshotDetection(id: number, isScreenshot: boolean, confidence: number, reasons: string[]): Promise<void> {
+        await db('images').where({ id }).update({
+            is_screenshot: isScreenshot,
+            screenshot_confidence: confidence,
+            screenshot_reasons: JSON.stringify(reasons),
+            updated_at: new Date()
+        });
+    }
+    
+    static async updateJunkStatus(id: number, status: 'confirmed_junk' | 'confirmed_important'): Promise<void> {
+        await db('images').where({ id }).update({
+            junk_status: status,
+            junk_reviewed_at: new Date(),
+            updated_at: new Date()
+        });
+    }
+    
+    static async getScreenshotCandidates(limit = 50): Promise<Image[]> {
+        return db('images')
+            .where('processing_status', 'completed')
+            .where('is_screenshot', true)
+            .where('junk_status', 'unreviewed')
+            .orderBy('screenshot_confidence', 'desc')
+            .limit(limit);
+    }
+    
+    static async getJunkReviewStats(): Promise<{ total: number; reviewed: number; confirmed_junk: number; confirmed_important: number }> {
+        const [totalResult, reviewedResult, junkResult, importantResult] = await Promise.all([
+            db('images').where('is_screenshot', true).count('* as count').first(),
+            db('images').where('is_screenshot', true).whereNot('junk_status', 'unreviewed').count('* as count').first(),
+            db('images').where('junk_status', 'confirmed_junk').count('* as count').first(),
+            db('images').where('junk_status', 'confirmed_important').count('* as count').first()
+        ]);
+        
+        return {
+            total: Number(totalResult?.count) || 0,
+            reviewed: Number(reviewedResult?.count) || 0,
+            confirmed_junk: Number(junkResult?.count) || 0,
+            confirmed_important: Number(importantResult?.count) || 0
+        };
+    }
+    
+    static async update(id: number, updates: Partial<Image>): Promise<void> {
+        await db('images').where({ id }).update({
+            ...updates,
+            updated_at: new Date()
+        });
+    }
+    
+    static async findMany(whereCondition: Partial<Image> = {}, limit?: number): Promise<Image[]> {
+        let query = db('images').where(whereCondition);
+        if (limit) {
+            query = query.limit(limit);
+        }
+        return query;
+    }
 }
 
 export class FaceRepository {
@@ -217,11 +291,212 @@ export class FaceRepository {
         return db('detected_faces').where({ person_id });
     }
     
-    static async getUnidentifiedFaces(limit = 50): Promise<DetectedFace[]> {
-        return db('detected_faces')
+    static async getUnidentifiedFaces(
+        limit = 50, 
+        random = false, 
+        filters: {
+            gender?: string;
+            ageMin?: number;
+            ageMax?: number;
+            minConfidence?: number;
+            maxConfidence?: number;
+            minGenderConfidence?: number;
+            minAgeConfidence?: number;
+        } = {}
+    ): Promise<DetectedFace[]> {
+        // Get faces that are truly unidentified (NULL) and exclude invalid/rejected faces
+        const query = db('detected_faces')
+            .whereNull('person_id')  // Only NULL person_id (truly unidentified)
+            .whereNotNull('face_image_path');  // Must have face image
+            
+        // Apply filters
+        if (filters.gender) {
+            query.where('predicted_gender', filters.gender);
+        }
+        
+        if (filters.ageMin !== undefined) {
+            query.where('age_max', '>=', filters.ageMin);
+        }
+        
+        if (filters.ageMax !== undefined) {
+            query.where('age_min', '<=', filters.ageMax);
+        }
+        
+        if (filters.minConfidence !== undefined) {
+            query.where('detection_confidence', '>=', filters.minConfidence);
+        }
+        
+        if (filters.maxConfidence !== undefined) {
+            query.where('detection_confidence', '<=', filters.maxConfidence);
+        }
+        
+        if (filters.minGenderConfidence !== undefined) {
+            query.where('gender_confidence', '>=', filters.minGenderConfidence);
+        }
+        
+        if (filters.minAgeConfidence !== undefined) {
+            query.where('age_confidence', '>=', filters.minAgeConfidence);
+        }
+        
+        query.limit(limit);
+            
+        if (random) {
+            // Use database-specific random ordering
+            query.orderByRaw('RAND()');  // MySQL syntax
+        } else {
+            query.orderBy('detection_confidence', 'desc');
+        }
+        
+        console.log('getUnidentifiedFaces repository called with limit:', limit, 'random:', random, 'filters:', filters);
+        console.log('getUnidentifiedFaces query SQL:', query.toSQL());
+        
+        const result = await query;
+        console.log('getUnidentifiedFaces result:', {
+            count: result.length,
+            firstFew: result.slice(0, 3).map(f => ({ id: f.id, person_id: f.person_id, confidence: f.detection_confidence }))
+        });
+        
+        return result;
+    }
+    
+    static async getUnidentifiedFacesCount(
+        filters: {
+            gender?: string;
+            ageMin?: number;
+            ageMax?: number;
+            minConfidence?: number;
+            maxConfidence?: number;
+            minGenderConfidence?: number;
+            minAgeConfidence?: number;
+        } = {}
+    ): Promise<number> {
+        try {
+            // Get count of faces that are truly unidentified (NULL) and exclude invalid/rejected faces
+            const query = db('detected_faces')
+                .whereNull('person_id')  // Only NULL person_id (truly unidentified)
+                .whereNotNull('face_image_path')  // Must have face image
+                .count('* as count');
+                
+            // Apply same filters as getUnidentifiedFaces
+            if (filters.gender) {
+                query.where('predicted_gender', filters.gender);
+            }
+            
+            if (filters.ageMin !== undefined) {
+                query.where('age_max', '>=', filters.ageMin);
+            }
+            
+            if (filters.ageMax !== undefined) {
+                query.where('age_min', '<=', filters.ageMax);
+            }
+            
+            if (filters.minConfidence !== undefined) {
+                query.where('detection_confidence', '>=', filters.minConfidence);
+            }
+            
+            if (filters.maxConfidence !== undefined) {
+                query.where('detection_confidence', '<=', filters.maxConfidence);
+            }
+            
+            if (filters.minGenderConfidence !== undefined) {
+                query.where('gender_confidence', '>=', filters.minGenderConfidence);
+            }
+            
+            if (filters.minAgeConfidence !== undefined) {
+                query.where('age_confidence', '>=', filters.minAgeConfidence);
+            }
+            
+            const result = await query.first();
+            return result ? Number(result.count) : 0;
+        } catch (error) {
+            console.error('Error in getUnidentifiedFacesCount:', error);
+            return 0;
+        }
+    }
+    
+    static async getFaceById(face_id: number): Promise<DetectedFace | undefined> {
+        return db('detected_faces').where({ id: face_id }).first();
+    }
+    
+    static async getFaceFilterOptions(): Promise<{
+        genders: { value: string; count: number }[];
+        ageRanges: { min: number; max: number; count: number }[];
+        confidenceStats: { min: number; max: number; avg: number };
+    }> {
+        // Get available genders with counts (only unidentified faces)
+        const genders = await db('detected_faces')
+            .select('predicted_gender as value')
+            .count('* as count')
             .whereNull('person_id')
-            .limit(limit)
-            .orderBy('detection_confidence', 'desc');
+            .whereNotNull('face_image_path')
+            .whereNotNull('predicted_gender')
+            .groupBy('predicted_gender')
+            .orderBy('count', 'desc') as any;
+            
+        // Get age range distribution (only unidentified faces)
+        const ageRanges = await db('detected_faces')
+            .select(['age_min', 'age_max'])
+            .count('* as count')
+            .whereNull('person_id')
+            .whereNotNull('face_image_path')
+            .whereNotNull('age_min')
+            .whereNotNull('age_max')
+            .groupBy(['age_min', 'age_max'])
+            .orderBy('age_min')
+            .orderBy('age_max') as any;
+            
+        // Get confidence statistics (only unidentified faces)
+        const confidenceStats = await db('detected_faces')
+            .whereNull('person_id')
+            .whereNotNull('face_image_path')
+            .min('detection_confidence as min')
+            .max('detection_confidence as max')
+            .avg('detection_confidence as avg')
+            .first() as any;
+            
+        return {
+            genders: genders || [],
+            ageRanges: ageRanges || [],
+            confidenceStats: {
+                min: parseFloat(confidenceStats?.min || '0'),
+                max: parseFloat(confidenceStats?.max || '1'),
+                avg: parseFloat(confidenceStats?.avg || '0.5')
+            }
+        };
+    }
+    
+    static async assignFaceToPerson(face_id: number, person_id: number, confidence: number, method: string): Promise<void> {
+        await db('detected_faces')
+            .where({ id: face_id })
+            .update({
+                person_id,
+                person_confidence: confidence,
+                recognition_method: method
+            });
+    }
+    
+    static async clearPersonFromFace(face_id: number): Promise<void> {
+        await db('detected_faces')
+            .where({ id: face_id })
+            .update({
+                person_id: null,
+                person_confidence: null,
+                recognition_method: 'manual'
+            });
+    }
+    
+    static async clearPersonFromFaces(person_id: number): Promise<void> {
+        await db('detected_faces')
+            .where({ person_id })
+            .update({
+                person_id: null,
+                person_confidence: null,
+                recognition_method: 'manual'
+            });
+    }
+    
+    static async getAllFaces(): Promise<DetectedFace[]> {
+        return db('detected_faces').select('*');
     }
 }
 
@@ -244,6 +519,36 @@ export class PersonRepository {
             .select('persons.*')
             .count('detected_faces.id as face_count')
             .first() as any;
+    }
+    
+    static async getPersonByComprefaceId(comprefaceSubjectId: string): Promise<Person | undefined> {
+        return db('persons').where({ compreface_subject_id: comprefaceSubjectId }).first();
+    }
+    
+    static async updatePerson(person_id: number, updates: Partial<Person>): Promise<void> {
+        await db('persons').where({ id: person_id }).update(updates);
+    }
+    
+    static async deletePerson(person_id: number): Promise<void> {
+        await db('persons').where({ id: person_id }).del();
+    }
+    
+    static async updateFaceCount(person_id: number): Promise<void> {
+        const faceCount = await db('detected_faces')
+            .where({ person_id })
+            .count('* as count')
+            .first();
+        
+        await db('persons')
+            .where({ id: person_id })
+            .update({ face_count: faceCount?.count || 0 });
+    }
+    
+    static async getAllTrainedPersons(): Promise<Person[]> {
+        return db('persons')
+            .whereNotNull('compreface_subject_id')
+            .where('auto_recognize', true)
+            .orderBy('name');
     }
 }
 
@@ -278,10 +583,22 @@ export class ObjectRepository {
             .orderBy('count', 'desc') as any;
     }
     
-    static async searchImagesByObjects(classes: string[], minConfidence = 0.5): Promise<number[]> {
-        const imageIds = await db('detected_objects')
-            .whereIn('class', classes)
-            .where('confidence', '>=', minConfidence)
+    static async searchImagesByObjects(classes: string[], minConfidence = appConfig.getMinConfidence()): Promise<number[]> {
+        const query = db('detected_objects')
+            .where('confidence', '>=', minConfidence);
+        
+        // Build OR conditions for partial matching
+        query.where(function() {
+            classes.forEach((searchTerm, index) => {
+                if (index === 0) {
+                    this.where('class', 'like', `%${searchTerm}%`);
+                } else {
+                    this.orWhere('class', 'like', `%${searchTerm}%`);
+                }
+            });
+        });
+        
+        const imageIds = await query
             .distinct('image_id')
             .pluck('image_id');
         return imageIds;

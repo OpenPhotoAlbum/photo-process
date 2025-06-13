@@ -4,356 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Gallery</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1a1a1a;
-            color: #fff;
-        }
-        
-        .header {
-            padding: 20px;
-            background: #2a2a2a;
-            border-bottom: 1px solid #333;
-        }
-        
-        .header h1 {
-            margin-bottom: 10px;
-        }
-        
-        .stats {
-            color: #888;
-            font-size: 14px;
-        }
-        
-        .controls {
-            padding: 20px;
-            background: #2a2a2a;
-            border-bottom: 1px solid #333;
-        }
-        
-        .btn {
-            background: #007acc;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-            font-size: 14px;
-        }
-        
-        .btn:hover {
-            background: #005a9e;
-        }
-        
-        .btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-        
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-        
-        .photo-card {
-            background: #2a2a2a;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #333;
-            transition: transform 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .photo-card:hover {
-            transform: translateY(-2px);
-            border-color: #007acc;
-        }
-        
-        .photo-preview {
-            background: #1a1a1a;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .photo-info {
-            padding: 15px;
-        }
-        
-        .photo-title {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .photo-meta {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 4px;
-        }
-        
-        .face-count {
-            display: inline-block;
-            background: #007acc;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            margin-top: 8px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-        }
-        
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #2a2a2a;
-            border-radius: 8px;
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: between;
-            align-items: center;
-        }
-        
-        .close {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 24px;
-            cursor: pointer;
-            margin-left: auto;
-        }
-        
-        .close:hover {
-            color: #fff;
-        }
-        
-        .modal-body {
-            padding: 20px;
-        }
-        
-        .metadata-section {
-            margin-bottom: 20px;
-        }
-        
-        .metadata-section h3 {
-            margin-bottom: 10px;
-            color: #007acc;
-        }
-        
-        .metadata-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .metadata-label {
-            color: #888;
-        }
-        
-        .metadata-value {
-            color: #fff;
-        }
-        
-        .faces-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 10px;
-        }
-        
-        .face-card {
-            background: #1a1a1a;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-        }
-        
-        .face-placeholder {
-            background: #333;
-            height: 80px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 12px;
-            margin-bottom: 8px;
-        }
-        
-        .error {
-            color: #ff6b6b;
-            text-align: center;
-            padding: 40px;
-        }
-        
-        /* Search Interface Styles */
-        .search-section {
-            background: #2a2a2a;
-            border-bottom: 1px solid #333;
-            padding: 20px;
-        }
-        
-        .search-section h3 {
-            margin: 0 0 15px 0;
-            color: #007acc;
-            font-size: 18px;
-        }
-        
-        .search-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .search-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .search-group label {
-            color: #ccc;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .search-input-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .search-input-group input {
-            flex: 1;
-            padding: 8px 12px;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 4px;
-            color: #fff;
-            font-size: 14px;
-        }
-        
-        .search-input-group input:focus {
-            outline: none;
-            border-color: #007acc;
-        }
-        
-        .search-btn {
-            padding: 8px 16px;
-            margin: 0;
-        }
-        
-        .quick-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .filter-btn {
-            background: #333;
-            color: #ccc;
-            border: 1px solid #555;
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s ease;
-        }
-        
-        .filter-btn:hover {
-            background: #007acc;
-            color: white;
-            border-color: #007acc;
-        }
-        
-        .filter-btn.active {
-            background: #007acc;
-            color: white;
-            border-color: #007acc;
-        }
-        
-        .search-suggestions {
-            display: none;
-            background: #333;
-            border: 1px solid #555;
-            border-radius: 4px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .suggestion-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #444;
-            font-size: 14px;
-        }
-        
-        .suggestion-item:hover {
-            background: #444;
-        }
-        
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        
-        .search-results-header {
-            background: #1a1a1a;
-            padding: 15px 20px;
-            border-bottom: 1px solid #333;
-            color: #007acc;
-            font-weight: 600;
-        }
-        
-        @media (min-width: 768px) {
-            .search-controls {
-                flex-direction: row;
-                align-items: end;
-                gap: 30px;
-            }
-            
-            .search-group {
-                flex: 1;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="header">
@@ -372,6 +23,8 @@
                 <option value="25">25 photos</option>
                 <option value="50">50 photos</option>
                 <option value="100">100 photos</option>
+                <option value="500">500 photos</option>
+                <option value="1000">1000 photos</option>
                 <option value="-1">All photos</option>
             </select>
         </div>
@@ -379,31 +32,67 @@
         <button class="btn" id="scanBtn" onclick="startScan()">Start Scan</button>
     </div>
     
-    <!-- Search Controls -->
-    <div class="search-section">
+    <!-- Search Controls (Hidden) -->
+    <div class="search-section" style="display: none;">
         <h3>🔍 Smart Search</h3>
         <div class="search-controls">
             <div class="search-group">
                 <label>Search by Objects:</label>
                 <div class="search-input-group">
-                    <input type="text" id="objectSearch" placeholder="e.g., person, car, dog, food..." />
+                    <div class="dropdown-container">
+                        <input type="text" id="objectSearch" placeholder="Type to search available objects..." autocomplete="off" />
+                        <div class="dropdown-menu" id="objectDropdown"></div>
+                    </div>
                     <button class="btn search-btn" onclick="searchByObjects()">Search</button>
                 </div>
-                <div class="search-suggestions" id="objectSuggestions"></div>
             </div>
             
             <div class="search-group">
                 <label>Quick Filters:</label>
                 <div class="quick-filters">
-                    <button class="filter-btn" onclick="searchByObjects('person')">👥 People</button>
-                    <button class="filter-btn" onclick="searchByObjects('car')">🚗 Cars</button>
-                    <button class="filter-btn" onclick="searchByObjects('dog')">🐕 Dogs</button>
-                    <button class="filter-btn" onclick="searchByObjects('cat')">🐱 Cats</button>
-                    <button class="filter-btn" onclick="searchByObjects('food')">🍽️ Food</button>
-                    <button class="filter-btn" onclick="searchByObjects('dining table')">🪑 Dining</button>
+                    <button class="filter-btn" onclick="selectObject('person')">👥 People</button>
+                    <button class="filter-btn" onclick="selectObject('car')">🚗 Cars</button>
+                    <button class="filter-btn" onclick="selectObject('dog')">🐕 Dogs</button>
+                    <button class="filter-btn" onclick="selectObject('cat')">🐱 Cats</button>
+                    <button class="filter-btn" onclick="selectObject('food')">🍽️ Food</button>
+                    <button class="filter-btn" onclick="selectObject('dining table')">🪑 Dining</button>
                     <button class="filter-btn" onclick="showAllPhotos()">📷 All Photos</button>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Face Management Section -->
+    <div class="face-section">
+        <h3>👤 Face Recognition</h3>
+        <div class="face-controls">
+            <button class="btn" onclick="showUnidentifiedFaces()">📝 Tag Faces</button>
+            <button class="btn" onclick="showConfirmationReview()">🤔 Review Matches</button>
+            <button class="btn" onclick="showPersonsManager()">👥 Manage People</button>
+            <button class="btn" onclick="runFaceRecognition()">🤖 Auto-Recognize</button>
+            <button class="btn" onclick="cleanupOrphanedFaces()" style="background: #dc3545;">🧹 Cleanup Orphaned</button>
+        </div>
+    </div>
+    
+    <!-- Junk Detection Section -->
+    <div class="face-section">
+        <h3>🗑️ Junk Detection</h3>
+        <div class="face-controls">
+            <button class="btn" onclick="showJunkCandidates()">🔍 Review Screenshots</button>
+            <button class="btn" onclick="runJunkDetection()">🤖 Detect Screenshots</button>
+            <button class="btn" onclick="showJunkStats()">📊 View Stats</button>
+        </div>
+    </div>
+    
+    <!-- Scan Progress Section -->
+    <div id="scanProgressSection" class="face-section" style="display: none;">
+        <h3>⚡ Background Jobs</h3>
+        <div id="jobsList" class="jobs-container">
+            <!-- Jobs will be populated here -->
+        </div>
+        <div class="face-controls">
+            <button class="btn" onclick="refreshJobs()">🔄 Refresh</button>
+            <button class="btn" onclick="clearCompletedJobs()">🧹 Clear Completed</button>
         </div>
     </div>
     
@@ -427,53 +116,146 @@
     <script>
         let photos = [];
         
-        async function loadPhotos() {
+        let currentPage = 0;
+        const photosPerPage = 50;
+        let isLoading = false;
+        let hasMorePhotos = true;
+        let lastLoadedId = null;
+        let loadDebounceTimer = null;
+        
+        async function loadPhotos(append = false) {
+            if (isLoading || (!hasMorePhotos && append)) return;
+            
+            // Debounce infinite scroll calls
+            if (append) {
+                if (loadDebounceTimer) {
+                    clearTimeout(loadDebounceTimer);
+                }
+                loadDebounceTimer = setTimeout(() => {
+                    performLoadPhotos(append);
+                }, 200);
+                return;
+            }
+            
+            // For non-append calls (initial load, refresh), call immediately
+            performLoadPhotos(append);
+        }
+        
+        async function performLoadPhotos(append = false) {
+            
             const content = document.getElementById('content');
             const stats = document.getElementById('stats');
             const refreshBtn = document.getElementById('refreshBtn');
             
-            refreshBtn.disabled = true;
-            content.innerHTML = '<div class="loading">Loading photos...</div>';
+            isLoading = true;
+            if (!append) {
+                refreshBtn.disabled = true;
+                content.innerHTML = '<div class="loading">Loading photos...</div>';
+                photos = [];
+                currentPage = 0;
+                lastLoadedId = null;
+                hasMorePhotos = true;
+            } else {
+                // Show loading indicator at bottom
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading';
+                loadingDiv.textContent = 'Loading more photos...';
+                loadingDiv.id = 'bottomLoader';
+                content.appendChild(loadingDiv);
+            }
             
             try {
-                const response = await fetch('/api/gallery');
+                let url = `/api/gallery?limit=${photosPerPage}`;
+                if (lastLoadedId) {
+                    url += `&cursor=${encodeURIComponent(lastLoadedId)}`;
+                }
+                
+                console.log(`Loading photos: ${append ? 'append' : 'initial'}, URL: ${url}, lastLoadedId: ${lastLoadedId}`);
+                
+                const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
                 
-                photos = data.photos;
-                stats.textContent = `${data.count} processed photos`;
+                // Use the API's hasMore flag for accurate pagination
+                hasMorePhotos = data.hasMore || false;
                 
-                renderPhotos(photos);
+                console.log(`Pagination: loaded ${data.images.length} images, hasMore: ${hasMorePhotos}, nextCursor: ${data.nextCursor}`);
+                
+                if (data.images.length > 0) {
+                    // Use the API's nextCursor for proper pagination
+                    // Only update cursor if we have a valid nextCursor
+                    if (data.nextCursor) {
+                        lastLoadedId = data.nextCursor;
+                    }
+                    
+                    if (append) {
+                        photos = photos.concat(data.images);
+                    } else {
+                        photos = data.images;
+                    }
+                } else {
+                    // No images returned, stop pagination
+                    hasMorePhotos = false;
+                }
+                
+                stats.textContent = `${photos.length} of ${data.totalCount || 'many'} processed photos`;
+                
+                renderPhotos(append ? data.images : photos, append);
+                currentPage++;
             } catch (error) {
                 console.error('Error loading photos:', error);
-                content.innerHTML = '<div class="error">Failed to load photos</div>';
-                stats.textContent = 'Error loading photos';
+                if (!append) {
+                    content.innerHTML = '<div class="error">Failed to load photos</div>';
+                    stats.textContent = 'Error loading photos';
+                }
             } finally {
+                isLoading = false;
                 refreshBtn.disabled = false;
+                // Remove bottom loader if exists
+                const bottomLoader = document.getElementById('bottomLoader');
+                if (bottomLoader) {
+                    bottomLoader.remove();
+                }
             }
         }
         
-        function renderPhotos(photos) {
+        function renderPhotos(photosToRender, append = false) {
             const content = document.getElementById('content');
             
-            if (photos.length === 0) {
+            if (!append && photosToRender.length === 0) {
                 content.innerHTML = '<div class="loading">No photos found. Run a scan to process photos.</div>';
                 return;
             }
             
-            const grid = document.createElement('div');
-            grid.className = 'photo-grid';
+            let grid;
+            if (append) {
+                grid = content.querySelector('.photo-grid');
+                if (!grid) {
+                    grid = document.createElement('div');
+                    grid.className = 'photo-grid';
+                    content.appendChild(grid);
+                }
+            } else {
+                grid = document.createElement('div');
+                grid.className = photosToRender.length === 1 ? 'photo-grid single-item' : 'photo-grid';
+                content.innerHTML = '';
+                content.appendChild(grid);
+            }
             
-            photos.forEach(photo => {
+            photosToRender.forEach(photo => {
                 const card = document.createElement('div');
                 card.className = 'photo-card';
-                card.onclick = () => showPhotoDetails(photo);
+                card.onclick = () => {
+                    const relativePath = photo.original_path.replace('/mnt/sg1/uploads/stephen/iphone/', '');
+                    const fullImageUrl = `/media/${relativePath}`;
+                    openLightbox(fullImageUrl, photo);
+                };
                 
-                // Construct the original image path from the processed metadata
-                const originalImagePath = photo.filename.replace('.json', '');
-                const imageUrl = `/media/recents/${originalImagePath}`;
+                // Extract path relative to media_source_dir from original_path
+                const relativePath = photo.original_path.replace('/mnt/sg1/uploads/stephen/iphone/', '');
+                const imageUrl = `/media/${relativePath}`;
                 
                 card.innerHTML = `
                     <div class="photo-preview">
@@ -484,16 +266,48 @@
                     </div>
                     <div class="photo-info">
                         <div class="photo-title">${photo.filename}</div>
-                        <div class="photo-meta">Metadata: ${photo.metadataPath}</div>
-                        ${photo.faceCount > 0 ? `<span class="face-count">${photo.faceCount} faces</span>` : ''}
+                        <div class="photo-meta">Status: ${photo.processing_status || 'processed'}</div>
+                        ${photo.face_count > 0 ? `<span class="face-count">${photo.face_count} faces</span>` : ''}
                     </div>
                 `;
                 
                 grid.appendChild(card);
             });
-            
-            content.innerHTML = '';
-            content.appendChild(grid);
+        }
+        
+        // Infinite scroll implementation
+        function setupInfiniteScroll() {
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    const scrollPosition = window.scrollY + window.innerHeight;
+                    const documentHeight = document.documentElement.scrollHeight;
+                    const threshold = documentHeight - 200;
+                    
+                    // Debug logging
+                    if (scrollPosition >= threshold - 50) {
+                        console.log('Scroll debug:', {
+                            scrollPosition,
+                            documentHeight,
+                            threshold,
+                            isLoading,
+                            hasMorePhotos,
+                            hasPhotoGrid: !!document.getElementById('content').querySelector('.photo-grid')
+                        });
+                    }
+                    
+                    // Load more when user is within 200px of the bottom
+                    if (scrollPosition >= threshold && !isLoading && hasMorePhotos) {
+                        // Only load more if we're showing the photo gallery
+                        const content = document.getElementById('content');
+                        if (content.querySelector('.photo-grid')) {
+                            console.log('Triggering loadPhotos(true) - infinite scroll');
+                            loadPhotos(true);
+                        }
+                    }
+                }, 100);
+            });
         }
         
         async function showPhotoDetails(photo) {
@@ -506,7 +320,9 @@
             modal.style.display = 'block';
             
             try {
-                const encodedPath = encodeURIComponent(photo.metadataPath);
+                // Construct metadata path from filename
+                const metadataPath = `recents/meta/${photo.filename}.json`;
+                const encodedPath = encodeURIComponent(metadataPath);
                 const response = await fetch(`/api/metadata?path=${encodedPath}`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -575,9 +391,11 @@
             
             // Face detection results
             if (people && Object.keys(people).length > 0) {
+                const faceCount = Object.keys(people).length;
+                const facesGridClass = faceCount === 1 ? 'faces-grid single-item' : 'faces-grid';
                 html += '<div class="metadata-section">';
                 html += '<h3>Detected Faces</h3>';
-                html += '<div class="faces-grid">';
+                html += `<div class="${facesGridClass}">`;
                 
                 Object.entries(people).forEach(([facePath, faceData], index) => {
                     const face = faceData;
@@ -608,24 +426,41 @@
             const scanLimit = document.getElementById('scanLimit').value;
             
             scanBtn.disabled = true;
-            scanBtn.textContent = 'Scanning...';
+            scanBtn.textContent = 'Starting...';
             
             try {
-                const url = scanLimit === '-1' ? '/scan' : `/scan?limit=${scanLimit}`;
+                // Use async mode for background processing
+                const url = scanLimit === '-1' ? '/scan?async=true' : `/scan?async=true&limit=${scanLimit}`;
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const result = await response.json();
                 
-                // Auto-refresh after scan
+                if (result.success && result.jobId) {
+                    // Show the progress section
+                    document.getElementById('scanProgressSection').style.display = 'block';
+                    
+                    // Start polling for job progress
+                    pollJobProgress(result.jobId);
+                    
+                    // Load and display all current jobs
+                    await refreshJobs();
+                    
+                    scanBtn.textContent = `✓ Scan Started (${result.jobId.substring(4, 12)})`;
+                } else {
+                    throw new Error('Failed to start scan job');
+                }
+                
+                // Re-enable button after a short delay
                 setTimeout(() => {
-                    loadPhotos();
                     scanBtn.disabled = false;
                     scanBtn.textContent = 'Start Scan';
-                }, 2000);
+                }, 3000);
+                
             } catch (error) {
                 console.error('Error starting scan:', error);
+                alert('Failed to start scan: ' + error.message);
                 scanBtn.disabled = false;
                 scanBtn.textContent = 'Start Scan';
             }
@@ -634,6 +469,7 @@
         // Object-based search functionality
         let currentSearchQuery = '';
         let availableObjects = [];
+        let selectedDropdownIndex = -1;
         
         async function searchByObjects(objectQuery) {
             const query = objectQuery || document.getElementById('objectSearch').value.trim();
@@ -709,32 +545,1640 @@
             });
         }
         
-        // Load available object types for suggestions
-        async function loadObjectSuggestions() {
+        // Load available object types for autocomplete
+        async function loadAvailableObjects() {
             try {
                 const response = await fetch('/api/objects/stats');
                 if (response.ok) {
                     const data = await response.json();
                     availableObjects = data.objects || [];
+                    setupAutocomplete();
                 }
             } catch (error) {
-                console.error('Error loading object suggestions:', error);
+                console.error('Error loading available objects:', error);
             }
         }
         
-        // Add search functionality to Enter key
-        document.addEventListener('DOMContentLoaded', () => {
+        // Setup autocomplete functionality
+        function setupAutocomplete() {
             const searchInput = document.getElementById('objectSearch');
-            if (searchInput) {
-                searchInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        searchByObjects();
-                    }
-                });
+            const dropdown = document.getElementById('objectDropdown');
+            
+            searchInput.addEventListener('input', handleInputChange);
+            searchInput.addEventListener('keydown', handleKeyDown);
+            searchInput.addEventListener('focus', handleInputFocus);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.dropdown-container')) {
+                    hideDropdown();
+                }
+            });
+            
+            // Update quick filter buttons to only show available objects
+            updateQuickFilters();
+        }
+        
+        function updateQuickFilters() {
+            const quickFilters = document.querySelector('.quick-filters');
+            const availableClasses = new Set(availableObjects.map(obj => obj.class.toLowerCase()));
+            
+            // Common object types with their emojis
+            const commonObjects = [
+                { class: 'person', emoji: '👥', label: 'People' },
+                { class: 'car', emoji: '🚗', label: 'Cars' },
+                { class: 'dog', emoji: '🐕', label: 'Dogs' },
+                { class: 'cat', emoji: '🐱', label: 'Cats' },
+                { class: 'food', emoji: '🍽️', label: 'Food' },
+                { class: 'dining table', emoji: '🪑', label: 'Dining' },
+                { class: 'bowl', emoji: '🥣', label: 'Bowls' },
+                { class: 'chair', emoji: '🪑', label: 'Chairs' },
+                { class: 'table', emoji: '🏓', label: 'Tables' }
+            ];
+            
+            // Create buttons for available objects
+            const buttons = [];
+            
+            // Add available common objects
+            commonObjects.forEach(item => {
+                if (availableClasses.has(item.class.toLowerCase()) || 
+                    availableObjects.some(obj => obj.class.toLowerCase().includes(item.class.toLowerCase()))) {
+                    buttons.push(`<button class="filter-btn" onclick="selectObject('${item.class}')">${item.emoji} ${item.label}</button>`);
+                }
+            });
+            
+            // Add any other detected objects not in the common list
+            availableObjects.forEach(obj => {
+                const isCommon = commonObjects.some(common => 
+                    common.class.toLowerCase() === obj.class.toLowerCase() ||
+                    obj.class.toLowerCase().includes(common.class.toLowerCase())
+                );
+                if (!isCommon) {
+                    const emoji = getEmojiForClass(obj.class);
+                    const label = obj.class.split(' ').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ');
+                    buttons.push(`<button class="filter-btn" onclick="selectObject('${obj.class}')">${emoji} ${label}</button>`);
+                }
+            });
+            
+            // Always add "All Photos" button
+            buttons.push(`<button class="filter-btn" onclick="showAllPhotos()">📷 All Photos</button>`);
+            
+            quickFilters.innerHTML = buttons.join('');
+        }
+        
+        function getEmojiForClass(className) {
+            const emojiMap = {
+                'bottle': '🍶',
+                'cup': '☕',
+                'fork': '🍴',
+                'knife': '🔪',
+                'spoon': '🥄',
+                'banana': '🍌',
+                'apple': '🍎',
+                'orange': '🍊',
+                'cake': '🎂',
+                'pizza': '🍕',
+                'laptop': '💻',
+                'mouse': '🖱️',
+                'keyboard': '⌨️',
+                'cell phone': '📱',
+                'book': '📚',
+                'clock': '🕐',
+                'vase': '🏺',
+                'teddy bear': '🧸',
+                'sports ball': '⚽',
+                'kite': '🪁'
+            };
+            return emojiMap[className.toLowerCase()] || '🔍';
+        }
+        
+        function handleInputChange(e) {
+            const query = e.target.value.toLowerCase().trim();
+            selectedDropdownIndex = -1;
+            
+            if (query.length === 0) {
+                showAllObjects();
+                return;
             }
             
-            loadObjectSuggestions();
+            const filteredObjects = availableObjects.filter(obj => 
+                obj.class.toLowerCase().includes(query)
+            );
+            
+            showDropdown(filteredObjects);
+        }
+        
+        function handleInputFocus(e) {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length === 0) {
+                showAllObjects();
+            } else {
+                handleInputChange(e);
+            }
+        }
+        
+        function handleKeyDown(e) {
+            const dropdown = document.getElementById('objectDropdown');
+            const items = dropdown.querySelectorAll('.dropdown-item');
+            
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedDropdownIndex = Math.min(selectedDropdownIndex + 1, items.length - 1);
+                    updateSelection(items);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedDropdownIndex = Math.max(selectedDropdownIndex - 1, -1);
+                    updateSelection(items);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedDropdownIndex >= 0 && items[selectedDropdownIndex]) {
+                        selectObject(items[selectedDropdownIndex].dataset.objectClass);
+                    } else {
+                        searchByObjects();
+                    }
+                    break;
+                case 'Escape':
+                    hideDropdown();
+                    break;
+            }
+        }
+        
+        function updateSelection(items) {
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedDropdownIndex);
+            });
+        }
+        
+        function showAllObjects() {
+            showDropdown(availableObjects);
+        }
+        
+        function showDropdown(objects) {
+            const dropdown = document.getElementById('objectDropdown');
+            
+            if (objects.length === 0) {
+                hideDropdown();
+                return;
+            }
+            
+            dropdown.innerHTML = objects.map(obj => `
+                <div class="dropdown-item" data-object-class="${obj.class}" onclick="selectObject('${obj.class}')">
+                    <span class="object-name">${obj.class}</span>
+                    <span class="object-count">${obj.count} photo${obj.count > 1 ? 's' : ''}</span>
+                </div>
+            `).join('');
+            
+            dropdown.classList.add('show');
+        }
+        
+        function hideDropdown() {
+            const dropdown = document.getElementById('objectDropdown');
+            dropdown.classList.remove('show');
+            selectedDropdownIndex = -1;
+        }
+        
+        function selectObject(objectClass) {
+            const searchInput = document.getElementById('objectSearch');
+            searchInput.value = objectClass;
+            hideDropdown();
+            searchByObjects(objectClass);
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAvailableObjects();
             loadPhotos();
+        });
+
+        // Face Management Functions
+        let persons = [];
+        
+        async function showUnidentifiedFaces(random = false, filters = {}) {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading unidentified faces...</div>';
+            
+            try {
+                const randomParam = random ? '&random=true' : '';
+                const filterParams = Object.keys(filters).map(key => 
+                    filters[key] ? `&${key}=${encodeURIComponent(filters[key])}` : ''
+                ).join('');
+                
+                const response = await fetch(`/api/faces/unidentified?limit=200${randomParam}${filterParams}`);
+                const data = await response.json();
+                
+                if (data.faces.length === 0) {
+                    content.innerHTML = '<div style="padding: 40px; text-align: center; color: #888;">🎉 No faces found matching the current filters!</div>';
+                    return;
+                }
+                
+                renderUnidentifiedFaces(data.faces, random, filters, data.totalCount);
+            } catch (error) {
+                console.error('Error loading unidentified faces:', error);
+                content.innerHTML = '<div class="error">Failed to load unidentified faces</div>';
+            }
+        }
+        
+        function renderUnidentifiedFaces(faces, random = false, filters = {}, totalCount = faces.length) {
+            const content = document.getElementById('content');
+            
+            let html = `
+                <div>
+                    <h2 style="padding: 20px; margin: 0;">👤 Tag Unidentified Faces (${faces.length} faces of ${totalCount})</h2>
+                    
+                    <!-- Sticky Tagging Toolbar -->
+                    <div id="tagging-toolbar" style="background: #333; padding: 15px; border-radius: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <button id="selectAllBtn" class="btn" onclick="toggleSelectAll()">Select All</button>
+                            <button id="clearSelectionBtn" class="btn" onclick="clearSelection()">Clear</button>
+                            <span id="selectedCount" style="color: #888;">0 selected</span>
+                            
+                            <div style="margin-left: 20px;">
+                                <label style="color: #888; margin-right: 10px;">
+                                    <input type="checkbox" id="randomToggle" ${random ? 'checked' : ''} onchange="toggleRandomMode(this.checked)" style="margin-right: 5px;">
+                                    🎲 Random order
+                                </label>
+                                <button class="btn" onclick="refreshUnidentifiedFaces()" style="background: #6c757d; margin-right: 10px;">🔄 Refresh</button>
+                            </div>
+                            
+                            <!-- Filter Controls -->
+                            <div style="margin-left: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <span style="color: #888; font-size: 14px;">Filters:</span>
+                                <select id="genderFilter" onchange="updateFilters()" style="background: #444; color: #fff; border: 1px solid #666; padding: 6px; border-radius: 4px; font-size: 12px;">
+                                    <option value="">All genders</option>
+                                    <option value="male" ${filters.gender === 'male' ? 'selected' : ''}>Male</option>
+                                    <option value="female" ${filters.gender === 'female' ? 'selected' : ''}>Female</option>
+                                </select>
+                                <select id="ageFilter" onchange="updateFilters()" style="background: #444; color: #fff; border: 1px solid #666; padding: 6px; border-radius: 4px; font-size: 12px;">
+                                    <option value="">All ages</option>
+                                    <option value="0-2" ${filters.ageMin === 0 && filters.ageMax === 2 ? 'selected' : ''}>0-2 years</option>
+                                    <option value="4-6" ${filters.ageMin === 4 && filters.ageMax === 6 ? 'selected' : ''}>4-6 years</option>
+                                    <option value="8-12" ${filters.ageMin === 8 && filters.ageMax === 12 ? 'selected' : ''}>8-12 years</option>
+                                    <option value="15-20" ${filters.ageMin === 15 && filters.ageMax === 20 ? 'selected' : ''}>15-20 years</option>
+                                    <option value="25-32" ${filters.ageMin === 25 && filters.ageMax === 32 ? 'selected' : ''}>25-32 years</option>
+                                    <option value="38-43" ${filters.ageMin === 38 && filters.ageMax === 43 ? 'selected' : ''}>38-43 years</option>
+                                    <option value="48-53" ${filters.ageMin === 48 && filters.ageMax === 53 ? 'selected' : ''}>48-53 years</option>
+                                    <option value="60-100" ${filters.ageMin === 60 && filters.ageMax === 100 ? 'selected' : ''}>60+ years</option>
+                                </select>
+                                <input type="range" id="confidenceFilter" min="0.8" max="1.0" step="0.05" value="${filters.minConfidence || 0.8}" onchange="updateFilters()" style="width: 100px;" title="Minimum confidence threshold">
+                                <span style="color: #888; font-size: 12px;">Confidence: <span id="confidenceValue">${Math.round((filters.minConfidence || 0.8) * 100)}%</span></span>
+                                <button class="btn" onclick="clearFilters()" style="background: #dc3545; font-size: 12px; padding: 4px 8px;">Clear Filters</button>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
+                            
+                            <div style="flex: 1; min-width: 200px;">
+                                <select id="batchPersonSelect" style="background: #444; color: #fff; border: 1px solid #666; padding: 8px; border-radius: 4px; margin-right: 10px; min-width: 150px;">
+                                    <option value="">Select existing person...</option>
+                                </select>
+                                <input type="text" id="batchNewPersonName" placeholder="Or type new name..." style="background: #444; color: #fff; border: 1px solid #666; padding: 8px; border-radius: 4px; margin-right: 10px; min-width: 150px;">
+                                <button class="btn" onclick="batchTagFaces()" style="background: #28a745;">Tag Selected</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="face-grid" style="padding: 20px;">
+            `;
+            
+            faces.forEach(face => {
+                const faceImagePath = face.face_image_path ? `/processed/${face.face_image_path}` : '';
+                const imageInfo = face.image ? `${face.image.filename} - ${new Date(face.image.date_taken).toLocaleDateString()}` : 'Unknown image';
+                
+                html += `
+                    <div class="face-card selectable-face" data-face-id="${face.id}" onclick="toggleFaceSelection(${face.id})">
+                        <div class="face-checkbox-container">
+                            <input type="checkbox" class="face-checkbox" data-face-id="${face.id}" onclick="event.stopPropagation();" onchange="updateSelectedCount()">
+                        </div>
+                        <img src="${faceImagePath}" class="face-image" alt="Face" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div style="display: none; width: 100%; height: 120px; background: #444; border-radius: 6px; margin-bottom: 8px; align-items: center; justify-content: center; flex-direction: column; color: #888; font-size: 12px;">
+                            <span style="font-size: 32px;">👤</span>
+                            <span>No Image</span>
+                        </div>
+                        <div class="face-info">
+                            Face detected
+                        </div>
+                        <div class="face-actions" onclick="event.stopPropagation();" style="display: flex; gap: 5px; justify-content: center;">
+                            <button onclick="markFaceAsUnknown(${face.id})" style="background: #6c757d; font-size: 11px; padding: 4px 8px;" title="Mark as unknown person">❓</button>
+                            <button onclick="markFaceAsInvalid(${face.id})" style="background: #dc3545; font-size: 11px; padding: 4px 8px;" title="Mark as not a face">❌</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            content.innerHTML = html;
+            
+            // Load persons for dropdown
+            loadPersonsForDropdown();
+        }
+        
+        async function tagFace(faceId) {
+            const input = document.getElementById(`person-input-${faceId}`);
+            const personName = input.value.trim();
+            
+            if (!personName) {
+                alert('Please enter a person name');
+                return;
+            }
+            
+            try {
+                console.log('Tagging face:', faceId, 'with person:', personName);
+                
+                // First, try to find existing person or create new one
+                let person = await findOrCreatePerson(personName);
+                console.log('Found/created person:', person);
+                
+                // Assign face to person
+                const requestBody = {
+                    faceId: faceId,
+                    personId: person.id
+                };
+                console.log('Sending assignment request:', requestBody);
+                
+                const response = await fetch('/api/faces/assign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const responseData = await response.json();
+                console.log('Assignment response:', response.status, responseData);
+                
+                if (response.ok) {
+                    // Remove the face card from the grid
+                    const faceCard = document.querySelector(`[data-face-id="${faceId}"]`);
+                    faceCard.style.background = '#2d7d32';
+                    faceCard.innerHTML = `<div class="person-tag">✅ Tagged as ${personName}</div>`;
+                    
+                    setTimeout(() => {
+                        faceCard.remove();
+                    }, 1500);
+                } else {
+                    console.error('API error:', responseData);
+                    alert(`Failed to tag face: ${responseData.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error tagging face:', error);
+                alert(`Failed to tag face: ${error.message}`);
+            }
+        }
+        
+        async function findOrCreatePerson(name) {
+            console.log('Finding or creating person:', name);
+            
+            // First try to find existing person
+            const personsResponse = await fetch('/api/persons');
+            if (!personsResponse.ok) {
+                throw new Error(`Failed to fetch persons: ${personsResponse.status}`);
+            }
+            
+            const personsData = await personsResponse.json();
+            console.log('Existing persons:', personsData);
+            
+            const existingPerson = personsData.persons.find(p => 
+                p.name.toLowerCase() === name.toLowerCase()
+            );
+            
+            if (existingPerson) {
+                console.log('Found existing person:', existingPerson);
+                return existingPerson;
+            }
+            
+            // Create new person
+            console.log('Creating new person:', name);
+            const createResponse = await fetch('/api/persons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name })
+            });
+            
+            if (!createResponse.ok) {
+                const errorText = await createResponse.text();
+                console.error('Person creation failed:', createResponse.status, errorText);
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch (e) {
+                    errorData = { error: errorText };
+                }
+                throw new Error(`Failed to create person: ${errorData.error || createResponse.status}`);
+            }
+            
+            const createData = await createResponse.json();
+            console.log('Created new person:', createData);
+            
+            if (!createData.person) {
+                throw new Error(`Invalid response format: ${JSON.stringify(createData)}`);
+            }
+            
+            return createData.person;
+        }
+        
+        async function markFaceAsInvalid(faceId) {
+            try {
+                const response = await fetch(`/api/faces/${faceId}/mark-invalid`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    // Remove the face card from the UI
+                    const faceCard = document.querySelector(`[data-face-id="${faceId}"]`);
+                    if (faceCard) {
+                        faceCard.style.animation = 'fadeOut 0.3s ease-out';
+                        setTimeout(() => {
+                            faceCard.remove();
+                            updateSelectedCount(); // Update count in case it was selected
+                        }, 300);
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to mark face as invalid: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error marking face as invalid:', error);
+                alert('Failed to mark face as invalid');
+            }
+        }
+        
+        async function markFaceAsUnknown(faceId) {
+            try {
+                const response = await fetch(`/api/faces/${faceId}/mark-unknown`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    // Remove the face card from the UI
+                    const faceCard = document.querySelector(`[data-face-id="${faceId}"]`);
+                    if (faceCard) {
+                        faceCard.style.animation = 'fadeOut 0.3s ease-out';
+                        setTimeout(() => {
+                            faceCard.remove();
+                            updateSelectedCount(); // Update count in case it was selected
+                        }, 300);
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to mark face as unknown: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error marking face as unknown:', error);
+                alert('Failed to mark face as unknown');
+            }
+        }
+        
+        // Random mode toggle and refresh functions
+        function toggleRandomMode(isRandom) {
+            const filters = getCurrentFilters();
+            showUnidentifiedFaces(isRandom, filters);
+        }
+        
+        function refreshUnidentifiedFaces() {
+            const randomToggle = document.getElementById('randomToggle');
+            const isRandom = randomToggle ? randomToggle.checked : false;
+            const filters = getCurrentFilters();
+            showUnidentifiedFaces(isRandom, filters);
+        }
+        
+        // Filter management functions
+        function getCurrentFilters() {
+            const genderFilter = document.getElementById('genderFilter');
+            const ageFilter = document.getElementById('ageFilter');
+            const confidenceFilter = document.getElementById('confidenceFilter');
+            
+            const filters = {};
+            
+            if (genderFilter && genderFilter.value) {
+                filters.gender = genderFilter.value;
+            }
+            
+            if (ageFilter && ageFilter.value) {
+                const [min, max] = ageFilter.value.split('-').map(Number);
+                filters.ageMin = min;
+                filters.ageMax = max;
+            }
+            
+            if (confidenceFilter && confidenceFilter.value) {
+                filters.minConfidence = parseFloat(confidenceFilter.value);
+            }
+            
+            return filters;
+        }
+        
+        function updateFilters() {
+            const randomToggle = document.getElementById('randomToggle');
+            const isRandom = randomToggle ? randomToggle.checked : false;
+            const filters = getCurrentFilters();
+            
+            // Update confidence display
+            const confidenceFilter = document.getElementById('confidenceFilter');
+            const confidenceValue = document.getElementById('confidenceValue');
+            if (confidenceFilter && confidenceValue) {
+                confidenceValue.textContent = Math.round(confidenceFilter.value * 100) + '%';
+            }
+            
+            showUnidentifiedFaces(isRandom, filters);
+        }
+        
+        function clearFilters() {
+            const genderFilter = document.getElementById('genderFilter');
+            const ageFilter = document.getElementById('ageFilter');
+            const confidenceFilter = document.getElementById('confidenceFilter');
+            const confidenceValue = document.getElementById('confidenceValue');
+            
+            if (genderFilter) genderFilter.value = '';
+            if (ageFilter) ageFilter.value = '';
+            if (confidenceFilter) {
+                confidenceFilter.value = '0.8';
+                if (confidenceValue) confidenceValue.textContent = '80%';
+            }
+            
+            updateFilters();
+        }
+        
+        async function showPersonsManager() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading people...</div>';
+            
+            try {
+                const response = await fetch('/api/persons');
+                const data = await response.json();
+                
+                renderPersonsManager(data.persons);
+            } catch (error) {
+                console.error('Error loading persons:', error);
+                content.innerHTML = '<div class="error">Failed to load people</div>';
+            }
+        }
+        
+        function renderPersonsManager(persons) {
+            const content = document.getElementById('content');
+            
+            let html = `
+                <div style="padding: 20px;">
+                    <h2>👥 Manage People (${persons.length} people)</h2>
+                    <div style="margin: 20px 0;">
+                        <input type="text" id="newPersonName" placeholder="Add new person..." style="padding: 8px; margin-right: 10px;">
+                        <button class="btn" onclick="createNewPerson()">Add Person</button>
+                    </div>
+                    <div class="face-grid${persons.length === 1 ? ' single-item' : ''}">
+            `;
+            
+            persons.forEach(person => {
+                const faceImagePath = person.sample_face_image ? `/processed/${person.sample_face_image}` : '';
+                const hasFaceImage = person.sample_face_image && person.face_count > 0;
+                
+                html += `
+                    <div class="face-card">
+                        <div style="height: 120px; display: flex; align-items: center; justify-content: center; background: #444; border-radius: 6px; margin-bottom: 8px; overflow: hidden;">
+                            ${hasFaceImage ? 
+                                `<img src="${faceImagePath}" alt="${person.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; flex-direction: column; color: #888;">
+                                     <span style="font-size: 32px;">👤</span>
+                                     <span style="font-size: 10px;">No Image</span>
+                                 </div>` :
+                                `<div style="display: flex; align-items: center; justify-content: center; flex-direction: column; color: #888; width: 100%; height: 100%;">
+                                     <span style="font-size: 40px;">👤</span>
+                                     <span style="font-size: 12px;">No faces</span>
+                                 </div>`
+                            }
+                        </div>
+                        <div class="face-info">
+                            <strong>${person.name}</strong><br>
+                            ${person.face_count || 0} face${(person.face_count || 0) !== 1 ? 's' : ''}
+                            ${person.auto_recognize ? '<br><span style="color: #4CAF50; font-size: 11px;">✓ Auto-recognize</span>' : ''}
+                        </div>
+                        <div class="face-actions">
+                            <button onclick="viewPersonFaces(${person.id}, '${person.name}')">View Faces</button>
+                            <button onclick="deletePerson(${person.id}, '${person.name}')" style="background: #dc3545;">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+            content.innerHTML = html;
+        }
+        
+        async function createNewPerson() {
+            const input = document.getElementById('newPersonName');
+            const name = input.value.trim();
+            
+            if (!name) {
+                alert('Please enter a person name');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/persons', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    showPersonsManager(); // Refresh the list
+                } else {
+                    alert('Failed to create person');
+                }
+            } catch (error) {
+                console.error('Error creating person:', error);
+                alert('Failed to create person');
+            }
+        }
+        
+        async function viewPersonFaces(personId, personName) {
+            currentPersonId = personId; // Track current person
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading faces for ' + personName + '...</div>';
+            
+            try {
+                const response = await fetch(`/api/persons/${personId}`);
+                const data = await response.json();
+                
+                if (response.ok && data.person) {
+                    renderPersonFacesView(data.person);
+                } else {
+                    content.innerHTML = '<div class="error">Failed to load person faces</div>';
+                }
+            } catch (error) {
+                console.error('Error loading person faces:', error);
+                content.innerHTML = '<div class="error">Failed to load person faces</div>';
+            }
+        }
+        
+        function renderPersonFacesView(person) {
+            const content = document.getElementById('content');
+            
+            let html = `
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        <button class="btn" onclick="showPersonsManager()" style="margin-right: 10px;">← Back to People</button>
+                        <h2>👤 ${person.name} (${person.faces.length} faces)</h2>
+                        ${person.auto_recognize ? '<p style="color: #4CAF50;">✓ Auto-recognition enabled</p>' : '<p style="color: #888;">Auto-recognition disabled</p>'}
+                    </div>
+                    
+                    ${person.faces.length > 0 ? 
+                        `<div class="face-grid">
+                            ${person.faces.map(face => {
+                                const faceImagePath = face.face_image_path ? `/processed/${face.face_image_path}` : '';
+                                const confidence = face.person_confidence ? Math.round(face.person_confidence * 100) : 0;
+                                const method = face.recognition_method || 'manual';
+                                
+                                return `
+                                    <div class="face-card">
+                                        <img src="${faceImagePath}" class="face-image" alt="Face" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div style="display: none; width: 100%; height: 120px; background: #444; border-radius: 6px; margin-bottom: 8px; align-items: center; justify-content: center; flex-direction: column; color: #888; font-size: 12px;">
+                                            <span style="font-size: 32px;">👤</span>
+                                            <span>No Image</span>
+                                        </div>
+                                        <div class="face-info">
+                                            ${confidence > 0 ? `Confidence: ${confidence}%<br>` : ''}
+                                            Method: ${method}<br>
+                                            Detection: ${Math.round(face.detection_confidence * 100)}%
+                                        </div>
+                                        <div class="face-actions">
+                                            <button onclick="removeFaceFromPerson(${face.id}, '${person.name}')" style="background: #dc3545; font-size: 10px;">Remove</button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>` :
+                        '<p style="text-align: center; color: #888; padding: 40px;">No faces assigned to this person yet.</p>'
+                    }
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+        
+        async function removeFaceFromPerson(faceId, personName) {
+            if (!confirm(`Remove this face from ${personName}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/faces/${faceId}/person`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    // Refresh the current person view
+                    const personId = getCurrentPersonId(); // We'll need to track this
+                    if (personId) {
+                        viewPersonFaces(personId, personName);
+                    }
+                } else {
+                    alert('Failed to remove face');
+                }
+            } catch (error) {
+                console.error('Error removing face:', error);
+                alert('Failed to remove face');
+            }
+        }
+        
+        // Helper to track current person ID
+        let currentPersonId = null;
+        function getCurrentPersonId() {
+            return currentPersonId;
+        }
+        
+        async function deletePerson(personId, personName) {
+            if (!confirm(`Are you sure you want to delete "${personName}"? This will remove all face associations.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/persons/${personId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showPersonsManager(); // Refresh the list
+                } else {
+                    alert('Failed to delete person');
+                }
+            } catch (error) {
+                console.error('Error deleting person:', error);
+                alert('Failed to delete person');
+            }
+        }
+        
+        // Batch Tagging Functions
+        let selectedFaces = new Set();
+        
+        async function loadPersonsForDropdown() {
+            try {
+                const response = await fetch('/api/persons');
+                const data = await response.json();
+                
+                const dropdown = document.getElementById('batchPersonSelect');
+                if (dropdown) {
+                    dropdown.innerHTML = '<option value="">Select existing person...</option>';
+                    data.persons.forEach(person => {
+                        dropdown.innerHTML += `<option value="${person.id}">${person.name}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading persons for dropdown:', error);
+            }
+        }
+        
+        function toggleFaceSelection(faceId) {
+            const checkbox = document.querySelector(`input.face-checkbox[data-face-id="${faceId}"]`);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                updateSelectedCount();
+            }
+        }
+        
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.face-checkbox:checked');
+            const count = checkboxes.length;
+            
+            selectedFaces.clear();
+            checkboxes.forEach(cb => {
+                selectedFaces.add(parseInt(cb.dataset.faceId));
+                cb.closest('.face-card').classList.add('selected');
+            });
+            
+            // Remove selected class from unchecked faces
+            document.querySelectorAll('.face-checkbox:not(:checked)').forEach(cb => {
+                cb.closest('.face-card').classList.remove('selected');
+            });
+            
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+            
+            // Update buttons
+            const batchBtn = document.querySelector('button[onclick="batchTagFaces()"]');
+            if (batchBtn) {
+                batchBtn.disabled = count === 0;
+            }
+        }
+        
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.face-checkbox');
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const areAllSelected = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(cb => {
+                cb.checked = !areAllSelected;
+            });
+            
+            selectAllBtn.textContent = areAllSelected ? 'Select All' : 'Deselect All';
+            updateSelectedCount();
+        }
+        
+        function clearSelection() {
+            document.querySelectorAll('.face-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+            document.getElementById('selectAllBtn').textContent = 'Select All';
+            updateSelectedCount();
+        }
+        
+        async function batchTagFaces() {
+            if (selectedFaces.size === 0) {
+                alert('Please select some faces first');
+                return;
+            }
+            
+            const dropdown = document.getElementById('batchPersonSelect');
+            const newNameInput = document.getElementById('batchNewPersonName');
+            
+            let personId = dropdown.value;
+            let personName = newNameInput.value.trim();
+            
+            if (!personId && !personName) {
+                alert('Please select an existing person or enter a new name');
+                return;
+            }
+            
+            try {
+                // If new name provided, create person first
+                if (!personId && personName) {
+                    const person = await findOrCreatePerson(personName);
+                    personId = person.id;
+                }
+                
+                if (!personId) {
+                    alert('Failed to get person ID');
+                    return;
+                }
+                
+                console.log('Batch tagging faces:', Array.from(selectedFaces), 'to person:', personId);
+                
+                const response = await fetch('/api/faces/batch-assign', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        personId: parseInt(personId),
+                        faceIds: Array.from(selectedFaces)
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Batch assignment result:', result);
+                
+                if (response.ok) {
+                    // Remove successfully tagged faces from the grid
+                    selectedFaces.forEach(faceId => {
+                        const faceCard = document.querySelector(`[data-face-id="${faceId}"]`);
+                        if (faceCard) {
+                            faceCard.style.background = '#2d7d32';
+                            faceCard.innerHTML = `<div class="person-tag">✅ Tagged as ${result.person.name}</div>`;
+                            
+                            setTimeout(() => {
+                                faceCard.remove();
+                            }, 1500);
+                        }
+                    });
+                    
+                    // Clear selection
+                    clearSelection();
+                    
+                    // Clear form
+                    dropdown.value = '';
+                    newNameInput.value = '';
+                    
+                    alert(`Batch tagging completed: ${result.successCount} faces tagged successfully${result.errorCount > 0 ? `, ${result.errorCount} failed` : ''}`);
+                } else {
+                    alert(`Failed to batch tag faces: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Error in batch tagging:', error);
+                alert(`Failed to batch tag faces: ${error.message}`);
+            }
+        }
+        
+        async function runFaceRecognition() {
+            if (!confirm('This will run automatic face recognition in the background using CompreFace AI. You can monitor progress in the Background Jobs section. Continue?')) {
+                return;
+            }
+            
+            try {
+                console.log('Starting background face recognition job...');
+                
+                const response = await fetch('/api/jobs/face-recognition', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        limit: 50,
+                        confidenceThreshold: 0.75
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Face recognition job started:', result);
+                
+                if (result.success && result.jobId) {
+                    // Show the progress section
+                    document.getElementById('scanProgressSection').style.display = 'block';
+                    
+                    // Start polling for job progress
+                    pollJobProgress(result.jobId);
+                    
+                    // Load and display all current jobs
+                    await refreshJobs();
+                    
+                    alert(`✓ Face recognition started in background (Job: ${result.jobId.substring(4, 12)})`);
+                } else {
+                    throw new Error('Failed to start face recognition job');
+                }
+            } catch (error) {
+                console.error('Error starting face recognition job:', error);
+                alert('Failed to start face recognition: ' + error.message);
+            }
+        }
+        
+        async function cleanupOrphanedFaces() {
+            if (!confirm('This will remove face assignments that were auto-recognized but not uploaded to CompreFace. This helps maintain consistency between the local database and CompreFace training data. Continue?')) {
+                return;
+            }
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div style="padding: 40px; text-align: center;">
+                    <h2>🧹 Cleaning Up Orphaned Face Assignments</h2>
+                    <div style="margin: 20px 0;">
+                        <div class="loading">Checking faces assigned locally but missing from CompreFace...</div>
+                        <p style="color: #888; margin-top: 10px;">This will unassign faces that weren't properly uploaded to CompreFace.</p>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                console.log('Starting orphaned faces cleanup...');
+                
+                const response = await fetch('/api/faces/cleanup-orphaned', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Cleanup result:', result);
+                
+                // Show results
+                let resultHtml = `
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>🎉 Cleanup Complete!</h2>
+                        <div style="margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px;">
+                            <h3>Cleanup Summary</h3>
+                            <p><strong>${result.removedCount}</strong> orphaned face assignments removed</p>
+                            <p><strong>${result.checkedCount}</strong> auto-recognized faces checked</p>
+                            <p style="color: #888; font-size: 14px;">${result.message}</p>
+                        </div>
+                `;
+                
+                if (result.removedFaces && result.removedFaces.length > 0) {
+                    resultHtml += `
+                        <div style="margin: 20px 0;">
+                            <h3>Sample Removed Assignments:</h3>
+                            <div style="max-height: 200px; overflow-y: auto; text-align: left;">
+                    `;
+                    
+                    result.removedFaces.forEach(face => {
+                        resultHtml += `
+                            <div style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; display: flex; justify-content: space-between;">
+                                <span>Face ID: ${face.faceId} was assigned to <strong>${face.personName}</strong></span>
+                                <span style="color: #ff6b6b;">${Math.round(face.confidence * 100)}% confidence</span>
+                            </div>
+                        `;
+                    });
+                    
+                    resultHtml += '</div></div>';
+                }
+                
+                resultHtml += `
+                        <div style="margin: 20px 0;">
+                            <p style="color: #4CAF50;">✅ Database and CompreFace are now in sync!</p>
+                            <button class="btn" onclick="showUnidentifiedFaces()">📝 Tag More Faces</button>
+                            <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                        </div>
+                    </div>
+                `;
+                
+                content.innerHTML = resultHtml;
+                
+            } catch (error) {
+                console.error('Error during cleanup:', error);
+                content.innerHTML = `
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>❌ Cleanup Failed</h2>
+                        <p style="color: #ff6b6b; margin: 20px 0;">Error: ${error.message}</p>
+                        <p style="color: #888; font-size: 14px;">
+                            Please check that CompreFace is running and try again.
+                        </p>
+                        <div style="margin: 20px 0;">
+                            <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Junk Detection Functions
+        async function showJunkCandidates() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading screenshot candidates...</div>';
+            
+            try {
+                const response = await fetch('/api/junk/candidates?limit=50');
+                const data = await response.json();
+                
+                if (data.candidates.length === 0) {
+                    content.innerHTML = `
+                        <div style="padding: 40px; text-align: center; color: #888;">
+                            <h2>🎉 No screenshots detected for review</h2>
+                            <p>All detected screenshots have been reviewed, or none have been found yet.</p>
+                            <div style="margin: 20px 0;">
+                                <button class="btn" onclick="runJunkDetection()">🤖 Run Detection</button>
+                                <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                renderJunkCandidates(data.candidates);
+            } catch (error) {
+                console.error('Error loading junk candidates:', error);
+                content.innerHTML = '<div class="error">Failed to load screenshot candidates</div>';
+            }
+        }
+        
+        function renderJunkCandidates(candidates) {
+            const content = document.getElementById('content');
+            
+            // Check if only one candidate to apply max-width
+            const isSingle = candidates.length === 1;
+            const gridStyle = isSingle ? 
+                'display: flex; justify-content: center; padding: 20px;' : 
+                'display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px;';
+            
+            let html = `
+                <div>
+                    <h2 style="padding: 20px; margin: 0;">🗑️ Review Screenshot Candidates (${candidates.length} detected)</h2>
+                    
+                    <!-- Batch Actions Toolbar -->
+                    <div id="junk-toolbar" style="background: #333; padding: 15px; border-radius: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <button id="selectAllJunkBtn" class="btn" onclick="toggleSelectAllJunk()">Select All</button>
+                            <button id="clearJunkSelectionBtn" class="btn" onclick="clearJunkSelection()">Clear</button>
+                            <span id="selectedJunkCount" style="color: #888;">0 selected</span>
+                            
+                            <div style="margin-left: 20px;">
+                                <button class="btn" onclick="batchMarkJunk('confirmed_junk')" style="background: #dc3545;">🗑️ Mark as Junk</button>
+                                <button class="btn" onclick="batchMarkJunk('confirmed_important')" style="background: #28a745;">✅ Mark as Important</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="${gridStyle}">
+            `;
+            
+            candidates.forEach(candidate => {
+                const relativePath = candidate.original_path.replace('/mnt/sg1/uploads/stephen/iphone/', '');
+                const imageUrl = `/media/${relativePath}`;
+                const reasons = candidate.screenshot_reasons || [];
+                const confidenceColor = candidate.screenshot_confidence >= 80 ? '#FF6B6B' : 
+                                       candidate.screenshot_confidence >= 60 ? '#FFA726' : '#4CAF50';
+                const dominantColor = candidate.dominant_color || '#1a1a1a';
+                const cardMaxWidth = isSingle ? 'max-width: 400px; width: 100%;' : '';
+                
+                html += `
+                    <div class="junk-card" data-image-id="${candidate.id}" style="background: #2a2a2a; border-radius: 8px; padding: 15px; border: 1px solid #333; position: relative; ${cardMaxWidth}">
+                        <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                            <input type="checkbox" class="junk-checkbox" data-image-id="${candidate.id}" onchange="updateJunkSelectedCount()">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <div style="width: 100%; height: 250px; border-radius: 6px; background: ${dominantColor}; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <img src="${imageUrl}?thumb=1" 
+                                     style="max-width: 100%; max-height: 100%; object-fit: contain; z-index: 1;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                     alt="${candidate.filename}">
+                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; color: #666; flex-direction: column;">
+                                    <span style="font-size: 48px;">📸</span>
+                                    <span>Image not found</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 10px;">
+                            <h4 style="margin: 0; color: #fff; font-size: 14px; word-break: break-all;">${candidate.filename}</h4>
+                            <div style="color: ${confidenceColor}; font-weight: bold; margin: 5px 0;">
+                                ${candidate.screenshot_confidence}% confidence
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="margin: 0 0 5px 0; color: #888; font-size: 12px;">Detection Reasons:</h5>
+                            <div style="max-height: 100px; overflow-y: auto;">
+                                ${reasons.map(reason => `
+                                    <div style="background: #1a1a1a; padding: 4px 8px; margin: 2px 0; border-radius: 3px; font-size: 11px; color: #ccc;">
+                                        ${reason}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" onclick="markSingleJunk(${candidate.id}, 'confirmed_junk')" 
+                                    style="background: #dc3545; flex: 1; font-size: 12px;">
+                                🗑️ Junk
+                            </button>
+                            <button class="btn" onclick="markSingleJunk(${candidate.id}, 'confirmed_important')" 
+                                    style="background: #28a745; flex: 1; font-size: 12px;">
+                                ✅ Keep
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div style="text-align: center; padding: 20px; border-top: 1px solid #333; margin-top: 20px;">
+                        <button class="btn" onclick="showJunkStats()">📊 View Stats</button>
+                        <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+        
+        let selectedJunkImages = new Set();
+        
+        function updateJunkSelectedCount() {
+            const checkboxes = document.querySelectorAll('.junk-checkbox:checked');
+            const count = checkboxes.length;
+            
+            selectedJunkImages.clear();
+            checkboxes.forEach(cb => {
+                selectedJunkImages.add(parseInt(cb.dataset.imageId));
+                cb.closest('.junk-card').style.border = '2px solid #007acc';
+            });
+            
+            // Remove border from unchecked
+            document.querySelectorAll('.junk-checkbox:not(:checked)').forEach(cb => {
+                cb.closest('.junk-card').style.border = '1px solid #333';
+            });
+            
+            document.getElementById('selectedJunkCount').textContent = `${count} selected`;
+        }
+        
+        function toggleSelectAllJunk() {
+            const checkboxes = document.querySelectorAll('.junk-checkbox');
+            const selectAllBtn = document.getElementById('selectAllJunkBtn');
+            const areAllSelected = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(cb => {
+                cb.checked = !areAllSelected;
+            });
+            
+            selectAllBtn.textContent = areAllSelected ? 'Select All' : 'Deselect All';
+            updateJunkSelectedCount();
+        }
+        
+        function clearJunkSelection() {
+            document.querySelectorAll('.junk-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+            document.getElementById('selectAllJunkBtn').textContent = 'Select All';
+            updateJunkSelectedCount();
+        }
+        
+        async function markSingleJunk(imageId, status) {
+            try {
+                const response = await fetch(`/api/junk/${imageId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                
+                if (response.ok) {
+                    // Remove the card from display
+                    const card = document.querySelector(`[data-image-id="${imageId}"]`);
+                    if (card) {
+                        card.style.animation = 'fadeOut 0.3s ease-out';
+                        setTimeout(() => {
+                            card.remove();
+                            updateJunkSelectedCount();
+                        }, 300);
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to update status: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Error updating junk status:', error);
+                alert('Failed to update image status');
+            }
+        }
+        
+        async function batchMarkJunk(status) {
+            if (selectedJunkImages.size === 0) {
+                alert('Please select some images first');
+                return;
+            }
+            
+            const action = status === 'confirmed_junk' ? 'mark as junk' : 'mark as important';
+            if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${selectedJunkImages.size} selected images?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/junk/batch-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        imageIds: Array.from(selectedJunkImages),
+                        status
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Remove selected cards from display
+                    selectedJunkImages.forEach(imageId => {
+                        const card = document.querySelector(`[data-image-id="${imageId}"]`);
+                        if (card) {
+                            card.style.animation = 'fadeOut 0.3s ease-out';
+                            setTimeout(() => {
+                                card.remove();
+                            }, 300);
+                        }
+                    });
+                    
+                    clearJunkSelection();
+                    alert(`Batch update completed: ${result.updated} images updated`);
+                } else {
+                    alert(`Failed to batch update: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Error in batch update:', error);
+                alert('Failed to batch update images');
+            }
+        }
+        
+        async function runJunkDetection() {
+            if (!confirm('This will run screenshot detection on your photos. This may take several minutes depending on the number of photos. Continue?')) {
+                return;
+            }
+            
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div style="padding: 40px; text-align: center;">
+                    <h2>🤖 Running Screenshot Detection</h2>
+                    <div style="margin: 20px 0;">
+                        <div class="loading">Analyzing photos for screenshots and junk...</div>
+                        <p style="color: #888; margin-top: 10px;">This will analyze filename patterns, metadata, and content to identify potential screenshots.</p>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/junk/detect?limit=500', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                let resultHtml = `
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>🎉 Screenshot Detection Complete!</h2>
+                        <div style="margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px;">
+                            <h3>Results Summary</h3>
+                            <p><strong>${result.screenshotsFound}</strong> potential screenshots found out of <strong>${result.analyzed}</strong> analyzed</p>
+                            <p style="color: #888; font-size: 14px;">${result.message}</p>
+                        </div>
+                `;
+                
+                if (result.results && result.results.length > 0) {
+                    resultHtml += `
+                        <div style="margin: 20px 0;">
+                            <h3>Sample Detected Screenshots:</h3>
+                            <div style="max-height: 300px; overflow-y: auto; text-align: left;">
+                    `;
+                    
+                    result.results.forEach(item => {
+                        resultHtml += `
+                            <div style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; display: flex; justify-content: space-between;">
+                                <span><strong>${item.filename}</strong></span>
+                                <span style="color: #FFA726;">${item.confidence}% confidence</span>
+                            </div>
+                        `;
+                    });
+                    
+                    resultHtml += '</div></div>';
+                }
+                
+                resultHtml += `
+                        <div style="margin: 20px 0;">
+                            <button class="btn" onclick="showJunkCandidates()">🔍 Review Screenshots</button>
+                            <button class="btn" onclick="showJunkStats()">📊 View Stats</button>
+                            <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                        </div>
+                    </div>
+                `;
+                
+                content.innerHTML = resultHtml;
+                
+            } catch (error) {
+                console.error('Error running junk detection:', error);
+                content.innerHTML = `
+                    <div style="padding: 40px; text-align: center;">
+                        <h2>❌ Detection Failed</h2>
+                        <p style="color: #ff6b6b; margin: 20px 0;">Error: ${error.message}</p>
+                        <div style="margin: 20px 0;">
+                            <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        async function showJunkStats() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading junk detection statistics...</div>';
+            
+            try {
+                const response = await fetch('/api/junk/stats');
+                const data = await response.json();
+                const stats = data.stats;
+                
+                content.innerHTML = `
+                    <div style="padding: 40px;">
+                        <h2>📊 Junk Detection Statistics</h2>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+                            <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; text-align: center;">
+                                <h3 style="margin: 0; color: #FFA726;">🔍 Total Detected</h3>
+                                <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">${stats.total}</div>
+                                <p style="color: #888; margin: 0;">Screenshots found</p>
+                            </div>
+                            
+                            <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; text-align: center;">
+                                <h3 style="margin: 0; color: #4CAF50;">✅ Reviewed</h3>
+                                <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">${stats.reviewed}</div>
+                                <p style="color: #888; margin: 0;">${stats.review_progress}% complete</p>
+                            </div>
+                            
+                            <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; text-align: center;">
+                                <h3 style="margin: 0; color: #FF6B6B;">🗑️ Confirmed Junk</h3>
+                                <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">${stats.confirmed_junk}</div>
+                                <p style="color: #888; margin: 0;">Marked as junk</p>
+                            </div>
+                            
+                            <div style="background: #2a2a2a; padding: 20px; border-radius: 8px; text-align: center;">
+                                <h3 style="margin: 0; color: #007acc;">✨ Kept Important</h3>
+                                <div style="font-size: 32px; font-weight: bold; margin: 10px 0;">${stats.confirmed_important}</div>
+                                <p style="color: #888; margin: 0;">Marked as important</p>
+                            </div>
+                        </div>
+                        
+                        ${stats.unreviewed > 0 ? `
+                            <div style="background: #333; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                                <h3 style="margin: 0 0 10px 0;">⏳ ${stats.unreviewed} screenshots need review</h3>
+                                <button class="btn" onclick="showJunkCandidates()" style="background: #007acc;">🔍 Review Now</button>
+                            </div>
+                        ` : `
+                            <div style="background: #1a4a1a; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; color: #4CAF50;">
+                                <h3 style="margin: 0;">🎉 All screenshots have been reviewed!</h3>
+                            </div>
+                        `}
+                        
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button class="btn" onclick="runJunkDetection()">🤖 Run Detection Again</button>
+                            <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading junk stats:', error);
+                content.innerHTML = '<div class="error">Failed to load junk detection statistics</div>';
+            }
+        }
+
+        // Job Management Functions
+        let jobPollingIntervals = new Map(); // Track polling intervals for cleanup
+        
+        async function refreshJobs() {
+            try {
+                const response = await fetch('/api/jobs?limit=20');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayJobs(data.jobs);
+                    
+                    // Show section if there are jobs
+                    if (data.jobs.length > 0) {
+                        document.getElementById('scanProgressSection').style.display = 'block';
+                    }
+                } else {
+                    throw new Error('Failed to fetch jobs');
+                }
+            } catch (error) {
+                console.error('Error fetching jobs:', error);
+                document.getElementById('jobsList').innerHTML = 
+                    '<div class="error">Failed to load jobs</div>';
+            }
+        }
+        
+        function displayJobs(jobs) {
+            const jobsList = document.getElementById('jobsList');
+            
+            if (jobs.length === 0) {
+                jobsList.innerHTML = '<div class="empty-jobs">No background jobs</div>';
+                return;
+            }
+            
+            const jobsHtml = jobs.map(job => {
+                const startedTime = job.startedAt ? new Date(job.startedAt).toLocaleTimeString() : 'Not started';
+                const createdTime = new Date(job.createdAt).toLocaleTimeString();
+                const duration = job.startedAt ? Math.floor((Date.now() - new Date(job.startedAt).getTime()) / 1000) : 0;
+                
+                return `
+                    <div class="job-item ${job.status}">
+                        <div class="job-header">
+                            <div class="job-title">
+                                ${getJobTypeIcon(job.type)} ${getJobTypeName(job.type)}
+                            </div>
+                            <div class="job-status ${job.status}">${job.status}</div>
+                        </div>
+                        
+                        ${job.status === 'running' || job.status === 'completed' ? `
+                            <div class="job-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill ${job.status}" style="width: ${job.progress}%"></div>
+                                </div>
+                                <div class="progress-text">${job.progress}% complete</div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="job-details">
+                            <div class="job-time">
+                                <span>Created: ${createdTime}</span>
+                                ${job.startedAt ? `<span>Started: ${startedTime}</span>` : ''}
+                                ${duration > 0 ? `<span>Running: ${duration}s</span>` : ''}
+                            </div>
+                            <div>
+                                <span>ID: ${job.id.substring(4, 12)}...</span>
+                                ${job.retries > 0 ? `<span>Retries: ${job.retries}</span>` : ''}
+                            </div>
+                        </div>
+                        
+                        ${job.error ? `<div class="error" style="margin-top: 8px; color: #ff6b6b; font-size: 11px;">${job.error}</div>` : ''}
+                        
+                        <div class="job-actions">
+                            ${job.status === 'pending' ? `
+                                <button class="job-btn cancel" onclick="cancelJob('${job.id}')">Cancel</button>
+                            ` : ''}
+                            ${job.status === 'completed' || job.status === 'failed' ? `
+                                <button class="job-btn" onclick="removeJob('${job.id}')">Remove</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            jobsList.innerHTML = jobsHtml;
+        }
+        
+        function getJobTypeIcon(type) {
+            const icons = {
+                'scan': '📸',
+                'face-recognition': '👤',
+                'thumbnail': '🖼️'
+            };
+            return icons[type] || '⚙️';
+        }
+        
+        function getJobTypeName(type) {
+            const names = {
+                'scan': 'Photo Scan',
+                'face-recognition': 'Face Recognition',
+                'thumbnail': 'Thumbnail Generation'
+            };
+            return names[type] || type;
+        }
+        
+        async function pollJobProgress(jobId) {
+            // Clear any existing polling for this job
+            if (jobPollingIntervals.has(jobId)) {
+                clearInterval(jobPollingIntervals.get(jobId));
+            }
+            
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/jobs/${jobId}`);
+                    if (!response.ok) {
+                        clearInterval(interval);
+                        jobPollingIntervals.delete(jobId);
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        const job = data.job;
+                        
+                        // Update the specific job in the UI
+                        await refreshJobs();
+                        
+                        // Stop polling if job is completed or failed
+                        if (job.status === 'completed' || job.status === 'failed') {
+                            clearInterval(interval);
+                            jobPollingIntervals.delete(jobId);
+                            
+                            // Auto-refresh photos if scan completed successfully
+                            if (job.type === 'scan' && job.status === 'completed') {
+                                setTimeout(() => {
+                                    loadPhotos();
+                                }, 2000);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling job progress:', error);
+                }
+            }, 2000); // Poll every 2 seconds
+            
+            jobPollingIntervals.set(jobId, interval);
+        }
+        
+        async function cancelJob(jobId) {
+            try {
+                const response = await fetch(`/api/jobs/${jobId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    await refreshJobs();
+                } else {
+                    throw new Error('Failed to cancel job');
+                }
+            } catch (error) {
+                console.error('Error cancelling job:', error);
+                alert('Failed to cancel job: ' + error.message);
+            }
+        }
+        
+        async function removeJob(jobId) {
+            // This would need an API endpoint to remove completed jobs
+            // For now, just refresh to remove from view
+            await refreshJobs();
+        }
+        
+        async function clearCompletedJobs() {
+            try {
+                const response = await fetch('/api/jobs/cleanup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ olderThanHours: 0 }) // Remove all completed jobs
+                });
+                
+                if (response.ok) {
+                    await refreshJobs();
+                } else {
+                    throw new Error('Failed to clear completed jobs');
+                }
+            } catch (error) {
+                console.error('Error clearing jobs:', error);
+                alert('Failed to clear completed jobs: ' + error.message);
+            }
+        }
+        
+        // Auto-refresh jobs periodically
+        setInterval(async () => {
+            const progressSection = document.getElementById('scanProgressSection');
+            if (progressSection.style.display !== 'none') {
+                await refreshJobs();
+            }
+        }, 5000); // Refresh every 5 seconds
+        
+        // Load jobs on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await refreshJobs();
         });
 
         // Make functions global so they can be called from onclick handlers
@@ -744,6 +2188,432 @@
         window.closeModal = closeModal;
         window.searchByObjects = searchByObjects;
         window.showAllPhotos = showAllPhotos;
+        window.showUnidentifiedFaces = showUnidentifiedFaces;
+        window.showPersonsManager = showPersonsManager;
+        window.runFaceRecognition = runFaceRecognition;
+        window.tagFace = tagFace;
+        window.markFaceAsInvalid = markFaceAsInvalid;
+        window.markFaceAsUnknown = markFaceAsUnknown;
+        window.createNewPerson = createNewPerson;
+        window.deletePerson = deletePerson;
+        window.cleanupOrphanedFaces = cleanupOrphanedFaces;
+        window.showConfirmationReview = showConfirmationReview;
+        window.confirmFaceMatch = confirmFaceMatch;
+        window.rejectFaceMatch = rejectFaceMatch;
+        window.showJunkCandidates = showJunkCandidates;
+        window.runJunkDetection = runJunkDetection;
+        window.showJunkStats = showJunkStats;
+        window.refreshJobs = refreshJobs;
+        window.cancelJob = cancelJob;
+        window.removeJob = removeJob;
+        window.clearCompletedJobs = clearCompletedJobs;
+        
+        // Confidence Confirmation Functions
+        async function showConfirmationReview(minConfidence = 0.75) {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Checking for faces needing confirmation...</div>';
+            
+            try {
+                // Run auto-recognition to get faces needing confirmation with confidence filter
+                const response = await fetch(`/api/faces/auto-recognize?limit=20&minConfidence=${minConfidence}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.needsConfirmation === 0) {
+                    // Still render the full review page with the confidence filter, but show no faces
+                    data.confirmationNeeded = [];
+                    renderConfirmationReview(data, minConfidence);
+                    return;
+                }
+                
+                renderConfirmationReview(data, minConfidence);
+            } catch (error) {
+                console.error('Error loading confirmation review:', error);
+                content.innerHTML = `
+                    <div class="error">
+                        Failed to load faces for confirmation: ${error.message}
+                        <div style="margin: 20px 0;">
+                            <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderConfirmationReview(data, currentMinConfidence = 0.75) {
+            const content = document.getElementById('content');
+            
+            let html = `
+                <div>
+                    <h2 style="padding: 20px; margin: 0;">🤔 Review Face Matches (${data.needsConfirmation} need confirmation)</h2>
+                    
+                    <div style="background: #333; padding: 15px; margin: 20px; border-radius: 8px;">
+                        <h4 style="margin: 0 0 15px 0; color: #007acc;">Auto-Recognition Results:</h4>
+                        <p style="margin: 5px 0; color: #4CAF50;">✅ ${data.recognized} faces auto-assigned (≥99% confidence)</p>
+                        <p style="margin: 5px 0; color: #FFA726;">⚠️ ${data.needsConfirmation} faces need confirmation (${Math.round(currentMinConfidence * 100)}-98% confidence)</p>
+                        <p style="margin: 5px 0; color: #888;">⏭️ ${data.processed - data.recognized - data.needsConfirmation} faces skipped (<${Math.round(currentMinConfidence * 100)}% confidence)</p>
+                        
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+                            <label style="display: block; color: #ccc; margin-bottom: 8px;">🎯 Minimum Confidence Filter:</label>
+                            <select id="confidenceFilter" onchange="showConfirmationReview(parseFloat(this.value))" 
+                                    style="background: #222; color: #fff; border: 1px solid #555; padding: 8px 12px; border-radius: 4px; font-size: 14px;">
+                                <option value="0.5" ${currentMinConfidence === 0.5 ? 'selected' : ''}>50% - Show all matches</option>
+                                <option value="0.6" ${currentMinConfidence === 0.6 ? 'selected' : ''}>60% - Moderate confidence</option>
+                                <option value="0.7" ${currentMinConfidence === 0.7 ? 'selected' : ''}>70% - Good confidence</option>
+                                <option value="0.75" ${currentMinConfidence === 0.75 ? 'selected' : ''}>75% - Default threshold</option>
+                                <option value="0.8" ${currentMinConfidence === 0.8 ? 'selected' : ''}>80% - High confidence</option>
+                                <option value="0.85" ${currentMinConfidence === 0.85 ? 'selected' : ''}>85% - Very high confidence</option>
+                                <option value="0.9" ${currentMinConfidence === 0.9 ? 'selected' : ''}>90% - Excellent confidence</option>
+                                <option value="0.95" ${currentMinConfidence === 0.95 ? 'selected' : ''}>95% - Near perfect confidence</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 20px;">
+            `;
+            
+            if (data.confirmationNeeded && data.confirmationNeeded.length > 0) {
+                const isSingle = data.confirmationNeeded.length === 1;
+                const gridStyle = isSingle ? 
+                    'display: flex; justify-content: center;' : 
+                    'display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;';
+                const cardStyle = isSingle ? 'max-width: 450px; width: 100%;' : '';
+                
+                html += `<div style="${gridStyle}">`;
+                
+                data.confirmationNeeded.forEach(face => {
+                    const confidencePercent = Math.round(face.confidence * 100);
+                    const confidenceColor = face.confidence >= 0.9 ? '#4CAF50' : 
+                                           face.confidence >= 0.8 ? '#FFA726' : '#FF6B6B';
+                    
+                    html += `
+                        <div style="background: #2a2a2a; border-radius: 8px; padding: 20px; border: 1px solid #333; ${cardStyle}">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                <img src="/media/${face.faceImagePath}" 
+                                     style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background: #1a1a1a;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                     alt="Face">
+                                <div style="background: #1a1a1a; width: 80px; height: 80px; border-radius: 8px; display: none; align-items: center; justify-content: center; color: #666; font-size: 12px;">
+                                    👤 Face
+                                </div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 5px 0; color: #fff;">Suggested Match: ${face.personName}</h4>
+                                    <div style="color: ${confidenceColor}; font-weight: bold;">
+                                        ${confidencePercent}% confidence
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn" onclick="confirmFaceMatch(${face.faceId}, ${face.personId}, '${face.personName}', event)" 
+                                        style="background: #4CAF50; flex: 1;">
+                                    ✅ Confirm
+                                </button>
+                                <button class="btn" onclick="rejectFaceMatch(${face.faceId}, '${face.personName}', event)" 
+                                        style="background: #FF6B6B; flex: 1;">
+                                    ❌ Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            } else {
+                // No faces need confirmation with current filter
+                html += `
+                    <div style="text-align: center; padding: 40px; color: #888;">
+                        <h3>✨ No faces need confirmation</h3>
+                        <p>All auto-recognized faces had high confidence (≥99%) or were below the ${Math.round(currentMinConfidence * 100)}% threshold.</p>
+                        <p style="color: #ccc; font-size: 14px;">Try lowering the confidence filter above to see more matches.</p>
+                    </div>
+                `;
+            }
+            
+            html += `
+                    </div>
+                    
+                    <div style="text-align: center; padding: 20px; border-top: 1px solid #333; margin-top: 20px;">
+                        <button class="btn" onclick="showConfirmationReview(${currentMinConfidence})">🔄 Refresh</button>
+                        <button class="btn" onclick="showUnidentifiedFaces()">📝 Tag More Faces</button>
+                        <button class="btn" onclick="loadPhotos()">📷 Back to Photos</button>
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+        
+        async function confirmFaceMatch(faceId, personId, personName, event) {
+            try {
+                const response = await fetch('/api/faces/assign', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        faceId: faceId,
+                        personId: personId
+                    })
+                });
+                
+                if (response.ok) {
+                    // Remove this confirmation from the display
+                    const faceCard = event.target.closest('[style*="background: #2a2a2a"]');
+                    if (faceCard) {
+                        faceCard.style.background = '#1a4a1a';
+                        faceCard.innerHTML = `
+                            <div style="text-align: center; color: #4CAF50; padding: 20px;">
+                                ✅ Confirmed as ${personName}
+                            </div>
+                        `;
+                        setTimeout(() => {
+                            faceCard.style.display = 'none';
+                        }, 2000);
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('API error:', response.status, errorText);
+                    alert(`Failed to confirm face match: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error confirming face match:', error);
+                alert('Failed to confirm face match');
+            }
+        }
+        
+        async function rejectFaceMatch(faceId, personName, event) {
+            try {
+                // Mark the face as unknown so it won't be suggested again
+                const response = await fetch(`/api/faces/${faceId}/mark-unknown`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const faceCard = event ? event.target.closest('[style*="background: #2a2a2a"]') : 
+                                document.querySelector(`[onclick*="rejectFaceMatch(${faceId}"]`)?.closest('[style*="background: #2a2a2a"]');
+                
+                if (response.ok) {
+                    // Successfully marked as unknown - remove from display
+                    if (faceCard) {
+                        faceCard.style.background = '#4a1a1a';
+                        faceCard.innerHTML = `
+                            <div style="text-align: center; color: #FF6B6B; padding: 20px;">
+                                ❌ Rejected match with ${personName}<br>
+                                <small style="color: #888;">Face marked as unknown - won't be suggested again</small>
+                            </div>
+                        `;
+                        setTimeout(() => {
+                            faceCard.style.display = 'none';
+                        }, 3000);
+                    }
+                } else {
+                    // Failed to mark as unknown
+                    if (faceCard) {
+                        faceCard.style.background = '#4a1a1a';
+                        faceCard.innerHTML = `
+                            <div style="text-align: center; color: #FF6B6B; padding: 20px;">
+                                ❌ Failed to save rejection<br>
+                                <small style="color: #888;">Face may appear again in future reviews</small>
+                            </div>
+                        `;
+                        setTimeout(() => {
+                            faceCard.style.display = 'none';
+                        }, 3000);
+                    }
+                    console.error('Failed to mark face as unknown:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error rejecting face match:', error);
+                const faceCard = event ? event.target.closest('[style*="background: #2a2a2a"]') : 
+                                document.querySelector(`[onclick*="rejectFaceMatch(${faceId}"]`)?.closest('[style*="background: #2a2a2a"]');
+                if (faceCard) {
+                    faceCard.style.background = '#4a1a1a';
+                    faceCard.innerHTML = `
+                        <div style="text-align: center; color: #FF6B6B; padding: 20px;">
+                            ❌ Error rejecting face match
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        faceCard.style.display = 'none';
+                    }, 3000);
+                }
+            }
+        }
+        
+        // Lightbox functions
+        async function openLightbox(imageUrl, photo) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const lightboxMetadata = document.getElementById('lightbox-metadata');
+            
+            lightboxImage.src = imageUrl;
+            lightbox.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            
+            // Show loading state
+            lightboxMetadata.innerHTML = '<div class="loading">Loading metadata...</div>';
+            
+            try {
+                // Fetch metadata for this photo
+                const metadataPath = `recents/meta/${photo.filename}.json`;
+                const encodedPath = encodeURIComponent(metadataPath);
+                const response = await fetch(`/api/metadata?path=${encodedPath}`);
+                
+                if (response.ok) {
+                    const metadata = await response.json();
+                    await populateLightboxMetadata(metadata, photo);
+                } else {
+                    lightboxMetadata.innerHTML = '<div class="error">Failed to load metadata</div>';
+                }
+            } catch (error) {
+                console.error('Error loading metadata:', error);
+                lightboxMetadata.innerHTML = '<div class="error">Error loading metadata</div>';
+            }
+        }
+
+        async function populateLightboxMetadata(metadata, photo) {
+            const lightboxMetadata = document.getElementById('lightbox-metadata');
+            
+            let html = `
+                <h3>Photo Details</h3>
+                <div class="metadata-grid">
+                    <div class="metadata-label">Filename:</div>
+                    <div class="metadata-value">${photo.filename}</div>
+                    <div class="metadata-label">Date Taken:</div>
+                    <div class="metadata-value">${photo.date_taken ? new Date(photo.date_taken).toLocaleDateString() : 'Unknown'}</div>
+                    <div class="metadata-label">Status:</div>
+                    <div class="metadata-value">${photo.processing_status || 'processed'}</div>
+                    <div class="metadata-label">Faces:</div>
+                    <div class="metadata-value">${photo.face_count || 0} detected</div>
+                </div>
+            `;
+
+            // Add camera info if available
+            if (metadata.exif) {
+                const exif = metadata.exif;
+                if (exif.Make || exif.Model) {
+                    html += `
+                        <div class="metadata-section">
+                            <h4 style="color: #007acc; margin: 15px 0 10px 0;">Camera</h4>
+                            <div class="metadata-grid">
+                    `;
+                    if (exif.Make) {
+                        html += `
+                            <div class="metadata-label">Make:</div>
+                            <div class="metadata-value">${exif.Make}</div>
+                        `;
+                    }
+                    if (exif.Model) {
+                        html += `
+                            <div class="metadata-label">Model:</div>
+                            <div class="metadata-value">${exif.Model}</div>
+                        `;
+                    }
+                    html += '</div></div>';
+                }
+            }
+
+            // Add faces section if faces exist
+            if (metadata.people && Object.keys(metadata.people).length > 0) {
+                html += `
+                    <div class="lightbox-faces">
+                        <h4>Detected Faces</h4>
+                        <div class="lightbox-faces-grid">
+                `;
+
+                // Fetch person assignments for faces
+                const faceAssignments = await fetchFaceAssignments(photo.id);
+                
+                for (const [facePath, faceData] of Object.entries(metadata.people)) {
+                    const faceName = facePath.split('/').pop().replace(/\.[^/.]+$/, "");
+                    // Fix face URL - facePath already contains full path, extract relative path
+                    const relativeFacePath = facePath.replace('/mnt/hdd/photo-process/processed/', '');
+                    const faceImageUrl = `/processed/${relativeFacePath}`;
+                    
+                    // Find person assignment for this face
+                    const assignment = faceAssignments.find(f => f.face_image_path === facePath);
+                    const personName = assignment?.person_name || null;
+                    
+                    html += `
+                        <div class="lightbox-face-card">
+                            <img src="${faceImageUrl}" class="lightbox-face-image" alt="Face">
+                            <div class="lightbox-face-name">Face ${faceName.split('_').pop()}</div>
+                            ${personName ? `<div class="lightbox-face-person">${personName}</div>` : ''}
+                        </div>
+                    `;
+                }
+
+                html += '</div></div>';
+            }
+
+            lightboxMetadata.innerHTML = html;
+        }
+
+        async function fetchFaceAssignments(imageId) {
+            try {
+                const response = await fetch(`/api/gallery/${imageId}/faces`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.faces || [];
+                }
+            } catch (error) {
+                console.error('Error fetching face assignments:', error);
+            }
+            return [];
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup infinite scroll
+            setupInfiniteScroll();
+            
+            // Setup lightbox event listeners
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox) {
+                // Close lightbox when clicking outside the image
+                lightbox.addEventListener('click', (e) => {
+                    if (e.target.id === 'lightbox') {
+                        closeLightbox();
+                    }
+                });
+            }
+            
+            // Close lightbox on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeLightbox();
+                }
+            });
+            
+            // Load initial photos
+            loadPhotos();
+        });
     </script>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <div class="lightbox-content">
+            <div class="lightbox-image-container">
+                <img id="lightbox-image" class="lightbox-image" src="" alt="">
+            </div>
+            <div id="lightbox-metadata" class="lightbox-metadata">
+                <!-- Metadata will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>

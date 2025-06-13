@@ -8,11 +8,20 @@ interface ProcessedPhotoData {
     dominantColor: string;
     people: Record<string, any>;
     objects?: any[];
+    screenshotDetection?: {
+        isScreenshot: boolean;
+        confidence: number;
+        reasons: string[];
+    };
 }
 
 export class DataMigrator {
     
-    static async migrateProcessedData(sourceDir: string, destDir: string): Promise<void> {
+    static async migrateProcessedData(
+        sourceDir: string, 
+        destDir: string,
+        progressCallback?: (progress: number, message?: string) => void
+    ): Promise<void> {
         console.log('Starting data migration to database...');
         
         const metaDir = path.join(destDir, 'recents', 'meta');
@@ -29,14 +38,20 @@ export class DataMigrator {
         
         let processed = 0;
         let errors = 0;
+        let actuallyProcessed = 0;
         
         for (const metaFile of metadataFiles) {
             try {
-                await this.processMetadataFile(metaFile, sourceDir, destDir, metaDir, facesDir);
+                const wasProcessed = await this.processMetadataFile(metaFile, sourceDir, destDir, metaDir, facesDir);
                 processed++;
+                if (wasProcessed) actuallyProcessed++;
                 
                 if (processed % 10 === 0) {
                     console.log(`Processed ${processed}/${metadataFiles.length} files...`);
+                    if (progressCallback) {
+                        const progress = processed / metadataFiles.length;
+                        progressCallback(progress, `Migrated ${actuallyProcessed} new images (${processed}/${metadataFiles.length} checked)`);
+                    }
                 }
             } catch (error) {
                 console.error(`Error processing ${metaFile}:`, error);
@@ -44,7 +59,7 @@ export class DataMigrator {
             }
         }
         
-        console.log(`Migration completed: ${processed} processed, ${errors} errors`);
+        console.log(`Migration completed: ${actuallyProcessed} new images processed, ${processed - actuallyProcessed} already existed, ${errors} errors`);
     }
     
     static async processMetadataFile(
@@ -53,7 +68,7 @@ export class DataMigrator {
         destDir: string, 
         metaDir: string, 
         facesDir: string
-    ): Promise<void> {
+    ): Promise<boolean> {
         // Read metadata JSON
         const metaPath = path.join(metaDir, metaFile);
         const metadataJson: ProcessedPhotoData = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
@@ -65,18 +80,25 @@ export class DataMigrator {
         // Check if original file exists
         if (!fs.existsSync(originalPath)) {
             console.warn(`Original file not found: ${originalPath}`);
-            return;
+            return false;
         }
         
-        // Calculate file hash for deduplication
+        // First check if image already exists by path (much faster than hash)
+        const existingImageByPath = await ImageRepository.findByPath(originalPath);
+        if (existingImageByPath) {
+            console.log(`Image already exists in database (by path): ${originalFilename}`);
+            return false;
+        }
+        
+        // Calculate file hash for deduplication only if not found by path
         const fileBuffer = fs.readFileSync(originalPath);
         const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
         
-        // Check if image already exists in database
-        const existingImage = await ImageRepository.findByHash(fileHash);
-        if (existingImage) {
-            console.log(`Image already exists in database: ${originalFilename}`);
-            return;
+        // Check if image already exists by hash (for duplicates with different paths)
+        const existingImageByHash = await ImageRepository.findByHash(fileHash);
+        if (existingImageByHash) {
+            console.log(`Image already exists in database (by hash): ${originalFilename}`);
+            return false;
         }
         
         // Create image record
@@ -92,7 +114,11 @@ export class DataMigrator {
             dominant_color: this.normalizeDominantColor(metadataJson.dominantColor),
             processing_status: 'completed',
             date_taken: this.parseExifDate(metadataJson.exif.DateTimeOriginal || metadataJson.exif.FileModifyDate),
-            date_processed: new Date()
+            date_processed: new Date(),
+            is_screenshot: metadataJson.screenshotDetection?.isScreenshot || false,
+            screenshot_confidence: metadataJson.screenshotDetection?.confidence || 0,
+            screenshot_reasons: metadataJson.screenshotDetection?.reasons ? JSON.stringify(metadataJson.screenshotDetection.reasons) : undefined,
+            junk_status: 'unreviewed'
         };
         
         const imageId = await ImageRepository.create(imageData);
@@ -110,6 +136,8 @@ export class DataMigrator {
         if (metadataJson.objects && metadataJson.objects.length > 0) {
             await this.createObjectRecords(imageId, metadataJson.objects);
         }
+        
+        return true;
     }
     
     private static async createMetadataRecord(imageId: number, exif: any): Promise<void> {
@@ -170,7 +198,7 @@ export class DataMigrator {
                 pitch: faceData.pose?.pitch || 0,
                 roll: faceData.pose?.roll || 0,
                 yaw: faceData.pose?.yaw || 0,
-                landmarks: faceData.landmarks || null
+                landmarks: faceData.landmarks ? JSON.stringify(faceData.landmarks) : null
             };
             
             await FaceRepository.createFace(face);

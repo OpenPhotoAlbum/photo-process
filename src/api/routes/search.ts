@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { ObjectRepository, ImageRepository } from '../models/database';
+import config from '../../config';
 
 // Search images by detected objects
 export const searchByObjects = async (req: Request, res: Response) => {
         try {
             const query = req.query.q as string;
-            const minConfidence = parseFloat(req.query.confidence as string) || 0.5;
+            const minConfidence = parseFloat(req.query.confidence as string) || config.getMinConfidence();
             
             if (!query) {
                 return res.status(400).json({ error: 'Search query required' });
@@ -97,7 +98,7 @@ export const advancedSearch = async (req: Request, res: Response) => {
         try {
             const {
                 objects = [],
-                minConfidence = 0.5,
+                minConfidence = config.getMinConfidence(),
                 dateFrom,
                 dateTo,
                 hasFaces,

@@ -60,8 +60,6 @@ async function updateObjectsForExistingImages() {
                     await ObjectRepository.createObjects(objectRecords);
                     console.log(`Added ${objectRecords.length} objects for ${originalFilename}`);
                     updated++;
-                } else {
-                    console.log(`Objects already exist for ${originalFilename}`);
                 }
             }
             

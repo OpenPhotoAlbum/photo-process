@@ -3,7 +3,11 @@ build/
 node_modules
 # Ignore logs
 logs
+*.log
 npm-debug.log*
+debug.log
+server.log
+server-debug.log
 # Ignore coverage reports
 coverage
 # Ignore environment files
@@ -13,3 +17,21 @@ coverage
 .env.test.local
 # Temp Media
 dest/
+processed/
+# Test output directories
+test-*/
+# Temporary files
+*.tmp
+*.temp
+# OS files
+.DS_Store
+Thumbs.db
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+# Database files
+*.db
+*.sqlite
+*.sqlite3

@@ -1,35 +1,27 @@
-import dotenv from 'dotenv';
-import mime from 'mime-types';
-import { Image } from '../util/image';
 import { Request, Response } from 'express';
-
-dotenv.config({ path: '/mnt/hdd/photo-process/.env' });
-
-const MEDIA_SOURCE = process.env.media_source_dir;
+import { ImageServer } from '../util/image-server';
+import fs from 'fs';
+import path from 'path';
+import config from '../util/config';
 
 export const Media = async (request: Request, response: Response) => {
-    console.log(request.query, 'bang');
-    const { thumb } = request.query;
-
-    const imagePath = `${MEDIA_SOURCE}/${request.params.path || ''}`;
-
-    const image = Image(imagePath);
-
-    if (thumb) {
-        image.resize(200);
+    // Get the requested path from URL
+    const urlPath = request.url.split('?')[0];
+    const requestedPath = urlPath.startsWith('/') ? urlPath.substring(1) : urlPath;
+    
+    // Build full paths for both directories
+    const processedPath = path.join(config.mediaDestDir, requestedPath);
+    const sourcePath = path.join(config.mediaSourceDir, requestedPath);
+    
+    // Check which directory has the file and serve from there
+    if (fs.existsSync(processedPath)) {
+        // File exists in processed directory (face images, thumbnails, etc.)
+        await ImageServer.serveProcessedMedia(request, response);
+    } else if (fs.existsSync(sourcePath)) {
+        // File exists in source directory (original photos)
+        await ImageServer.serveSourceMedia(request, response);
+    } else {
+        // File not found in either directory
+        response.status(404).json({ error: 'File not found' });
     }
-
-    const buffer = await image.toBuffer();
-
-    const mimetype = mime.lookup(imagePath);
-    const expiry_time = Date.now() + parseInt('9999') * 1000;
-
-    let headers = {
-        "Content-Type": mimetype,
-        "Cache-Control": `public, max-age=9999`,
-        "Content-Length": buffer.length,
-        Expires: new Date(expiry_time).toUTCString(),
-    };
-
-    response.set(headers).status(200).send(buffer);
 }

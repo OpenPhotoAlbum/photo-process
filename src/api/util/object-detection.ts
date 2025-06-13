@@ -2,6 +2,7 @@ import * as tf from '@tensorflow/tfjs-node';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import sharp from 'sharp';
 import { Logger } from '../logger';
+import config from '../../config';
 
 const logger = Logger.getInstance();
 
@@ -35,8 +36,9 @@ export const detectObjects = async (imagePath: string): Promise<DetectedObject[]
         }
 
         // Load and preprocess image using Sharp
+        const objConfig = config.getObjectDetectionConfig();
         const imageBuffer = await sharp(imagePath)
-            .resize(640, 640, { fit: 'inside', withoutEnlargement: true })
+            .resize(objConfig.imageResize.width, objConfig.imageResize.height, { fit: 'inside', withoutEnlargement: true })
             .removeAlpha() // Remove alpha channel to ensure RGB only
             .raw()
             .toBuffer({ resolveWithObject: true });
@@ -78,7 +80,7 @@ export const getObjectClasses = (objects: DetectedObject[]): string[] => {
 };
 
 // Filter objects by confidence threshold
-export const filterByConfidence = (objects: DetectedObject[], threshold: number = 0.5): DetectedObject[] => {
+export const filterByConfidence = (objects: DetectedObject[], threshold: number = config.getMinConfidence()): DetectedObject[] => {
     return objects.filter(obj => obj.confidence >= threshold);
 };
 
