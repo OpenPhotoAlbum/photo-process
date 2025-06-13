@@ -222,12 +222,48 @@ MEDIA_CACHE_DIR=/external/photos/cache
 MEDIA_LOGS_DIR=/external/photos/logs
 ```
 
+## Current Development Plans
+
+### IMPORTANT: UI Strategy Context
+**The current web UI is temporary** and only meant for API interaction and CompreFace training. The user plans to **remove this UI entirely** and create a new React app in the future. Therefore:
+
+- ✅ **Focus on:** Robust backend APIs and data models
+- ✅ **Build:** Clean APIs that the future React app can consume  
+- 🔄 **Minimal:** Basic UI updates just for testing/training CompreFace
+- ❌ **Skip:** Complex UI features that will be replaced
+
+### Next Priority: Face Recognition Enhancement (Backend Focus)
+
+**Phase A: Core Recognition Engine**
+- **Person Identification**: Build backend APIs to identify who faces belong to
+- **Face Clustering**: Algorithm to group similar faces for easier person assignment
+- **Training Management**: APIs to manage CompreFace training data and confidence scoring
+- **Person Management**: CRUD APIs for person entities and face associations
+
+**Phase B: Advanced Recognition Features**  
+- **Auto-Assignment**: Smart face-to-person matching based on confidence thresholds
+- **Review Workflows**: APIs for faces that need manual review/confirmation
+- **Batch Operations**: Bulk face assignment and training operations
+- **Analytics**: Recognition accuracy tracking and improvement suggestions
+
+**Phase C: Integration & Polish**
+- **Retroactive Processing**: Apply recognition to existing photo collections
+- **Performance Optimization**: Efficient batch processing and caching
+- **Data Consistency**: Ensure face data stays synchronized across systems
+
+### Backend API Design Goals
+- Clean, RESTful endpoints ready for React app consumption
+- Comprehensive person and face management
+- Flexible confidence threshold handling
+- Efficient bulk operations for large photo collections
+- Strong data validation and error handling
+
 ## Future Development Roadmap
 
-### 1. Face Recognition Enhancement
-- **Person Identification**: Currently we detect faces but don't identify who they are. Could implement face recognition to automatically tag people in photos
+### 1. Face Recognition Enhancement (IN PROGRESS - Backend Focus)
+- **Person Identification**: Backend APIs to identify who faces belong to 
 - **Face Clustering**: Group similar faces together to help identify recurring people
-- **Manual Face Tagging**: UI for users to manually tag faces with names
+- **Manual Face Tagging**: APIs for manual face-to-person assignment (React UI will consume these)
 
 ### 2. Search & Discovery Features
 - **Advanced Search Interface**: Build a more sophisticated web UI with filters for date, location, camera, objects, and faces
