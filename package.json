@@ -31,13 +31,24 @@
     "cleanup:low-confidence": "node tools/cleanup/cleanup-low-confidence.js",
     "test:full-processing": "node tools/testing/test-full-processing.js",
     "test:object-detection": "node tools/testing/test-object-detection.js",
-    "test:single-file": "node tools/testing/test-single-file.js"
+    "test:single-file": "node tools/testing/test-single-file.js",
+    "config:migrate": "node tools/maintenance/migrate-env-config.js",
+    "config:validate": "node -e \"require('./build/api/util/config-manager.js').configManager.getConfigSummary()\"",
+    "config:example": "cp .env.example .env && echo 'Created .env from example. Please edit with your settings.'",
+    "config:status": "node -e \"const c = require('./build/api/util/config-manager.js').configManager; console.log('Config Status:'); console.log(JSON.stringify(c.getConfigSummary(), null, 2))\"",
+    "logs:processing": "tail -f /media/stephen/Expansion/photos/logs/processing-summary-$(date +%Y-%m-%d).log",
+    "logs:api": "tail -f /media/stephen/Expansion/photos/logs/api-$(date +%Y-%m-%d).log",
+    "logs:errors": "tail -f /media/stephen/Expansion/photos/logs/error-$(date +%Y-%m-%d).log",
+    "logs:faces": "tail -f /media/stephen/Expansion/photos/logs/faces-$(date +%Y-%m-%d).log",
+    "logs:system": "tail -f /media/stephen/Expansion/photos/logs/system-$(date +%Y-%m-%d).log",
+    "logs:all": "tail -f /media/stephen/Expansion/photos/logs/*-$(date +%Y-%m-%d).log"
   },
   "author": "Stephen Young <stephen@theyoungs.cloud>",
   "license": "ISC",
   "dependencies": {
     "@tensorflow-models/coco-ssd": "^2.2.3",
     "@tensorflow/tfjs-node": "^4.22.0",
+    "@types/winston": "^2.4.4",
     "color": "^5.0.0",
     "dotenv": "^16.5.0",
     "exiftool-vendored": "^29.3.0",
@@ -49,7 +60,9 @@
     "mysql2": "^3.14.1",
     "node-fetch": "^2.7.0",
     "nodemon": "^3.1.10",
-    "sharp": "^0.34.1"
+    "sharp": "^0.34.1",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.2",

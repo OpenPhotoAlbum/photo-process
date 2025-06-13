@@ -37,3 +37,13 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Backup files
+/tmp/photo-process-backup/
+
+# Runtime files
+*.pid
+
+# Development test files
+test.png
+test.jpg

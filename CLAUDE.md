@@ -109,23 +109,117 @@ This is a photo processing service that processes iPhone PhotoSync backups with 
 - **Sharp**: High-performance image processing
 - **MySQL**: Database for tracking processed media
 
-### Configuration
-- Environment variables loaded from `/mnt/hdd/photo-process/.env`
-- Global configuration system in `src/config.ts` manages all application settings
-- Key settings can be adjusted via environment variables (see `CONFIG.md`)
-- Object detection confidence threshold: `OBJECT_DETECTION_MIN_CONFIDENCE=0.75`
-- CompreFace custom builds available in `services/CompreFace/custom-builds/`
-- TypeScript compiled to CommonJS modules in `build/` directory
+### Configuration System
+
+**Enhanced Multi-Layer Configuration** (Phase 2 Complete):
+- **Priority Order**: Runtime API > JSON Config File > Environment Variables > File-based Defaults
+- **No Hardcoded Defaults**: All defaults in `config/defaults.json` for easy discovery
+- **Validation**: Startup validation with helpful error messages
+- **Backward Compatibility**: Legacy variables (mysql_host, etc.) still supported
+- **Admin Ready**: Future admin panel API endpoints prepared
+
+#### Configuration Methods
+
+1. **Environment Variables** (.env file):
+```bash
+# New standardized format
+MYSQL_HOST=localhost
+MYSQL_PASSWORD=your_password
+MEDIA_SOURCE_DIR=/path/to/photos
+OBJECT_DETECTION_MIN_CONFIDENCE=0.75
+```
+
+2. **JSON Configuration** (config/settings.json):
+```json
+{
+  "database": { "host": "localhost", "password": "secret" },
+  "processing": { "objectDetection": { "minConfidence": 0.75 } }
+}
+```
+
+3. **Runtime Updates** (future admin panel):
+```bash
+# Will be available via API when admin panel is implemented
+PUT /api/admin/config
+```
+
+#### Configuration Commands
+
+- `npm run config:status` - Show current configuration summary
+- `npm run config:migrate` - Migrate legacy .env variables to new format
+
+### Logging Commands
+
+- `npm run logs:processing` - Monitor photo processing logs (summary format)
+- `npm run logs:api` - Monitor API request/response logs
+- `npm run logs:errors` - Monitor error logs from all sources
+- `npm run logs:faces` - Monitor face detection/recognition logs
+- `npm run logs:system` - Monitor system startup and configuration logs
+- `npm run logs:all` - Monitor all log files simultaneously
+
+### Structured Logging System
+
+**Multi-File Logging** (Phase 3 Complete):
+- **Separate log streams**: Different files for different concerns (processing, API, faces, errors)
+- **JSON format**: Structured, searchable logs for production analysis
+- **Daily rotation**: Automatic compression and cleanup with configurable retention
+- **Request correlation**: Every API request gets a unique ID for tracing
+
+#### Log Files
+
+1. **system-YYYY-MM-DD.log** - Server startup, configuration, infrastructure events
+2. **api-YYYY-MM-DD.log** - HTTP requests/responses with performance metrics
+3. **processing-YYYY-MM-DD.log** - Detailed image processing pipeline logs
+4. **processing-summary-YYYY-MM-DD.log** - Quick scannable summary of processed images
+5. **faces-YYYY-MM-DD.log** - Face detection and recognition events
+6. **faces-review-YYYY-MM-DD.log** - Faces needing manual review
+7. **error-YYYY-MM-DD.log** - All errors from any source (consolidated)
+8. **performance-YYYY-MM-DD.log** - Performance metrics and timing data
+9. **audit-YYYY-MM-DD.log** - Security-sensitive events (future)
+
+#### Log Analysis Examples
+
+```bash
+# See all successfully processed images today
+grep "success" /media/stephen/Expansion/photos/logs/processing-summary-$(date +%Y-%m-%d).log
+
+# Find API requests that took longer than 1 second
+jq 'select(.duration > 1000)' /media/stephen/Expansion/photos/logs/api-$(date +%Y-%m-%d).log
+
+# Monitor face recognition events in real-time
+tail -f /media/stephen/Expansion/photos/logs/faces-$(date +%Y-%m-%d).log | jq
+
+# Check for any errors in the last hour
+jq 'select(.timestamp > (now - 3600))' /media/stephen/Expansion/photos/logs/error-$(date +%Y-%m-%d).log
+```
+
+#### Configuration Files
+
+- `.env.example` - Complete template with all available options  
+- `config/defaults.json` - **System defaults** (no hardcoded values in source code)
+- `config/settings.example.json` - JSON configuration template
+- `config/settings.json` - Optional custom JSON configuration (overrides .env)
+- `config/README.md` - Complete configuration documentation
+- Legacy variables still supported: `mysql_host`, `mysql_pass`, `media_source_dir`, etc.
 
 ### Configuration Examples
 ```bash
-# Adjust object detection sensitivity (0.0-1.0)
+# Object detection settings
 OBJECT_DETECTION_MIN_CONFIDENCE=0.85   # Higher = more accurate, fewer detections
-OBJECT_DETECTION_MIN_CONFIDENCE=0.65   # Lower = more detections, some false positives
+OBJECT_DETECTION_BATCH_SIZE=4          # Process more images in parallel
+OBJECT_DETECTION_IMAGE_WIDTH=640       # AI model input size
+OBJECT_DETECTION_IMAGE_HEIGHT=640
 
-# Image processing settings
+# Image processing settings  
 IMAGE_THUMBNAIL_SIZE=256               # Thumbnail size in pixels
-JPEG_QUALITY=85                       # JPEG compression quality (1-100)
+IMAGE_JPEG_QUALITY=85                 # JPEG compression quality (1-100)
+IMAGE_CACHE_TIMEOUT=86400             # Cache timeout in seconds
+
+# Storage paths (external drive support)
+MEDIA_PROCESSED_DIR=/external/photos/processed
+MEDIA_THUMBNAIL_DIR=/external/photos/thumbnails
+MEDIA_CACHE_DIR=/external/photos/cache
+MEDIA_LOGS_DIR=/external/photos/logs
 ```
 
 ## Future Development Roadmap
@@ -160,6 +254,22 @@ JPEG_QUALITY=85                       # JPEG compression quality (1-100)
 - **Smart Notifications**: Alert when interesting photos are processed
 - **Auto-Tagging**: Suggest tags based on detected content
 - **Memory Creation**: Automatically create "memories" from photos taken on the same day in previous years
+
+### 7. Data Storage Architecture Analysis
+**Critical Architecture Questions** requiring research and analysis:
+
+- **Metadata Storage Strategy**: What are the benefits/drawbacks of storing metadata as JSON files vs. purely in the database?
+  - JSON files: Easy debugging, portable, can survive DB crashes, natural backup with photos
+  - Database only: Better querying, indexing, relationships, atomic updates, consistency
+  - Hybrid approach: Best of both worlds but adds complexity
+  
+- **Thumbnail Generation Strategy**: Should thumbnails be pre-generated and stored, or generated on-demand with caching?
+  - Pre-generated: Faster response times, predictable storage usage, consistent quality
+  - On-demand + cache: Less storage usage, flexible sizing, cache invalidation complexity
+  - Performance implications for 10k+ photos, storage requirements, and cache hit rates
+
+- **Analysis**: Need to benchmark both approaches with realistic data volumes and access patterns
+- **Decision factors**: Storage costs, response times, system complexity, backup/restore procedures
 
 **Reminder**: Always make sure the server is running when you are finished
 
