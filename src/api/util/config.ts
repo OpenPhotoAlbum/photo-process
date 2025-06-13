@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 
 // Load environment variables once
-dotenv.config({ path: '/mnt/hdd/photo-process/.env' });
+dotenv.config({ path: require('path').join(__dirname, '../../../.env') });
 
 /**
  * Centralized configuration to eliminate duplicate dotenv.config() calls

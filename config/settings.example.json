@@ -1,0 +1,103 @@
+{
+  "_comment": "Photo Processing Service Configuration",
+  "_description": "Copy this file to settings.json and customize for your environment. JSON config takes precedence over environment variables.",
+  
+  "database": {
+    "host": "localhost",
+    "port": 3307,
+    "user": "photo",
+    "password": "your_password_here",
+    "database": "photo-process",
+    "rootPassword": "your_root_password_here"
+  },
+  
+  "storage": {
+    "sourceDir": "/mnt/sg1/uploads/stephen/iphone",
+    "processedDir": "/media/stephen/Expansion/photos/processed",
+    "thumbnailDir": "/media/stephen/Expansion/photos/thumbnails",
+    "cacheDir": "/media/stephen/Expansion/photos/cache",
+    "logsDir": "/media/stephen/Expansion/photos/logs"
+  },
+  
+  "processing": {
+    "objectDetection": {
+      "enabled": true,
+      "minConfidence": 0.75,
+      "batchSize": 2
+    },
+    "faceDetection": {
+      "enabled": true,
+      "threshold": 0.8
+    },
+    "screenshotDetection": {
+      "enabled": true,
+      "threshold": 60
+    }
+  },
+  
+  "compreface": {
+    "baseUrl": "http://localhost:8000",
+    "apiKey": "",
+    "detectApiKey": "",
+    "recognizeApiKey": "",
+    "timeout": 10000,
+    "maxConcurrency": 5
+  },
+  
+  "image": {
+    "thumbnailSize": 256,
+    "jpegQuality": 85,
+    "supportedFormats": [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".bmp"],
+    "cacheTimeout": 86400
+  },
+  
+  "server": {
+    "port": 9000,
+    "galleryPageSize": 50,
+    "searchLimit": 100,
+    "scanBatchSize": 2
+  },
+  
+  "features": {
+    "_comment": "Feature flags to enable/disable functionality",
+    "enableFaceRecognition": true,
+    "enableObjectDetection": true,
+    "enableScreenshotDetection": true,
+    "enableApiConfig": false
+  },
+  
+  "_examples": {
+    "_comment": "Configuration examples for different use cases",
+    "development": {
+      "processing": {
+        "objectDetection": {
+          "minConfidence": 0.5
+        }
+      },
+      "server": {
+        "galleryPageSize": 25
+      }
+    },
+    "production": {
+      "processing": {
+        "objectDetection": {
+          "minConfidence": 0.85,
+          "batchSize": 4
+        }
+      },
+      "compreface": {
+        "maxConcurrency": 10
+      },
+      "image": {
+        "jpegQuality": 90
+      }
+    },
+    "storage_optimized": {
+      "image": {
+        "thumbnailSize": 128,
+        "jpegQuality": 75,
+        "cacheTimeout": 43200
+      }
+    }
+  }
+}
