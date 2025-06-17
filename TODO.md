@@ -26,11 +26,18 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [x] Advanced plugins (Mermaid diagrams)
 - [x] Fix all broken links and ensure site builds successfully
 - [x] Add npm scripts for documentation management
-- [ ] **IN PROGRESS**: Restructure API documentation with hierarchical sidebar
-  - [ ] Break down monolithic API doc into organized sections
-  - [ ] Create dedicated pages for each API category
-  - [ ] Update sidebar configuration for better navigation
-  - [ ] Improve discoverability and reduce scrolling
+- [x] **COMPLETED**: Restructure API documentation with hierarchical sidebar
+  - [x] Break down monolithic API doc into organized sections
+    - [x] Introduction - API overview and quick start
+    - [x] Media & Static - File serving and thumbnails
+    - [x] Gallery - Photo browsing and scanning
+    - [x] Search - Object and advanced search capabilities
+    - [x] Persons - Person management and training
+    - [x] Faces - Face recognition and assignment
+  - [x] Create dedicated pages for each API category
+  - [x] Update sidebar configuration for better navigation
+  - [x] Improve discoverability and reduce scrolling
+  - [x] Add interactive features (tabs, code examples, diagrams)
 - **Status**: 🔄 IN PROGRESS - Enhancing API documentation structure
 - **Access**: `npm run docs:dev` - Site runs at http://localhost:3000/
 

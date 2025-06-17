@@ -66,6 +66,7 @@ const sidebars: SidebarsConfig = {
         'api/search',
         'api/persons',
         'api/faces',
+        'api/training',
       ],
     },
   ],
