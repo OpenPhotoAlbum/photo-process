@@ -4,7 +4,7 @@ This file tracks current development priorities and tasks for the Photo Manageme
 
 ## 🔥 High Priority
 
-### ✅ Documentation Website
+### 📚 Documentation Website Enhancement
 - [x] Generate documentation website using Docusaurus
 - [x] Set up basic structure and navigation
 - [x] Copy existing documentation into proper format
@@ -24,7 +24,15 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [x] Architecture diagrams with Mermaid
   - [x] Multi-level navigation with emojis
   - [x] Advanced plugins (Mermaid diagrams)
-- **Status**: Basic site complete, advanced features in progress - Running at http://localhost:3000/
+- [x] Fix all broken links and ensure site builds successfully
+- [x] Add npm scripts for documentation management
+- [ ] **IN PROGRESS**: Restructure API documentation with hierarchical sidebar
+  - [ ] Break down monolithic API doc into organized sections
+  - [ ] Create dedicated pages for each API category
+  - [ ] Update sidebar configuration for better navigation
+  - [ ] Improve discoverability and reduce scrolling
+- **Status**: 🔄 IN PROGRESS - Enhancing API documentation structure
+- **Access**: `npm run docs:dev` - Site runs at http://localhost:3000/
 
 ### 🔍 Training Management Endpoints
 - [ ] Investigate Training Management endpoints - at least one is broken

@@ -60,7 +60,12 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '📚 API Reference',
       items: [
-        'api/overview',
+        'api/introduction',
+        'api/media-static',
+        'api/gallery',
+        'api/search',
+        'api/persons',
+        'api/faces',
       ],
     },
   ],
