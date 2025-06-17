@@ -12,6 +12,7 @@ photo-process/
 ├── docker-compose.platform.yml # Main Docker orchestration
 ├── services/                   # Microservices
 │   ├── api/                   # TypeScript API service
+│   ├── mobile-app/            # React Native mobile app
 │   ├── processing/            # Background processing service (planned)
 │   └── web-app/               # React frontend (planned)
 ├── infrastructure/            # Infrastructure as code
@@ -40,6 +41,7 @@ curl http://localhost:8001  # CompreFace UI
 
 ### **Platform Status**
 - ✅ **Backend API** - Full TypeScript API with face recognition and object detection
+- ✅ **Mobile App** - React Native app with photo grid, thumbnails, and infinite scroll
 - ✅ **Database** - MySQL with complete schema (15+ migrations)
 - ✅ **AI Services** - CompreFace face recognition fully integrated
 - ✅ **Docker Setup** - Complete container orchestration

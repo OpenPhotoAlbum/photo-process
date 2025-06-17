@@ -52,6 +52,16 @@ const sidebars: SidebarsConfig = {
         'deployment/index',
       ],
     },
+    {
+      type: 'category',
+      label: '📱 Mobile App',
+      items: [
+        'mobile-app/overview',
+        'mobile-app/setup',
+        'mobile-app/development',
+        'mobile-app/features',
+      ],
+    },
   ],
 
   // API Reference sidebar

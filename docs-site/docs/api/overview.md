@@ -6,6 +6,17 @@
 
 This document provides comprehensive documentation for all API endpoints in the photo processing system. The API supports photo scanning, face recognition, person management, clustering, and training workflows.
 
+## Mobile App Integration
+
+The API is designed to work seamlessly with the React Native mobile app located in `services/mobile-app/`. Key endpoints for mobile integration include:
+
+- **Gallery API** (`/api/gallery`) - Photo browsing with pagination for mobile interfaces
+- **Media Serving** (`/media/*`) - Optimized photo delivery with thumbnail support
+- **Search API** (`/api/search/*`) - Mobile-friendly search functionality
+- **Person Management** (`/api/persons`) - Face recognition features for mobile
+
+For mobile-specific implementation details, see the [Mobile App Documentation](/docs/mobile-app/overview).
+
 ## Table of Contents
 
 - [Authentication](#authentication)

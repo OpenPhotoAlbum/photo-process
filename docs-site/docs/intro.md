@@ -26,6 +26,7 @@ Modern microservices platform architecture with Docker orchestration:
 photo-process/
 ├── services/                   # Microservices
 │   ├── api/                   # TypeScript API service
+│   ├── mobile-app/            # React Native mobile app
 │   ├── processing/            # Background processing service (planned)
 │   └── web-app/               # React frontend (planned)
 ├── infrastructure/            # Infrastructure as code
@@ -53,6 +54,7 @@ photo-process/
 - ✅ **Backend API** - Full TypeScript API with face recognition and object detection
 - ✅ **Database** - MySQL with complete schema (15+ migrations)
 - ✅ **AI Services** - CompreFace face recognition fully integrated
+- ✅ **Mobile App** - React Native app with Expo for iOS and Android
 - ✅ **Docker Setup** - Complete container orchestration
 - ✅ **Tools & Testing** - Comprehensive development toolkit
 - 🔄 **Frontend** - React app ready to be built in `services/web-app/`
@@ -60,6 +62,7 @@ photo-process/
 ## 🔗 **Next Steps**
 
 - [Configuration Guide](/docs/configuration) - Set up your environment
+- [Mobile App](/docs/mobile-app/overview) - Get photos on your iPhone
 - [API Reference](/docs/api/overview) - Explore the REST API
 - [Development Setup](/docs/development/setup) - Contributing to the platform
 - [Deployment Guide](/docs/deployment) - Production deployment

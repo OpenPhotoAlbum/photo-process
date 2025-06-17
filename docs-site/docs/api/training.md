@@ -355,13 +355,13 @@ graph LR
 
 ### Success Indicators
 - **High Success Rate** (>90%) - Good face quality and quantity
-- **Fast Training Time** (<5s) - Efficient processing
-- **Low Retry Rate** (<10%) - Stable system performance
+- **Fast Training Time** (less than 5s) - Efficient processing
+- **Low Retry Rate** (less than 10%) - Stable system performance
 
 ### Warning Signs
-- **Low Success Rate** (<70%) - Poor face quality or system issues
-- **Slow Training** (>30s) - Performance bottleneck
-- **High Failure Rate** (>20%) - System or data problems
+- **Low Success Rate** (less than 70%) - Poor face quality or system issues
+- **Slow Training** (more than 30s) - Performance bottleneck
+- **High Failure Rate** (more than 20%) - System or data problems
 
 ## Integration with Face Recognition
 

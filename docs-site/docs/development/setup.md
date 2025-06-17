@@ -194,6 +194,7 @@ photo-process/
 │   │   ├── util/           # Business logic
 │   │   ├── models/         # Database models
 │   │   └── tests/          # API tests
+│   ├── mobile-app/         # React Native mobile app
 │   ├── processing/         # Background processing
 │   └── web-app/           # React frontend
 ├── infrastructure/
@@ -254,6 +255,21 @@ photo-process/
     npm run test:single-file
     npm run test:full-processing
     npm run test:object-detection
+    ```
+  </TabItem>
+  <TabItem value="mobile" label="📱 Mobile App">
+    ```bash
+    # Mobile app development (requires Mac for iOS)
+    cd services/mobile-app
+    
+    # Sync code to Mac for development
+    ./sync-to-mac.sh
+    
+    # On Mac: Start Expo development server
+    npx expo start
+    
+    # Test mobile API integration
+    curl http://LINUX_IP:9000/api/gallery?limit=1
     ```
   </TabItem>
 </Tabs>
@@ -457,4 +473,4 @@ npm run build
 cd docs-site && npm run build
 ```
 
-Ready to start developing? Check out the [API Reference](/docs/api/overview) for detailed endpoint documentation.
+Ready to start developing? Check out the [API Reference](/docs/api/overview) for detailed endpoint documentation or the [Mobile App Development Guide](/docs/mobile-app/overview) for mobile development.

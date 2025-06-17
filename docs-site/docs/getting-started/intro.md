@@ -35,6 +35,7 @@ Photo Management Platform is a modern, self-hosted solution for managing your pe
 - **Microservices** - Clean separation of concerns
 - **TypeScript** - Type-safe development experience
 - **MySQL Database** - Robust data persistence with migrations
+- **Mobile-First** - React Native app for iOS with hybrid development workflow
 - **React Frontend** - Modern web interface (in development)
 
 ## 📋 Current Status
@@ -47,6 +48,7 @@ import TabItem from '@theme/TabItem';
     - **Backend API** - Full TypeScript API with face recognition and object detection
     - **Database** - MySQL with complete schema (15+ migrations)
     - **AI Services** - CompreFace face recognition fully integrated
+    - **Mobile App** - React Native app with Expo for iOS access to your photos
     - **Docker Setup** - Complete container orchestration
     - **Tools & Testing** - Comprehensive development toolkit
   </TabItem>
@@ -80,7 +82,7 @@ Make sure you have **Docker**, **Node.js 18+**, and **Git** installed before sta
 ## 🔗 What's Next?
 
 <div className="row">
-  <div className="col col--6">
+  <div className="col col--4">
     <div className="text--center">
       <h3>🛠️ Setup Your Environment</h3>
       <p>Get the platform running on your system</p>
@@ -89,11 +91,20 @@ Make sure you have **Docker**, **Node.js 18+**, and **Git** installed before sta
       </a>
     </div>
   </div>
-  <div className="col col--6">
+  <div className="col col--4">
+    <div className="text--center">
+      <h3>📱 Mobile App</h3>
+      <p>Access your photos on iPhone with React Native</p>
+      <a className="button button--secondary" href="/docs/mobile-app/overview">
+        Mobile App Guide
+      </a>
+    </div>
+  </div>
+  <div className="col col--4">
     <div className="text--center">
       <h3>📖 Learn the Platform</h3>
-      <p>Understand how to use photo management features</p>
-      <a className="button button--secondary" href="/docs/user-guide/photo-management">
+      <p>Understand photo management features</p>
+      <a className="button button--outline" href="/docs/user-guide/photo-management">
         User Guide
       </a>
     </div>
