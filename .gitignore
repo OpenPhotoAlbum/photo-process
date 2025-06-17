@@ -1,49 +1,94 @@
 build/
-# Ignore node_modules
-node_modules
-# Ignore logs
-logs
+# Dependencies
+node_modules/
+services/*/node_modules/
+
+# Build outputs
+build/
+services/*/build/
+dist/
+
+# Logs (structured by service)
+logs/
+services/*/logs/
+platform-logs/
 *.log
+*-debug*.log
+*-server*.log
+*-clean*.log
+*-fixed*.log
+*-final*.log
+*-new*.log
+*-test*.log
+*-working*.log
+*-credentials*.log
+*-dotenv*.log
 npm-debug.log*
-debug.log
+yarn-debug.log*
+yarn-error.log*
 server.log
-server-debug.log
-# Ignore coverage reports
-coverage
-# Ignore environment files
+
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
-# Temp Media
+.env.production.local
+
+# Media and processing outputs
 dest/
 processed/
-# Test output directories
-test-*/
-# Tools output directories
-tools/testing/test-*/
-# Temporary files
+shared/processed/
+shared/thumbnails/
 *.tmp
 *.temp
+
+# Test outputs
+test-*/
+tools/testing/test-*/
+platform-tools/testing/test-*/
+coverage/
+test-results/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
 # IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
-/tmp/photo-process-backup/
+*~
 
 # Runtime files
 *.pid
+pids/
+
+# Backup and migration files
+/tmp/photo-process-backup/
+migration-backup/
+legacy-backup/
 
 # Development test files
 test.png
 test.jpg
+test.jpeg
+test.gif
+test.webp
+sample-*.jpg
+sample-*.png
