@@ -5,12 +5,13 @@ This directory contains various utility tools for managing and maintaining the p
 ## Structure
 
 ```
-tools/
+platform-tools/
 ├── maintenance/     # Data maintenance and migration tools
 ├── cleanup/         # Data cleanup utilities
 ├── testing/         # Testing utilities
 ├── database/        # Database management scripts
-└── deployment/      # Deployment utilities
+├── deployment/      # Production deployment tools
+└── development/     # Development setup tools
 ```
 
 ## Maintenance Tools

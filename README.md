@@ -4,96 +4,120 @@ A self-hosted photo management platform with AI-powered face recognition, object
 
 ## 🏗️ **Platform Architecture**
 
-This project has been migrated to a modern microservices platform architecture:
+Modern microservices platform architecture with Docker orchestration:
 
 ```
 photo-process/
-├── services/            # 🚀 ACTIVE PLATFORM - Use this for all development
-│   ├── services/        # Microservices (API, web-app, processing)
-│   ├── infrastructure/  # Infrastructure as code (database, CompreFace, etc.)
-│   ├── shared/          # Shared types, utilities, test data
-│   ├── tools/           # Development and maintenance tools
-│   ├── tests/           # Comprehensive testing suite
-│   └── docs/            # Platform documentation
-└── README.md            # This file
+├── VISION.md                    # Product vision and goals
+├── docker-compose.platform.yml # Main Docker orchestration
+├── services/                   # Microservices
+│   ├── api/                   # TypeScript API service
+│   ├── processing/            # Background processing service (planned)
+│   └── web-app/               # React frontend (planned)
+├── infrastructure/            # Infrastructure as code
+│   ├── database/             # MySQL with migrations
+│   ├── compreface/           # Face recognition service
+│   └── search/               # Search service (planned)
+├── platform-docs/           # Complete documentation
+├── platform-tests/          # Testing infrastructure  
+├── platform-tools/          # Development and maintenance tools
+└── shared/                   # Shared resources and utilities
 ```
 
 ## 🚀 **Quick Start**
 
-### **Active Platform** (Use this!)
 ```bash
-cd photo-process/             # You're already in the active platform
-npm install                   # Install dependencies
-npm run dev:infrastructure    # Start database + CompreFace
-npm run dev:api              # Start API service (in another terminal)
+# 1. Start all services with Docker
+npm run dev
+
+# 2. Run database migrations
+npm run db:migrate
+
+# 3. Verify everything is working
+curl http://localhost:9000/api/persons
+curl http://localhost:8001  # CompreFace UI
 ```
 
 ### **Platform Status**
-- ✅ **Backend API** - Fully functional TypeScript API
-- ✅ **Database** - MySQL with complete migration system
-- ✅ **AI Services** - CompreFace face recognition working
+- ✅ **Backend API** - Full TypeScript API with face recognition and object detection
+- ✅ **Database** - MySQL with complete schema (15+ migrations)
+- ✅ **AI Services** - CompreFace face recognition fully integrated
+- ✅ **Docker Setup** - Complete container orchestration
 - ✅ **Tools & Testing** - Comprehensive development toolkit
 - 🔄 **Frontend** - React app ready to be built in `services/web-app/`
 
 ## 📚 **Documentation**
 
-All current documentation is in the platform:
-
-- **[Platform Overview](platform-readme.md)** - Complete platform guide
-- **[API Documentation](platform-docs/api/API.md)** - API endpoints
+- **[Product Vision](VISION.md)** - Core goals and user experience
+- **[API Documentation](platform-docs/api/API.md)** - Complete API reference
 - **[Configuration Guide](platform-docs/CONFIG.md)** - Setup and configuration
+- **[Database Schema](platform-docs/DATABASE_SCHEMA.md)** - Tables and relationships
 - **[Development Tools](platform-tools/README.md)** - Tools and utilities
 - **[Testing Guide](platform-tests/README.md)** - Testing infrastructure
 
-## 🔧 **Development**
+## 🔧 **Development Commands**
 
-### **Available Commands**
 ```bash
-# Infrastructure
-npm run dev                      # Start full platform
-npm run dev:infrastructure       # Database + CompreFace only
-npm run dev:api                  # API service only
+# Platform Management
+npm run dev                     # Start all services
+npm run dev:api                # Start API only  
+npm run logs:api               # View API logs
+npm run logs:processing        # View processing logs
 
 # Database
-npm run db:migrate              # Run migrations
-npm run db:status               # Check database health
+npm run db:migrate             # Run migrations
+npm run db:seed               # Seed database
+npm run db:create-migration   # Create new migration
+
+# Photo Processing  
+curl http://localhost:9000/scan?limit=10        # Start scan
+curl http://localhost:9000/scan/status          # Check status
 
 # Maintenance
-npm run maintenance:retroactive  # Add features to existing images
-npm run cleanup:menu            # Interactive cleanup
+npm run maintenance:retroactive  # Add features to existing photos
+npm run cleanup:menu            # Interactive cleanup options
 
 # Testing
-npm run test:jest               # Run test suite
-npm run test:unit               # Unit tests only
-npm run test:integration        # Integration tests only
+npm run test:unit              # Unit tests
+npm run test:integration       # Integration tests
+npm run test:coverage         # Coverage report
 ```
 
-## 🎯 **Vision**
+## 🎯 **Vision & Goals**
 
-Building a self-hosted photo management platform that provides:
+**See [VISION.md](VISION.md) for complete product vision**
 
-1. **Digital Independence** - Complete control over your photo data
-2. **Smart Organization** - AI-powered face and object recognition
-3. **Modern Architecture** - Scalable microservices platform
-4. **Developer Experience** - Comprehensive tooling and documentation
+Core principles:
+1. **Digital Independence** - Break free from Big Tech photo storage
+2. **Smart Organization** - AI-powered face and object recognition  
+3. **Reliable Self-Hosting** - Complete control over your photo data
+4. **Modern Architecture** - Scalable microservices with Docker
 
-## 📁 **Clean Architecture**
+## 🏁 **Current Features**
 
-The platform uses a modern microservices architecture with clear separation of concerns. All development should use the platform structure with proper Docker orchestration.
+### ✅ **Implemented**
+- **Photo Processing**: Batch processing with EXIF extraction, thumbnail generation
+- **Face Recognition**: CompreFace integration with person management and clustering
+- **Object Detection**: YOLO-based detection with confidence filtering
+- **Smart Albums**: Auto-generated albums based on content analysis
+- **Hash-Based Storage**: Deduplication and organized file structure
+- **Screenshot Detection**: Automatic identification and classification
+- **Astrophotography Detection**: Specialized detection for night sky photos
 
-## 🏁 **Next Steps**
+### 🔄 **In Progress**
+- **React Frontend**: Building user interface in `services/web-app/`
+- **Advanced Search**: Enhanced search with filters and faceting
+- **Performance Optimization**: Background processing improvements
 
-1. **Explore the Platform**: `npm run dev`
-2. **Build Frontend**: Create React app in `services/web-app/`
-3. **Read Documentation**: Check `platform-docs/` for detailed guides
-4. **Run Tests**: Verify everything with `npm run test:jest`
+## 📁 **Architecture Notes**
 
-## 📋 **Migration Status**
+- **Service-Based**: Each service runs in its own container with clear boundaries
+- **Docker First**: All development and deployment through Docker Compose
+- **Configuration**: Single source of truth via `.env` with Docker overrides
+- **Database**: MySQL with comprehensive migration system
+- **Logging**: Structured logging with category-based log files
+- **Testing**: Jest with comprehensive unit and integration tests
 
-- ✅ **Core Migration Complete** - All files and functionality migrated
-- ✅ **Platform Working** - API, database, and AI services functional
-- ✅ **Tools Migrated** - All maintenance and development tools
-- ✅ **Tests Migrated** - Complete testing infrastructure
-- ✅ **Documentation** - Comprehensive docs for new structure
+## 🚨 **Migration Complete**
 
-**The platform is ready for frontend development!** 🚀
+This project was successfully migrated from a legacy monolith to the current platform architecture. All functionality has been preserved and enhanced with proper service separation and Docker orchestration.

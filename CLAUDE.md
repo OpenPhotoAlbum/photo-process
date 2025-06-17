@@ -39,13 +39,13 @@ sleep 3 && curl -s http://localhost:9000/api/persons/unidentified?limit=1 > /dev
 - `curl http://localhost:9000/scan/status` - Check processing status
 
 ### Database Management
-- `npm run db:start` - Start MySQL database using Docker Compose
-- `npm run db:migrate` - Run Knex migrations
+- `npm run db:migrate` - Run Knex migrations  
 - `npm run db:seed` - Run database seeds
 - `npm run db:create-migration` - Create new Knex migration
 
 ### Testing
-- `npm run test:unit` - Run unit tests (all 93 tests passing)
+- `npm run test:unit` - Run unit tests
+- `npm run test:integration` - Run integration tests
 - `npm run test:coverage` - Generate test coverage report
 - `npm run test:watch` - Run tests in watch mode
 
@@ -256,5 +256,15 @@ See Thunder Client collection for complete API documentation.
 - **Wait for explicit requests**: Don't assume implicit requests for action - wait for clear instructions like "let's fix that" or "please update X"
 - **Direct communication**: Use clear, factual responses without excessive validation phrases or deference
 - **Collaborative problem-solving**: Work together to understand issues fully before implementing solutions
+
+## Documentation Maintenance
+
+**CRITICAL**: Always update README.md whenever we make changes to our platform
+- When adding new features, update the "Current Features" section
+- When changing architecture, update the structure diagram
+- When adding new commands, update the "Development Commands" section
+- When changing deployment process, update the "Quick Start" section
+
+The README.md is the first thing users see and must always reflect the current state of the platform.
 
 **Reminder**: Always make sure the server is running when you are finished

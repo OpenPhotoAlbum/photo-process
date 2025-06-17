@@ -1,23 +1,41 @@
-# thoughts.md
+# Development Notes
 
-## Future Ideas & Considerations
+This document contains development thoughts, architecture decisions, and technical notes for the photo management platform.
 
-### UI/Frontend Architecture
-- **Fresh React UI**: Create new React app with TypeScript, react-router, SCSS
-  - Start with minimal "hello world" home page
-  - Consider Next.js as an alternative framework
-  - Separate application from backend services
-  
-### Feature Ideas
-- **Astrophotography Detection**: Can we detect if a photo contains stars/night sky?
-- **Emotion-Based Search**: Endpoint to find all faces of a person showing specific emotions (smiling, sad, etc.)
-- **Lightbox Face Tagging**: Allow tagging faces in lightbox view with boxes drawn around known faces
-- **Enhanced Person Data**:
-  - Nicknames, full names
-  - Multiple locations/addresses
-  - Family tree relationships between persons
+## Current Architecture Status
 
-### API Standardization
+### ✅ Completed Migration
+- **Platform Structure**: Successfully migrated from legacy monolith to microservices
+- **Docker Orchestration**: Complete container setup with docker-compose.platform.yml
+- **Database**: 15+ migrations successfully applied, MySQL 8.0 running
+- **API Service**: Full TypeScript API with face recognition and object detection
+- **Configuration**: Single source of truth via .env with Docker overrides
+- **Documentation**: Comprehensive platform docs and Thunder Client collection
+
+### 🔄 Current Development Focus
+- **Frontend Development**: React app ready to be built in `services/web-app/`
+- **Performance Optimization**: Background processing improvements
+- **Advanced Search**: Enhanced search with filters and faceting
+
+## Technical Decisions
+
+### Service Architecture
+- **API Service**: TypeScript with Express.js, handles all business logic
+- **Database Service**: MySQL 8.0 with Knex.js migrations
+- **CompreFace Service**: External face recognition service via Docker
+- **Processing Service**: Planned background processing service
+
+### Configuration Strategy
+- **Priority Order**: Runtime API > JSON Config > Environment Variables > Defaults
+- **Environment Variables**: Primary configuration method via .env file
+- **Docker Overrides**: Minimal overrides for container-specific values only
+- **Validation**: Startup validation ensures all required configuration is present
+
+### Data Organization
+- **Hash-Based Storage**: All files organized by hash to prevent duplicates
+- **Database Storage**: All metadata in MySQL, no JSON files
+- **Structured Logging**: Category-based log files with daily rotation
+- **API-First**: Clean backend APIs with no frontend dependencies
 - Standardize response body schemas across similar endpoints
 - Include "total count" vs "returned count" for searches and lists
 - Consistent patterns for pagination, filtering, sorting
