@@ -13,9 +13,14 @@ try {
     process.exit(1);
 }
 
-const { db } = require('../../services/api/build/models/database');
-const { configManager } = require('../../services/api/build/util/config-manager');
+const knex = require('knex');
+const knexConfig = require('../../infrastructure/database/knexfile.platform');
 const fs = require('fs');
+
+// Use development environment by default
+const environment = process.env.NODE_ENV || 'development';
+const config = knexConfig[environment];
+const db = knex(config);
 
 async function main() {
     const args = process.argv.slice(2);
