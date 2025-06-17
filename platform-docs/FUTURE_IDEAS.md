@@ -33,7 +33,28 @@
 
 ### Technical Improvements
 - **Face Clustering Enhancement**: Ensure clustering uses CompreFace recognition to compare faces
-  - Include unidentified/unknown faces (but not "not a face" entries)
+  - Include unidentified/unknown faces (but not "not a face" entries")
+
+### Documentation Website (HIGH PRIORITY)
+- **Documentation Site Generator**: Create professional documentation website using modern static site generator
+  - **Recommended**: Docusaurus (React-based, most mature ecosystem)
+  - **Alternative**: VitePress (Vue-based, fastest performance)
+  - **Structure**: Auto-generate from existing markdown files
+  - **Features**: 
+    - API documentation with interactive examples
+    - Configuration guides with code examples
+    - Development setup tutorials
+    - Deployment guides
+    - Architecture diagrams
+    - Search functionality
+    - Dark/light mode
+  - **Hosting**: Deploy to GitHub Pages, Vercel, or Netlify (all free)
+  - **Benefits**: 
+    - Professional presentation
+    - Easy navigation and search
+    - Mobile-responsive
+    - SEO optimized
+    - Versioned documentation
 
 ## Project Reorganization Plan
 

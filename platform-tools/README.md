@@ -23,49 +23,49 @@ Add new processing features to existing images retroactively.
 
 ```bash
 # Check status
-node tools/maintenance/retroactive-process.js --status
+node platform-tools/maintenance/retroactive-process.js --status
 
 # Process object detection for 50 images
-node tools/maintenance/retroactive-process.js --feature=object_detection --limit=50
+node platform-tools/maintenance/retroactive-process.js --feature=object_detection --limit=50
 
 # Process all missing features
-node tools/maintenance/retroactive-process.js --feature=all --limit=25
+node platform-tools/maintenance/retroactive-process.js --feature=all --limit=25
 ```
 
 ### fix-dates.js
 Fix date issues in processed images.
 
 ```bash
-node tools/maintenance/fix-dates.js
+node platform-tools/maintenance/fix-dates.js
 ```
 
 ### update-objects.js
 Update object detection data for existing images.
 
 ```bash
-node tools/maintenance/update-objects.js --limit=100
+node platform-tools/maintenance/update-objects.js --limit=100
 ```
 
 ### import-faces.js
 Import face data from external sources.
 
 ```bash
-node tools/maintenance/import-faces.js --source=/path/to/faces
+node platform-tools/maintenance/import-faces.js --source=/path/to/faces
 ```
 
 ### migrate-features.js
 Check and migrate features to new format.
 
 ```bash
-node tools/maintenance/migrate-features.js --check
-node tools/maintenance/migrate-features.js --migrate
+node platform-tools/maintenance/migrate-features.js --check
+node platform-tools/maintenance/migrate-features.js --migrate
 ```
 
 ### check-missing.js
 Check for missing files or data.
 
 ```bash
-node tools/maintenance/check-missing.js
+node platform-tools/maintenance/check-missing.js
 ```
 
 ## Cleanup Tools
@@ -76,35 +76,35 @@ Located in `cleanup/`, these tools help clean up data:
 Interactive cleanup menu for various cleanup operations.
 
 ```bash
-node tools/cleanup/cleanup-menu.js
+node platform-tools/cleanup/cleanup-menu.js
 ```
 
 ### cleanup-compreface.js
 Clean up CompreFace data and unknown faces.
 
 ```bash
-node tools/cleanup/cleanup-compreface.js
+node platform-tools/cleanup/cleanup-compreface.js
 ```
 
 ### cleanup-low-confidence.js
 Remove low confidence face detections.
 
 ```bash
-node tools/cleanup/cleanup-low-confidence.js --threshold=0.5
+node platform-tools/cleanup/cleanup-low-confidence.js --threshold=0.5
 ```
 
 ### cleanup-local-data.js
 Clean up local processing data and caches.
 
 ```bash
-node tools/cleanup/cleanup-local-data.js
+node platform-tools/cleanup/cleanup-local-data.js
 ```
 
 ### cleanup-fresh-start.js
 Complete system reset (WARNING: Deletes all data!)
 
 ```bash
-node tools/cleanup/cleanup-fresh-start.js --confirm
+node platform-tools/cleanup/cleanup-fresh-start.js --confirm
 ```
 
 ## Testing Tools
@@ -115,21 +115,21 @@ Located in `testing/`, these tools help test the system:
 Test complete processing pipeline on sample images.
 
 ```bash
-node tools/testing/test-full-processing.js
+node platform-tools/testing/test-full-processing.js
 ```
 
 ### test-object-detection.js
 Test object detection functionality.
 
 ```bash
-node tools/testing/test-object-detection.js --image=/path/to/test.jpg
+node platform-tools/testing/test-object-detection.js --image=/path/to/test.jpg
 ```
 
 ### test-single-file.js
 Test processing of a single file.
 
 ```bash
-node tools/testing/test-single-file.js --file=/path/to/image.jpg
+node platform-tools/testing/test-single-file.js --file=/path/to/image.jpg
 ```
 
 ## Database Tools

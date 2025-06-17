@@ -36,8 +36,8 @@ Additional documentation can be found in:
 
 - **[Platform README](../README.md)** - Main platform overview
 - **[API Service README](../services/api/README.md)** - API service specific documentation
-- **[Tools README](../tools/README.md)** - Development and maintenance tools
-- **[Tests README](../tests/README.md)** - Testing suite documentation
+- **[Platform Tools README](../platform-tools/README.md)** - Development and maintenance tools
+- **[Platform Tests README](../platform-tests/README.md)** - Testing suite documentation
 
 ## Getting Started
 
