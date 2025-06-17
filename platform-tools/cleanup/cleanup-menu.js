@@ -2,6 +2,7 @@
 
 const readline = require('readline');
 const { spawn } = require('child_process');
+const path = require('path');
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -29,31 +30,31 @@ rl.question('Enter your choice (1-6): ', (answer) => {
         case '1':
             console.log('🚀 Running full cleanup...\n');
             command = 'node';
-            args = ['cleanup-fresh-start.js'];
+            args = [path.join(__dirname, 'cleanup-fresh-start.js')];
             break;
             
         case '2':
             console.log('🚀 Running local data cleanup...\n');
             command = 'node';
-            args = ['cleanup-local-data.js'];
+            args = [path.join(__dirname, 'cleanup-local-data.js')];
             break;
             
         case '3':
             console.log('🚀 Running CompreFace cleanup...\n');
             command = 'node';
-            args = ['cleanup-compreface.js'];
+            args = [path.join(__dirname, 'cleanup-compreface.js')];
             break;
             
         case '4':
             console.log('🚀 Running database cleanup only...\n');
             command = 'node';
-            args = ['cleanup-fresh-start.js', '--keep-compreface', '--keep-processed'];
+            args = [path.join(__dirname, 'cleanup-fresh-start.js'), '--keep-compreface', '--keep-processed'];
             break;
             
         case '5':
             console.log('🚀 Running processed files cleanup only...\n');
             command = 'node';
-            args = ['cleanup-fresh-start.js', '--keep-compreface', '--keep-db'];
+            args = [path.join(__dirname, 'cleanup-fresh-start.js'), '--keep-compreface', '--keep-db'];
             break;
             
         case '6':
