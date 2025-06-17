@@ -1,0 +1,90 @@
+version: '3.8'
+
+# CompreFace service for the photo management platform
+# This integrates with the main platform docker-compose.yml
+
+services:
+  compreface-postgres:
+    image: postgres:13
+    container_name: compreface-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=facerecognition
+    volumes:
+      - compreface_postgres_data:/var/lib/postgresql/data
+    networks:
+      - photo-platform
+
+  compreface-admin:
+    image: exadel/compreface-admin:1.0.0
+    container_name: compreface-admin
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/facerecognition
+      - SPRING_PROFILES_ACTIVE=dev
+      - ENABLE_EMAIL_SERVER=false
+      - MAX_FILE_SIZE=5MB
+      - MAX_REQUEST_SIZE=5MB
+    depends_on:
+      - compreface-postgres
+      - compreface-api
+    networks:
+      - photo-platform
+
+  compreface-api:
+    image: exadel/compreface-api:1.0.0
+    container_name: compreface-api
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/facerecognition
+      - SPRING_PROFILES_ACTIVE=dev
+      - SAVE_IMAGES_TO_DB=true
+      - MAX_FILE_SIZE=5MB
+      - MAX_REQUEST_SIZE=5MB
+    depends_on:
+      - compreface-postgres
+    networks:
+      - photo-platform
+
+  compreface-core:
+    image: exadel/compreface-core:1.0.0
+    container_name: compreface-core
+    restart: unless-stopped
+    environment:
+      - ML_PORT=3000
+      - UWSGI_PROCESSES=2
+      - UWSGI_THREADS=1
+    healthcheck:
+      test: curl --fail http://localhost:3000/healthcheck || exit 1
+      interval: 30s
+      retries: 3
+      timeout: 10s
+    networks:
+      - photo-platform
+
+  compreface-ui:
+    image: exadel/compreface-fe:1.0.0
+    container_name: compreface-ui
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      - CLIENT_MAX_BODY_SIZE=5MB
+    depends_on:
+      - compreface-api
+      - compreface-admin
+    networks:
+      - photo-platform
+
+volumes:
+  compreface_postgres_data:
+
+networks:
+  photo-platform:
+    external: true

@@ -1,0 +1,72 @@
+{
+    "client": "Thunder Client",
+    "environmentName": "Photo Platform - Production",
+    "dateExported": "2025-06-16T06:45:00.000Z",
+    "version": "1.2",
+    "variables": [
+        {
+            "name": "baseUrl",
+            "value": "https://photos.yourdomain.com"
+        },
+        {
+            "name": "apiUrl",
+            "value": "https://photos.yourdomain.com/api"
+        },
+        {
+            "name": "mediaUrl",
+            "value": "https://photos.yourdomain.com/media"
+        },
+        {
+            "name": "processedUrl",
+            "value": "https://photos.yourdomain.com/processed"
+        },
+        {
+            "name": "apiKey",
+            "value": "YOUR_API_KEY_HERE"
+        },
+        {
+            "name": "personId",
+            "value": "1"
+        },
+        {
+            "name": "faceId",
+            "value": "1"
+        },
+        {
+            "name": "imageId",
+            "value": "1"
+        },
+        {
+            "name": "jobId",
+            "value": ""
+        },
+        {
+            "name": "clusterId",
+            "value": "1"
+        },
+        {
+            "name": "testPersonName",
+            "value": "Production Test Person"
+        },
+        {
+            "name": "testObjectSearch",
+            "value": "cat,dog,person"
+        },
+        {
+            "name": "defaultLimit",
+            "value": "20"
+        },
+        {
+            "name": "highConfidence",
+            "value": "0.90"
+        },
+        {
+            "name": "mediumConfidence",
+            "value": "0.70"
+        },
+        {
+            "name": "lowConfidence",
+            "value": "0.50"
+        }
+    ]
+}

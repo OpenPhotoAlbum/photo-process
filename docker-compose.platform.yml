@@ -1,0 +1,178 @@
+services:
+  # Backend API Service
+  api:
+    build: ./services/api
+    restart: unless-stopped
+    container_name: photo-api
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env
+    environment:
+      # Only Docker-specific overrides (different from .env values)
+      - NODE_ENV=development
+      - MYSQL_HOST=database              # Container name vs localhost in .env
+      - MYSQL_PORT=3306                  # Internal port vs external 3307
+      - COMPREFACE_BASE_URL=http://compreface-ui:80  # Internal URL vs external in .env
+    depends_on:
+      - database
+      - compreface-api
+    volumes:
+      - /mnt/hdd/photo-process:/mnt/hdd/photo-process
+      - /mnt/sg1/uploads:/mnt/sg1/uploads
+      - ./services/api:/app
+      - /app/node_modules
+      - ./shared:/app/shared
+      - ./logs:/app/logs
+    networks:
+      - photo-platform
+
+  # Web App Service  
+  # web-app:
+  #   build: ./services/web-app
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=development
+  #     - REACT_APP_API_URL=http://localhost:9000
+  #   depends_on:
+  #     - api
+  #   volumes:
+  #     - ./services/web-app:/app
+  #     - /app/node_modules
+  #   networks:
+  #     - photo-platform
+
+  # Infrastructure Services
+  database:
+    image: mysql:8.0
+    container_name: photo-database
+    restart: unless-stopped
+    ports:
+      - "3307:3306"  # Use 3307 to match API configuration
+    environment:
+      - MYSQL_ROOT_PASSWORD=Dalekini21
+      - MYSQL_DATABASE=photo-process
+      - MYSQL_USER=photo
+      - MYSQL_PASSWORD=Dalekini21
+      - MYSQL_AUTH_PLUGIN=caching_sha2_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=1001
+      --innodb-buffer-pool-size=512M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      timeout: 10s
+      retries: 10
+      interval: 30s
+    networks:
+      - photo-platform
+
+  # CompreFace Services
+  compreface-postgres:
+    image: postgres:13
+    container_name: compreface-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=facerecognition
+    volumes:
+      - compreface_postgres_data:/var/lib/postgresql/data
+    networks:
+      - photo-platform
+
+  compreface-admin:
+    image: exadel/compreface-admin:1.0.0
+    container_name: compreface-admin
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/facerecognition
+      - SPRING_PROFILES_ACTIVE=dev
+      - ENABLE_EMAIL_SERVER=false
+      - MAX_FILE_SIZE=5MB
+      - MAX_REQUEST_SIZE=5MB
+    depends_on:
+      - compreface-postgres
+      - compreface-api
+    networks:
+      - photo-platform
+
+  compreface-api:
+    image: exadel/compreface-api:1.0.0
+    container_name: compreface-api
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres:5432/facerecognition
+      - SPRING_PROFILES_ACTIVE=dev
+      - SAVE_IMAGES_TO_DB=true
+      - MAX_FILE_SIZE=5MB
+      - MAX_REQUEST_SIZE=5MB
+    depends_on:
+      - compreface-postgres
+    networks:
+      - photo-platform
+
+  compreface-core:
+    image: exadel/compreface-core:1.0.0
+    container_name: compreface-core
+    restart: unless-stopped
+    environment:
+      - ML_PORT=3000
+      - UWSGI_PROCESSES=2
+      - UWSGI_THREADS=1
+    healthcheck:
+      test: curl --fail http://localhost:3000/healthcheck || exit 1
+      interval: 30s
+      retries: 3
+      timeout: 10s
+    networks:
+      - photo-platform
+
+  compreface-ui:
+    image: exadel/compreface-fe:1.0.0
+    container_name: compreface-ui
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    environment:
+      - CLIENT_MAX_BODY_SIZE=5MB
+    depends_on:
+      - compreface-api
+      - compreface-admin
+    networks:
+      - photo-platform
+
+  # Additional Services (placeholder)
+  # search:
+  #   image: elasticsearch:8.0.0
+  #   ports:
+  #     - "9200:9200"
+  #   environment:
+  #     - discovery.type=single-node
+  #   networks:
+  #     - photo-platform
+
+  # cache:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - photo-platform
+
+volumes:
+  mysql_data:
+  compreface_postgres_data:
+
+networks:
+  photo-platform:
+    driver: bridge

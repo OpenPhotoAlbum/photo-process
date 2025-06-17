@@ -1,0 +1,68 @@
+{
+    "client": "Thunder Client",
+    "environmentName": "Photo Platform - Development",
+    "dateExported": "2025-06-16T06:45:00.000Z",
+    "version": "1.2",
+    "variables": [
+        {
+            "name": "baseUrl",
+            "value": "http://localhost:9000"
+        },
+        {
+            "name": "apiUrl",
+            "value": "http://localhost:9000/api"
+        },
+        {
+            "name": "mediaUrl",
+            "value": "http://localhost:9000/media"
+        },
+        {
+            "name": "processedUrl",
+            "value": "http://localhost:9000/processed"
+        },
+        {
+            "name": "personId",
+            "value": "1"
+        },
+        {
+            "name": "faceId",
+            "value": "1"
+        },
+        {
+            "name": "imageId",
+            "value": "1"
+        },
+        {
+            "name": "jobId",
+            "value": ""
+        },
+        {
+            "name": "clusterId",
+            "value": "1"
+        },
+        {
+            "name": "testPersonName",
+            "value": "Test Person"
+        },
+        {
+            "name": "testObjectSearch",
+            "value": "cat,dog,person"
+        },
+        {
+            "name": "defaultLimit",
+            "value": "10"
+        },
+        {
+            "name": "highConfidence",
+            "value": "0.95"
+        },
+        {
+            "name": "mediumConfidence",
+            "value": "0.75"
+        },
+        {
+            "name": "lowConfidence",
+            "value": "0.5"
+        }
+    ]
+}

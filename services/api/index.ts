@@ -1,0 +1,190 @@
+require('dotenv').config();
+import express from 'express';
+import path from 'path';
+import { Logger } from './logger';
+import * as routes from './routes';
+// import * as Persons from './routes/persons';
+import { searchByObjects, getObjectStats, advancedSearch } from './routes/search';
+import { ImageServer } from './util/image-server';
+import { errorHandler, notFoundHandler } from './middleware/error-handler';
+import { requestLogger, errorLogger } from './middleware/request-logger';
+import * as Junk from './routes/junk';
+import * as Jobs from './routes/jobs';
+import * as Process from './routes/process';
+import { StartupValidator } from './util/startup-validator';
+import { configManager } from './util/config-manager';
+
+const logger = Logger.getInstance();
+
+const main = async () => {
+    try {
+        // Temporarily disable startup validation during refactoring
+        // const validator = new StartupValidator();
+        // const validationReport = await validator.validateStartup();
+        // StartupValidator.printReport(validationReport);
+        
+        logger.info('Starting API...');
+        
+        const app = express()
+        const port = configManager.getServer().port
+        
+        logger.info(`Configuring server on port ${port}...`);
+
+    // Request logging middleware (before all routes)
+    logger.info('Adding request logger middleware...');
+    app.use(requestLogger);
+
+    // Root endpoint for API status
+    logger.info('Adding root endpoint...');
+    app.get('/', routes.Root)
+    
+    // Health check endpoint for Docker
+    app.get('/api/health', routes.Health)
+
+    // Serve source images with thumbnail support through ImageServer
+    app.use('/media', routes.Media);
+
+    app.get('/scan/status', routes.Scan.ScanStatusResolver);
+    app.get('/scan', routes.Scan.ScanStartResolver);
+
+    // Gallery API routes (database-based)
+    app.get('/api/gallery', routes.Gallery.GalleryListResolver);
+    app.get('/api/gallery/:id/faces', routes.Gallery.GalleryRoutes.getImageFaces as any);
+    
+    // Search API routes
+    app.get('/api/search/objects', searchByObjects as any);
+    app.get('/api/search/advanced', advancedSearch as any);
+    app.get('/api/objects/stats', getObjectStats as any);
+    
+    // Person management API routes
+    app.use(express.json()); // Parse JSON bodies
+    app.get('/api/persons', routes.Persons.getAllPersons as any);
+    app.get('/api/persons/:id', routes.Persons.getPersonById as any);
+    app.post('/api/persons', routes.Persons.createPerson as any);
+    app.put('/api/persons/:id', routes.Persons.updatePerson as any);
+    app.delete('/api/persons/:id', routes.Persons.deletePerson as any);
+    
+    // Face recognition API routes
+    app.post('/api/faces/assign', routes.Persons.assignFaceToPerson as any);
+    app.post('/api/faces/batch-assign', routes.Persons.batchAssignFacesToPerson as any);
+    app.delete('/api/faces/:faceId/person', routes.Persons.removeFaceFromPerson as any);
+    app.post('/api/faces/:faceId/mark-invalid', routes.Persons.markFaceAsInvalid as any);
+    app.post('/api/faces/:faceId/mark-unknown', routes.Persons.markFaceAsUnknown as any);
+    app.get('/api/faces/unidentified', routes.Persons.getUnidentifiedFaces as any);
+    app.get('/api/faces/filter-options', routes.Persons.getFaceFilterOptions as any);
+    app.post('/api/faces/auto-recognize', routes.Persons.batchAutoRecognize as any);
+    app.post('/api/faces/cleanup-orphaned', routes.Persons.cleanupOrphanedFaces as any);
+    app.post('/api/images/:imageId/recognize', routes.Persons.recognizeFacesInImage as any);
+    
+    // Enhanced face recognition routes
+    app.get('/api/persons/:id/training-history', routes.Persons.getPersonTrainingHistory as any);
+    app.post('/api/persons/:id/train', routes.Persons.startPersonTraining as any);
+    app.get('/api/faces/needs-review', routes.Persons.getFacesNeedingReview as any);
+    app.post('/api/faces/:faceId/review', routes.Persons.reviewFaceAssignment as any);
+    app.get('/api/faces/:faceId/similar', routes.Persons.getSimilarFaces as any);
+    
+    // Face clustering API routes
+    app.post('/api/clustering/start', routes.Persons.startFaceClustering as any);
+    app.get('/api/clustering/stats', routes.Persons.getClusteringStats as any);
+    app.get('/api/clusters', routes.Persons.getFaceClusters as any);
+    app.get('/api/clusters/:clusterId/faces', routes.Persons.getClusterFaces as any);
+    app.post('/api/clusters/:clusterId/assign', routes.Persons.assignClusterToPerson as any);
+    app.post('/api/clustering/rebuild', routes.Persons.rebuildClusters as any);
+    
+    // Enhanced face assignment API routes
+    app.post('/api/faces/bulk-assign', routes.Persons.bulkAssignFaces as any);
+    app.post('/api/faces/suggest-persons', routes.Persons.suggestPersonsForFaces as any);
+    app.put('/api/faces/:faceId/reassign', routes.Persons.reassignFace as any);
+    app.get('/api/assignment/workflow', routes.Persons.getAssignmentWorkflow as any);
+    
+    // CompreFace training management API routes
+    app.post('/api/persons/:id/queue-training', routes.Persons.queuePersonTraining as any);
+    app.post('/api/training/process-queue', routes.Persons.processTrainingQueue as any);
+    app.post('/api/training/auto-train', routes.Persons.autoTrainEligiblePeople as any);
+    app.get('/api/training/queue', routes.Persons.getTrainingQueue as any);
+    app.get('/api/training/stats', routes.Persons.getTrainingStats as any);
+    app.delete('/api/training/jobs/:jobId', routes.Persons.cancelTrainingJob as any);
+    app.post('/api/training/jobs/:jobId/retry', routes.Persons.retryTrainingJob as any);
+    app.post('/api/training/cleanup', routes.Persons.cleanupTrainingHistory as any);
+    
+    app.get('/api/system/consistency', routes.Persons.checkConsistency as any);
+    
+    // Image processing API routes
+    app.post('/api/process/image', Process.processImage as any);
+    app.get('/api/process/:id/status', Process.getProcessingStatus as any);
+    
+    // System configuration API route
+    app.get('/api/config', (req, res) => {
+        res.json({
+            system: {
+                version: '1.0.0',
+                mode: 'api-only'
+            },
+            storage: {
+                sourceDir: configManager.getStorage().sourceDir,
+                processedDir: configManager.getStorage().processedDir
+            },
+            server: {
+                port: configManager.getServer().port
+            }
+        });
+    });
+    
+    // Junk/Screenshot detection API routes
+    app.get('/api/junk/candidates', Junk.getScreenshotCandidates as any);
+    app.put('/api/junk/:id/status', Junk.updateJunkStatus as any);
+    app.post('/api/junk/batch-update', Junk.batchUpdateJunkStatus as any);
+    app.get('/api/junk/stats', Junk.getJunkStats as any);
+    app.post('/api/junk/detect', Junk.runScreenshotDetection as any);
+    
+    // Background job API routes
+    app.post('/api/jobs/scan', Jobs.startScanJob as any);
+    app.post('/api/jobs/face-recognition', Jobs.startFaceRecognitionJob as any);
+    app.post('/api/jobs/thumbnail', Jobs.startThumbnailJob as any);
+    app.get('/api/jobs/:jobId', Jobs.getJobStatus as any);
+    app.get('/api/jobs', Jobs.getAllJobs as any);
+    app.delete('/api/jobs/:jobId', Jobs.cancelJob as any);
+    app.get('/api/jobs-stats', Jobs.getQueueStats as any);
+    app.post('/api/jobs/cleanup', Jobs.cleanupJobs as any);
+    
+    // Smart Albums API routes - temporarily disabled for debugging
+    // app.get('/api/albums', routes.SmartAlbums.listAlbums as any);
+    // app.post('/api/albums', routes.SmartAlbums.createAlbum as any);
+    // app.post('/api/albums/initialize', routes.SmartAlbums.initializeDefaults as any);
+    // app.post('/api/albums/process', routes.SmartAlbums.processImages as any);
+    // app.get('/api/albums/:identifier', routes.SmartAlbums.getAlbum as any);
+    // app.put('/api/albums/:identifier', routes.SmartAlbums.updateAlbum as any);
+    // app.delete('/api/albums/:identifier', routes.SmartAlbums.deleteAlbum as any);
+    // app.get('/api/albums/:identifier/images', routes.SmartAlbums.getAlbumImages as any);
+    // app.get('/api/albums/:identifier/stats', routes.SmartAlbums.getAlbumStats as any);
+    
+    // Serve processed images statically (will add thumbnail support later)
+    const processedDir = configManager.getStorage().processedDir;
+    logger.info(`Setting up static file serving for processed images from: ${processedDir}`);
+    if (processedDir) {
+        app.use('/processed', express.static(processedDir));
+    }
+    
+    // Metadata now stored in database only - no file serving needed
+
+    // Error handling middleware (must be last)
+    app.use(notFoundHandler);
+    app.use(errorLogger);  // Log errors before handling
+    app.use(errorHandler);
+
+    app.listen(port, () => logger.info(`Server started`, { port, environment: process.env.NODE_ENV || 'development' }))
+    } catch (error) {
+        logger.error('Error in main:', error);
+        throw error;
+    }
+}
+
+// Call main to start the server
+main().catch(error => {
+    console.error('FULL ERROR:', error);
+    logger.error('Failed to start server:', error?.message || error);
+    logger.error('Stack trace:', error?.stack);
+    process.exit(1);
+});
+
+export default main;

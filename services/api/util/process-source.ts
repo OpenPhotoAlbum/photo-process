@@ -1,0 +1,436 @@
+import path from 'node:path';
+import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+
+import { dominantColorFromImage } from './image';
+import { exifFromImage } from './exif';
+import { extractFaces } from './compreface';
+import { detectObjects, filterByConfidence } from './object-detection';
+import { ScreenshotDetector } from './screenshot-detector';
+import { detectAstrophotography } from './astrophotography-detector';
+import { Logger } from '../logger';
+import { configManager } from './config-manager';
+import { HashManager, HashFileInfo } from './hash-manager';
+import { ImageRepository, MetadataRepository, ObjectRepository, FaceRepository } from '../models/database';
+import { SmartAlbumEngine } from './smart-album-engine';
+
+const logger = Logger.getInstance();
+
+// Legacy functions removed - metadata now stored in database only
+
+/**
+ * Extract faces using hash-based naming
+ */
+export const extractFacesHashed = async (imagepath: string, fileInfo: HashFileInfo): Promise<any> => {
+    const processedDir = configManager.getStorage().processedDir;
+    const facesDir = path.join(processedDir, 'faces');
+
+    // Ensure faces directory exists
+    await fsPromises.mkdir(facesDir, { recursive: true });
+
+    // Extract faces with hash-based naming
+    const faces = await extractFaces(imagepath, facesDir);
+
+    // Update face paths to use hash-based naming
+    const hashedFaces: any = {};
+    for (const [faceIndex, faceData] of Object.entries(faces)) {
+        if (faceData && typeof faceData === 'object' && 'face_image_path' in faceData) {
+            const index = parseInt(faceIndex);
+            const hashedFaceFilename = HashManager.generateFaceFilename(fileInfo.hashedFilename, index);
+            const originalFacePath = (faceData as any).face_image_path;
+            const hashedFacePath = path.join(facesDir, hashedFaceFilename);
+
+            // Copy face image to hashed name
+            if (fs.existsSync(originalFacePath)) {
+                await fsPromises.copyFile(originalFacePath, hashedFacePath);
+                // Clean up original
+                await fsPromises.unlink(originalFacePath);
+            }
+
+            hashedFaces[faceIndex] = {
+                ...faceData,
+                face_image_path: hashedFaceFilename, // Store relative path only
+                relative_face_path: hashedFaceFilename
+            };
+        }
+    }
+
+    return hashedFaces;
+};
+
+/**
+ * Main image processing function with hash-based file organization
+ * Data is stored directly in database (no JSON metadata files)
+ */
+export const generateImageDataJsonHashed = async (imagepath: string, dateTaken?: Date): Promise<{
+    fileInfo: HashFileInfo;
+    processingResults: any;
+}> => {
+    const processingStart = Date.now();
+    const correlationId = logger.startOperation(`process-image-hashed-${path.basename(imagepath)}`);
+
+    // Check if file already exists by hash
+    const fileInfo = await HashManager.generateFileInfo(imagepath, dateTaken);
+    const existingImage = await HashManager.findDuplicateByHash(fileInfo.hash);
+
+    if (existingImage) {
+        logger.logImageProcessed({
+            imagePath: imagepath,
+            processingTime: 0,
+            operations: {
+                exif: { success: true, duration: 0 },
+                thumbnail: { success: true, duration: 0 },
+                faceDetection: { success: true, faces: 0, duration: 0 },
+                objectDetection: { success: true, objects: 0, duration: 0 },
+                astrophotography: { success: true, isAstro: false, confidence: 0, duration: 0 }
+            },
+            output: { metadataPath: '', thumbnailPath: '', faceCount: 0 },
+            duplicate: true,
+            existingId: existingImage.id
+        });
+
+        correlationId.end({ processingTime: 0, duplicate: true });
+        throw new Error(`Duplicate file detected. Hash: ${fileInfo.hash}, existing ID: ${existingImage.id}`);
+    }
+
+    // Copy file to organized structure
+    await HashManager.copyToOrganized(imagepath, fileInfo);
+
+    // Track individual operation timings
+    const timings = {
+        exif: { start: Date.now(), end: 0 },
+        color: { start: Date.now(), end: 0 },
+        faces: { start: Date.now(), end: 0 },
+        objects: { start: Date.now(), end: 0 },
+        astro: { start: Date.now(), end: 0 }
+    };
+
+    const [exif, dominantColor, faces, allObjects, astroResult] = await Promise.all([
+        // Extract EXIF data
+        exifFromImage(fileInfo.fullPath).then(result => {
+            timings.exif.end = Date.now();
+            return result;
+        }).catch(error => {
+            timings.exif.end = Date.now();
+            logger.error(`Failed to extract EXIF data from ${fileInfo.fullPath}:`, error);
+            throw new Error(`Failed to extract EXIF data: ${error.message}`);
+        }
+        ),
+        // Extract dominant color
+        dominantColorFromImage(fileInfo.fullPath).then(result => {
+            timings.color.end = Date.now();
+            return result;
+        }).catch(error => {
+            timings.color.end = Date.now();
+            logger.error(`Failed to extract dominant color from ${fileInfo.fullPath}:`, error);
+            return '#ffffff'; // Default to white if extraction fails
+        }
+        ),
+        // Extract faces with hash-based naming
+        extractFacesHashed(fileInfo.fullPath, fileInfo).then(result => {
+            timings.faces.end = Date.now();
+            return result;
+        }).catch(error => {
+            timings.faces.end = Date.now();
+            logger.error(`Failed to extract faces from ${fileInfo.fullPath}:`, error);
+            return {};
+        }
+        ),
+        // Object detection and astrophotography detection
+        detectObjects(fileInfo.fullPath).then(result => {
+            timings.objects.end = Date.now();
+            return result;
+        }).catch(error => {
+            timings.objects.end = Date.now();
+            logger.error(`Failed to detect objects in ${fileInfo.fullPath}:`, error);
+            return [];
+        }
+        ),
+        // Astrophotography detection
+        // Note: This is an optional step, so we handle it separately
+        detectAstrophotography(fileInfo.fullPath).then(result => {
+            timings.astro.end = Date.now();
+            return result;
+        }).catch(error => {
+            timings.astro.end = Date.now();
+            logger.error(`Failed to detect astrophotography in ${fileInfo.fullPath}:`, error);
+            return { isAstro: false, confidence: 0, classification: 'unknown', details: {} };
+        }
+        )
+    ]);
+
+    console.log('\n'); console.log({ dominantColor, faces, allObjects, astroResult }); console.log('\n');
+
+    // Filter objects by confidence threshold (0.75)
+    const objects = filterByConfidence(allObjects);
+
+    // Perform screenshot detection
+    const imageWidth = exif.ImageWidth || exif.ExifImageWidth;
+    const imageHeight = exif.ImageHeight || exif.ExifImageHeight;
+    const mimeType = getMimeTypeFromPath(imagepath);
+    const filename = path.basename(imagepath);
+
+    // Convert objects to database format for screenshot detection
+    const dbObjects = objects.map(obj => ({
+        image_id: 0, // Placeholder, not used in detection
+        class: obj.class,
+        confidence: obj.confidence,
+        x: obj.bbox.x,
+        y: obj.bbox.y,
+        width: obj.bbox.width,
+        height: obj.bbox.height
+    }));
+
+    const screenshotDetection = ScreenshotDetector.detectScreenshot(
+        filename,
+        {
+            camera_make: exif.Make,
+            camera_model: exif.Model,
+            software: exif.Software,
+            focal_length: parseNumeric(exif.FocalLength),
+            aperture: exif.FNumber?.toString(),
+            iso: parseNumeric(exif.ISO)
+        } as any,
+        dbObjects,
+        imageWidth,
+        imageHeight,
+        mimeType
+    );
+
+    // No longer creating JSON metadata files - data stored in database only
+    const processingResults = {
+        exif,
+        dominantColor,
+        people: faces,
+        objects: objects,
+        screenshotDetection: screenshotDetection,
+        astroResult: astroResult,
+        hashInfo: {
+            hash: fileInfo.hash,
+            relativePath: fileInfo.relativePath,
+            originalFilename: path.basename(imagepath),
+            processedAt: new Date().toISOString()
+        }
+    };
+
+    // Log the completed processing with detailed metrics
+    const processingTime = Date.now() - processingStart;
+    logger.logImageProcessed({
+        imagePath: imagepath,
+        processingTime,
+        operations: {
+            exif: {
+                success: true,
+                duration: timings.exif.end - timings.exif.start
+            },
+            thumbnail: {
+                success: true,
+                duration: 0 // Thumbnail generation happens separately
+            },
+            faceDetection: {
+                success: true,
+                faces: Object.keys(faces).length,
+                duration: timings.faces.end - timings.faces.start
+            },
+            objectDetection: {
+                success: true,
+                objects: objects.length,
+                duration: timings.objects.end - timings.objects.start
+            },
+            astrophotography: {
+                success: true,
+                isAstro: astroResult.isAstro,
+                confidence: astroResult.confidence,
+                classification: astroResult.classification,
+                duration: timings.astro.end - timings.astro.start
+            }
+        },
+        output: {
+            thumbnailPath: '', // Set by thumbnail generation
+            faceCount: Object.keys(faces).length
+        }
+    });
+
+    correlationId.end({ processingTime, faceCount: Object.keys(faces).length, objectCount: objects.length });
+
+    return {
+        fileInfo,
+        processingResults
+    };
+};
+
+/**
+ * Store processed image data in database using hash-based structure
+ */
+export const storeImageDataHashed = async (
+    originalPath: string,
+    fileInfo: HashFileInfo,
+    processingResults: any
+): Promise<number> => {
+    const { exif, dominantColor, people, objects, screenshotDetection, astroResult } = processingResults;
+
+    // Parse date taken from EXIF
+    let dateTaken: Date | undefined;
+    try {
+        if (exif.DateTimeOriginal) {
+            const dateStr = typeof exif.DateTimeOriginal === 'string' ?
+                exif.DateTimeOriginal :
+                exif.DateTimeOriginal?.toString();
+            if (dateStr) {
+                dateTaken = new Date(dateStr.replace(/:(\d{2}):(\d{2})/, '-$1-$2'));
+            }
+        } else if (exif.DateTime) {
+            const dateStr = typeof exif.DateTime === 'string' ?
+                exif.DateTime :
+                exif.DateTime?.toString();
+            if (dateStr) {
+                dateTaken = new Date(dateStr.replace(/:(\d{2}):(\d{2})/, '-$1-$2'));
+            }
+        }
+    } catch (error) {
+        // Fall back to file modification time or current time
+        const stats = fs.statSync(originalPath);
+        dateTaken = stats.mtime;
+    }
+
+    // Create image record with hash-based fields
+    const imageData = {
+        filename: path.basename(originalPath),
+        original_path: originalPath,
+        file_hash: fileInfo.hash,
+        file_size: fileInfo.size,
+        relative_media_path: fileInfo.relativePath,
+        relative_meta_path: '', // Metadata stored in database only
+        source_filename: path.basename(originalPath),
+        date_imported: new Date(),
+        migration_status: 'copied' as const,
+        mime_type: getMimeTypeFromPath(originalPath),
+        width: exif.ImageWidth || exif.ExifImageWidth,
+        height: exif.ImageHeight || exif.ExifImageHeight,
+        dominant_color: dominantColor,
+        processing_status: 'completed' as const,
+        date_taken: dateTaken,
+        date_processed: new Date(),
+        is_screenshot: screenshotDetection.isScreenshot,
+        screenshot_confidence: screenshotDetection.confidence,
+        screenshot_reasons: JSON.stringify(screenshotDetection.reasons),
+        is_astrophotography: astroResult.isAstro,
+        astro_confidence: astroResult.confidence,
+        astro_details: JSON.stringify(astroResult.details),
+        astro_classification: astroResult.classification,
+        astro_detected_at: astroResult.isAstro ? new Date() : undefined
+    };
+
+    // Create the image record first
+    const imageId = await ImageRepository.create(imageData);
+
+    // Store detailed EXIF metadata in image_metadata table
+    if (exif && Object.keys(exif).length > 0) {
+        const metadataRecord = {
+            image_id: imageId,
+            camera_make: exif.Make,
+            camera_model: exif.Model,
+            software: exif.Software,
+            lens_model: exif.LensModel,
+            focal_length: parseNumeric(exif.FocalLength),
+            aperture: exif.FNumber?.toString() || exif.ApertureValue?.toString(),
+            shutter_speed: exif.ExposureTime?.toString() || exif.ShutterSpeedValue?.toString(),
+            iso: parseNumeric(exif.ISO) || parseNumeric(exif.ISOSpeedRatings),
+            flash: exif.Flash?.toString(),
+            white_balance: exif.WhiteBalance?.toString(),
+            exposure_mode: exif.ExposureMode?.toString(),
+            latitude: parseNumeric(exif.GPSLatitude),
+            longitude: parseNumeric(exif.GPSLongitude),
+            altitude: parseNumeric(exif.GPSAltitude),
+            orientation: parseNumeric(exif.Orientation),
+            color_space: exif.ColorSpace?.toString(),
+            raw_exif: exif, // Store complete EXIF data as JSON
+            created_at: new Date(),
+            updated_at: new Date()
+        };
+
+        await MetadataRepository.createMetadata(metadataRecord);
+    }
+
+    // Store detected objects in detected_objects table
+    if (objects && objects.length > 0) {
+        for (const obj of objects) {
+            await ObjectRepository.createObject({
+                image_id: imageId,
+                class: obj.class,
+                confidence: obj.confidence,
+                x: Math.round(obj.bbox.x),
+                y: Math.round(obj.bbox.y),
+                width: Math.round(obj.bbox.width),
+                height: Math.round(obj.bbox.height),
+                created_at: new Date()
+            });
+        }
+    }
+
+    // Store faces in detected_faces table
+    if (people && Object.keys(people).length > 0) {
+        for (const [faceKey, faceData] of Object.entries(people)) {
+            const face = faceData as any;
+
+            // Face paths from extractFacesHashed are already relative
+            const relativeFacePath = face.relative_face_path || face.face_image_path;
+            const fullFacePath = relativeFacePath ?
+                path.join(configManager.getStorage().processedDir, 'faces', relativeFacePath) :
+                undefined;
+
+            await FaceRepository.createFace({
+                image_id: imageId,
+                face_image_path: fullFacePath,
+                relative_face_path: relativeFacePath,
+                x_min: face.box?.x_min || face.x_min || 0,
+                y_min: face.box?.y_min || face.y_min || 0,
+                x_max: face.box?.x_max || face.x_max || 0,
+                y_max: face.box?.y_max || face.y_max || 0,
+                detection_confidence: face.detection_confidence || face.similarityResponse?.similarity || face.confidence || 0,
+                predicted_gender: face.predicted_gender || face.gender,
+                gender_confidence: face.gender_confidence,
+                age_min: face.age_min || face.age?.low,
+                age_max: face.age_max || face.age?.high,
+                age_confidence: face.age_confidence,
+                pitch: face.pitch,
+                roll: face.roll,
+                yaw: face.yaw,
+                landmarks: face.landmarks ? JSON.stringify(face.landmarks) : null,
+                face_embedding: face.embedding ? JSON.stringify(face.embedding) : null,
+                created_at: new Date()
+            });
+        }
+    }
+
+    // Process image for smart albums
+    try {
+        await SmartAlbumEngine.processImageForAlbums(imageId);
+    } catch (albumError) {
+        // Log error but don't fail the entire process
+        logger.error('Failed to process image for smart albums:', albumError);
+    }
+
+    return imageId;
+};
+
+// Legacy function removed - use generateImageDataJsonHashed instead
+
+// Helper functions
+function parseNumeric(value: any): number | undefined {
+    if (value === undefined || value === null) return undefined;
+    const num = typeof value === 'number' ? value : parseFloat(value);
+    return isNaN(num) ? undefined : num;
+}
+
+function getMimeTypeFromPath(filepath: string): string {
+    const ext = path.extname(filepath).toLowerCase();
+    const mimeTypes: Record<string, string> = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp'
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+}

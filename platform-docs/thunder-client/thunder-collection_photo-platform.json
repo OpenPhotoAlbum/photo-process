@@ -1,0 +1,590 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "Photo Platform API",
+    "dateExported": "2025-06-16T06:45:00.000Z",
+    "version": "1.2",
+    "folders": [
+        {
+            "id": "root-endpoints",
+            "name": "🏠 Root & Health",
+            "containerId": "",
+            "created": "2025-06-16T06:45:00.000Z",
+            "sortNum": 10000
+        },
+        {
+            "id": "gallery-endpoints", 
+            "name": "🖼️ Gallery & Media",
+            "containerId": "",
+            "created": "2025-06-16T06:45:00.000Z",
+            "sortNum": 20000
+        },
+        {
+            "id": "person-endpoints",
+            "name": "👤 Person Management",
+            "containerId": "",
+            "created": "2025-06-16T06:45:00.000Z", 
+            "sortNum": 30000
+        },
+        {
+            "id": "face-endpoints",
+            "name": "😊 Face Recognition",
+            "containerId": "",
+            "created": "2025-06-16T06:45:00.000Z",
+            "sortNum": 40000
+        },
+        {
+            "id": "search-endpoints",
+            "name": "🔍 Search & Discovery",
+            "containerId": "",
+            "created": "2025-06-16T06:45:00.000Z",
+            "sortNum": 50000
+        },
+        {
+            "id": "processing-endpoints",
+            "name": "⚙️ Processing & Jobs",
+            "containerId": "",
+            "created": "2025-06-16T06:45:00.000Z",
+            "sortNum": 60000
+        },
+        {
+            "id": "admin-endpoints",
+            "name": "🔧 Admin & Configuration",
+            "containerId": "",
+            "created": "2025-06-16T06:45:00.000Z",
+            "sortNum": 70000
+        }
+    ],
+    "requests": [
+        {
+            "id": "root-status",
+            "name": "API Status",
+            "url": "{{baseUrl}}/",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.status",
+                    "action": "equal", 
+                    "value": "running"
+                }
+            ],
+            "containerId": "root-endpoints"
+        },
+        {
+            "id": "health-check",
+            "name": "Health Check",
+            "url": "{{baseUrl}}/api/health",
+            "method": "GET",
+            "sortNum": 10100,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "root-endpoints"
+        },
+        {
+            "id": "gallery-list",
+            "name": "Gallery - List Images",
+            "url": "{{baseUrl}}/api/gallery",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "limit",
+                    "value": "10",
+                    "isPath": false
+                },
+                {
+                    "name": "cursor", 
+                    "value": "",
+                    "isPath": false,
+                    "isDisabled": true
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.images",
+                    "action": "istype",
+                    "value": "array"
+                }
+            ],
+            "containerId": "gallery-endpoints"
+        },
+        {
+            "id": "gallery-search",
+            "name": "Gallery - Search Images",
+            "url": "{{baseUrl}}/api/gallery/search",
+            "method": "GET",
+            "sortNum": 20100,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "dateFrom",
+                    "value": "2025-01-01",
+                    "isPath": false,
+                    "isDisabled": true
+                },
+                {
+                    "name": "dateTo", 
+                    "value": "2025-12-31",
+                    "isPath": false,
+                    "isDisabled": true
+                },
+                {
+                    "name": "hasFaces",
+                    "value": "true",
+                    "isPath": false,
+                    "isDisabled": true
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "gallery-endpoints"
+        },
+        {
+            "id": "persons-list",
+            "name": "Persons - List All",
+            "url": "{{baseUrl}}/api/persons",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.persons",
+                    "action": "istype",
+                    "value": "array"
+                }
+            ],
+            "containerId": "person-endpoints"
+        },
+        {
+            "id": "persons-create",
+            "name": "Persons - Create New",
+            "url": "{{baseUrl}}/api/persons",
+            "method": "POST",
+            "sortNum": 30100,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"name\": \"Test Person\",\n  \"notes\": \"Created via API test\"\n}",
+                "form": []
+            },
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "201"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.person.id",
+                    "action": "istype",
+                    "value": "number"
+                }
+            ],
+            "containerId": "person-endpoints"
+        },
+        {
+            "id": "persons-get",
+            "name": "Persons - Get by ID",
+            "url": "{{baseUrl}}/api/persons/{{personId}}",
+            "method": "GET", 
+            "sortNum": 30200,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "person-endpoints"
+        },
+        {
+            "id": "faces-unidentified",
+            "name": "Faces - Get Unidentified",
+            "url": "{{baseUrl}}/api/faces/unidentified",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "limit",
+                    "value": "20",
+                    "isPath": false
+                },
+                {
+                    "name": "random",
+                    "value": "true",
+                    "isPath": false,
+                    "isDisabled": true
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.faces",
+                    "action": "istype",
+                    "value": "array"
+                }
+            ],
+            "containerId": "face-endpoints"
+        },
+        {
+            "id": "faces-assign",
+            "name": "Faces - Assign to Person",
+            "url": "{{baseUrl}}/api/faces/assign",
+            "method": "POST",
+            "sortNum": 40100,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"faceId\": {{faceId}},\n  \"personId\": {{personId}},\n  \"confidence\": 0.95\n}",
+                "form": []
+            },
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "face-endpoints"
+        },
+        {
+            "id": "faces-needs-review",
+            "name": "Faces - Needs Review",
+            "url": "{{baseUrl}}/api/faces/needs-review",
+            "method": "GET",
+            "sortNum": 40200,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "limit",
+                    "value": "10",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "face-endpoints"
+        },
+        {
+            "id": "search-objects",
+            "name": "Search - By Objects",
+            "url": "{{baseUrl}}/api/search/objects",
+            "method": "GET",
+            "sortNum": 50000,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "objects",
+                    "value": "cat,dog",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "10",
+                    "isPath": false
+                },
+                {
+                    "name": "minConfidence",
+                    "value": "0.5",
+                    "isPath": false,
+                    "isDisabled": true
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "search-endpoints"
+        },
+        {
+            "id": "search-advanced",
+            "name": "Search - Advanced",
+            "url": "{{baseUrl}}/api/search/advanced",
+            "method": "GET",
+            "sortNum": 50100,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "dateFrom",
+                    "value": "2025-01-01",
+                    "isPath": false,
+                    "isDisabled": true
+                },
+                {
+                    "name": "dateTo",
+                    "value": "2025-12-31", 
+                    "isPath": false,
+                    "isDisabled": true
+                },
+                {
+                    "name": "objects",
+                    "value": "cat",
+                    "isPath": false,
+                    "isDisabled": true
+                },
+                {
+                    "name": "hasFaces",
+                    "value": "true",
+                    "isPath": false,
+                    "isDisabled": true
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "search-endpoints"
+        },
+        {
+            "id": "objects-stats",
+            "name": "Search - Object Statistics",
+            "url": "{{baseUrl}}/api/objects/stats",
+            "method": "GET",
+            "sortNum": 50200,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "search-endpoints"
+        },
+        {
+            "id": "scan-start",
+            "name": "Processing - Start Scan",
+            "url": "{{baseUrl}}/scan",
+            "method": "GET",
+            "sortNum": 60000,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "async",
+                    "value": "true",
+                    "isPath": false
+                },
+                {
+                    "name": "limit",
+                    "value": "5",
+                    "isPath": false,
+                    "isDisabled": true
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "processing-endpoints"
+        },
+        {
+            "id": "scan-status",
+            "name": "Processing - Scan Status",
+            "url": "{{baseUrl}}/scan/status",
+            "method": "GET",
+            "sortNum": 60100,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "processing-endpoints"
+        },
+        {
+            "id": "jobs-list",
+            "name": "Jobs - List All",
+            "url": "{{baseUrl}}/api/jobs",
+            "method": "GET",
+            "sortNum": 60200,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "status",
+                    "value": "completed",
+                    "isPath": false,
+                    "isDisabled": true
+                },
+                {
+                    "name": "limit",
+                    "value": "10",
+                    "isPath": false
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "processing-endpoints"
+        },
+        {
+            "id": "jobs-stats",
+            "name": "Jobs - Queue Stats",
+            "url": "{{baseUrl}}/api/jobs-stats",
+            "method": "GET",
+            "sortNum": 60300,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                }
+            ],
+            "containerId": "processing-endpoints"
+        },
+        {
+            "id": "config-get",
+            "name": "Admin - Get Configuration",
+            "url": "{{baseUrl}}/api/config",
+            "method": "GET",
+            "sortNum": 70000,
+            "created": "2025-06-16T06:45:00.000Z",
+            "modified": "2025-06-16T06:45:00.000Z",
+            "headers": [],
+            "params": [],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "200"
+                },
+                {
+                    "type": "json-query",
+                    "custom": "json.system.version",
+                    "action": "equal",
+                    "value": "1.0.0"
+                }
+            ],
+            "containerId": "admin-endpoints"
+        }
+    ]
+}

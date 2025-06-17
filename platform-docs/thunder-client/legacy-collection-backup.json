@@ -1,0 +1,1385 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "Photo Processing API",
+  "dateExported": "2025-01-14T12:00:00.000Z",
+  "version": "1.1",
+  "folders": [
+    {
+      "_id": "core-system",
+      "name": "🏠 Core System",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 10000
+    },
+    {
+      "_id": "scanning-jobs", 
+      "name": "📊 Scanning & Jobs",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 20000
+    },
+    {
+      "_id": "gallery-media",
+      "name": "🖼️ Gallery & Media", 
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 30000
+    },
+    {
+      "_id": "search",
+      "name": "🔍 Search",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z", 
+      "sortNum": 40000
+    },
+    {
+      "_id": "person-management",
+      "name": "👥 Person Management",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 50000
+    },
+    {
+      "_id": "face-recognition",
+      "name": "👤 Face Recognition", 
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 60000
+    },
+    {
+      "_id": "enhanced-faces",
+      "name": "🔄 Enhanced Face Management",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 70000
+    },
+    {
+      "_id": "face-clustering",
+      "name": "🧩 Face Clustering",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 80000
+    },
+    {
+      "_id": "training-management", 
+      "name": "🎓 Training Management",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 90000
+    },
+    {
+      "_id": "junk-management",
+      "name": "🗑️ Junk Management",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 100000
+    },
+    {
+      "_id": "background-jobs",
+      "name": "🔧 Background Jobs", 
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 110000
+    },
+    {
+      "_id": "image-processing",
+      "name": "🖼️ Image Processing",
+      "containerId": "",
+      "created": "2025-01-14T12:00:00.000Z",
+      "sortNum": 120000
+    }
+  ],
+  "requests": [
+    {
+      "_id": "system-status",
+      "colId": "",
+      "containerId": "core-system",
+      "name": "System Status",
+      "url": "{{baseUrl}}/",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-config",
+      "colId": "",
+      "containerId": "core-system", 
+      "name": "Get Configuration",
+      "url": "{{apiBase}}/config",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "consistency-check",
+      "colId": "",
+      "containerId": "core-system",
+      "name": "System Consistency Check", 
+      "url": "{{apiBase}}/system/consistency",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [
+        {
+          "name": "autoRepair",
+          "value": "true",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "scan-status",
+      "colId": "",
+      "containerId": "scanning-jobs",
+      "name": "Get Scan Status",
+      "url": "{{baseUrl}}/scan/status", 
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "start-scan",
+      "colId": "",
+      "containerId": "scanning-jobs",
+      "name": "Start Scan",
+      "url": "{{baseUrl}}/scan",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit", 
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "start-scan-job",
+      "colId": "",
+      "containerId": "scanning-jobs",
+      "name": "Start Scan Job",
+      "url": "{{apiBase}}/jobs/scan",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"sourceDir\": \"/path/to/source\",\n  \"limit\": 100,\n  \"recursive\": true\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-all-jobs",
+      "colId": "",
+      "containerId": "scanning-jobs",
+      "name": "Get All Jobs",
+      "url": "{{apiBase}}/jobs",
+      "method": "GET", 
+      "sortNum": 40000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-job-status",
+      "colId": "",
+      "containerId": "scanning-jobs",
+      "name": "Get Job Status",
+      "url": "{{apiBase}}/jobs/{{jobId}}",
+      "method": "GET",
+      "sortNum": 50000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "cancel-job",
+      "colId": "",
+      "containerId": "scanning-jobs",
+      "name": "Cancel Job",
+      "url": "{{apiBase}}/jobs/{{jobId}}",
+      "method": "DELETE",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "queue-stats",
+      "colId": "",
+      "containerId": "scanning-jobs", 
+      "name": "Get Queue Stats",
+      "url": "{{apiBase}}/jobs-stats",
+      "method": "GET",
+      "sortNum": 70000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-list",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Get Gallery List",
+      "url": "{{apiBase}}/gallery",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "cursor",
+          "value": "123",
+          "isDisabled": true
+        },
+        {
+          "name": "page", 
+          "value": "1",
+          "isDisabled": true
+        },
+        {
+          "name": "astro",
+          "value": "true",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "image-faces",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Get Image Faces",
+      "url": "{{apiBase}}/gallery/{{imageId}}/faces",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "serve-media",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Serve Media File",
+      "url": "{{baseUrl}}/media/{{sampleMediaPath}}",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [
+        {
+          "name": "thumb",
+          "value": "1",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "search-objects",
+      "colId": "",
+      "containerId": "search",
+      "name": "Search by Objects",
+      "url": "{{apiBase}}/search/objects",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [
+        {
+          "name": "q",
+          "value": "person,dog,car",
+          "isDisabled": false
+        },
+        {
+          "name": "confidence",
+          "value": "0.75",
+          "isDisabled": true
+        },
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "advanced-search",
+      "colId": "",
+      "containerId": "search", 
+      "name": "Advanced Search",
+      "url": "{{apiBase}}/search/advanced",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [
+        {
+          "name": "dateFrom",
+          "value": "2023-01-01",
+          "isDisabled": true
+        },
+        {
+          "name": "dateTo",
+          "value": "2023-12-31",
+          "isDisabled": true
+        },
+        {
+          "name": "camera",
+          "value": "iPhone",
+          "isDisabled": true
+        },
+        {
+          "name": "hasFaces",
+          "value": "true",
+          "isDisabled": true
+        },
+        {
+          "name": "isAstro",
+          "value": "true",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "object-stats",
+      "colId": "",
+      "containerId": "search",
+      "name": "Object Statistics",
+      "url": "{{apiBase}}/objects/stats",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-all-persons",
+      "colId": "",
+      "containerId": "person-management",
+      "name": "Get All Persons",
+      "url": "{{apiBase}}/persons",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-person-by-id",
+      "colId": "",
+      "containerId": "person-management",
+      "name": "Get Person by ID",
+      "url": "{{apiBase}}/persons/{{personId}}",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "create-person",
+      "colId": "",
+      "containerId": "person-management",
+      "name": "Create Person",
+      "url": "{{apiBase}}/persons",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"John Doe\",\n  \"notes\": \"Family member\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "update-person",
+      "colId": "",
+      "containerId": "person-management",
+      "name": "Update Person",
+      "url": "{{apiBase}}/persons/{{personId}}",
+      "method": "PUT",
+      "sortNum": 40000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"John Smith\",\n  \"notes\": \"Updated info\",\n  \"auto_recognize\": true,\n  \"recognition_status\": \"trained\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "delete-person",
+      "colId": "",
+      "containerId": "person-management",
+      "name": "Delete Person",
+      "url": "{{apiBase}}/persons/{{personId}}",
+      "method": "DELETE",
+      "sortNum": 50000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "unidentified-faces",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Get Unidentified Faces",
+      "url": "{{apiBase}}/faces/unidentified",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "random",
+          "value": "true",
+          "isDisabled": true
+        },
+        {
+          "name": "gender",
+          "value": "male",
+          "isDisabled": true
+        },
+        {
+          "name": "ageMin",
+          "value": "20",
+          "isDisabled": true
+        },
+        {
+          "name": "ageMax",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "minConfidence",
+          "value": "0.8",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "face-filter-options",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Get Face Filter Options",
+      "url": "{{apiBase}}/faces/filter-options",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "assign-face",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Assign Face to Person",
+      "url": "{{apiBase}}/faces/assign",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1,\n  \"faceId\": 123\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "batch-assign-faces",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Batch Assign Faces",
+      "url": "{{apiBase}}/faces/batch-assign",
+      "method": "POST",
+      "sortNum": 40000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1,\n  \"faceIds\": [123, 124, 125]\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "bulk-assign-faces",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Bulk Assign Faces",
+      "url": "{{apiBase}}/faces/bulk-assign",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"faceIds\": [123, 124, 125],\n  \"personId\": 1,\n  \"confidence\": 0.95,\n  \"method\": \"manual_bulk\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "remove-face-from-person",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Remove Face from Person",
+      "url": "{{apiBase}}/faces/{{faceId}}/person",
+      "method": "DELETE",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "mark-face-invalid",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Mark Face as Invalid",
+      "url": "{{apiBase}}/faces/{{faceId}}/mark-invalid",
+      "method": "POST",
+      "sortNum": 70000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "mark-face-unknown",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Mark Face as Unknown",
+      "url": "{{apiBase}}/faces/{{faceId}}/mark-unknown",
+      "method": "POST",
+      "sortNum": 80000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "auto-recognize",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Auto-Recognize Faces",
+      "url": "{{apiBase}}/faces/auto-recognize",
+      "method": "POST",
+      "sortNum": 90000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "minConfidence",
+          "value": "0.9",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "cleanup-orphaned-faces",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Cleanup Orphaned Faces",
+      "url": "{{apiBase}}/faces/cleanup-orphaned",
+      "method": "POST",
+      "sortNum": 100000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "recognize-faces-in-image",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Recognize Faces in Image",
+      "url": "{{apiBase}}/images/{{imageId}}/recognize",
+      "method": "POST",
+      "sortNum": 110000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "suggest-persons",
+      "colId": "",
+      "containerId": "enhanced-faces",
+      "name": "Suggest Persons for Faces",
+      "url": "{{apiBase}}/faces/suggest-persons",
+      "method": "POST",
+      "sortNum": 10000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"faceIds\": [123, 124],\n  \"maxSuggestions\": 3,\n  \"minConfidence\": 0.7\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "reassign-face",
+      "colId": "",
+      "containerId": "enhanced-faces",
+      "name": "Reassign Face",
+      "url": "{{apiBase}}/faces/{{faceId}}/reassign",
+      "method": "PUT",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"fromPersonId\": 1,\n  \"toPersonId\": 2,\n  \"confidence\": 0.95,\n  \"reason\": \"Correction needed\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "assignment-workflow",
+      "colId": "",
+      "containerId": "enhanced-faces",
+      "name": "Get Assignment Workflow",
+      "url": "{{apiBase}}/assignment/workflow",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "includeClusteredFaces",
+          "value": "true",
+          "isDisabled": true
+        },
+        {
+          "name": "includeSimilarityMatches",
+          "value": "true",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "faces-needing-review",
+      "colId": "",
+      "containerId": "enhanced-faces",
+      "name": "Get Faces Needing Review",
+      "url": "{{apiBase}}/faces/needs-review",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "review-face-assignment",
+      "colId": "",
+      "containerId": "enhanced-faces",
+      "name": "Review Face Assignment",
+      "url": "{{apiBase}}/faces/{{faceId}}/review",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"approved\": true,\n  \"personId\": 1\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "similar-faces",
+      "colId": "",
+      "containerId": "enhanced-faces",
+      "name": "Get Similar Faces",
+      "url": "{{apiBase}}/faces/{{faceId}}/similar",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [
+        {
+          "name": "threshold",
+          "value": "0.8",
+          "isDisabled": true
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "start-clustering",
+      "colId": "",
+      "containerId": "face-clustering",
+      "name": "Start Face Clustering",
+      "url": "{{apiBase}}/clustering/start",
+      "method": "POST",
+      "sortNum": 10000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"similarityThreshold\": 0.75,\n  \"minClusterSize\": 2,\n  \"maxClusterSize\": 50,\n  \"algorithm\": \"bbox_intersection\",\n  \"rebuild\": false\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "clustering-stats",
+      "colId": "",
+      "containerId": "face-clustering",
+      "name": "Get Clustering Statistics",
+      "url": "{{apiBase}}/clustering/stats",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "face-clusters",
+      "colId": "",
+      "containerId": "face-clustering",
+      "name": "Get Face Clusters",
+      "url": "{{apiBase}}/clusters",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [
+        {
+          "name": "includeReviewed",
+          "value": "false",
+          "isDisabled": true
+        },
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "offset",
+          "value": "0",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "cluster-faces",
+      "colId": "",
+      "containerId": "face-clustering",
+      "name": "Get Cluster Faces",
+      "url": "{{apiBase}}/clusters/{{clusterId}}/faces",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "assign-cluster-to-person",
+      "colId": "",
+      "containerId": "face-clustering",
+      "name": "Assign Cluster to Person",
+      "url": "{{apiBase}}/clusters/{{clusterId}}/assign",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "rebuild-clusters",
+      "colId": "",
+      "containerId": "face-clustering",
+      "name": "Rebuild Clusters",
+      "url": "{{apiBase}}/clustering/rebuild",
+      "method": "POST",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "person-training-history",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Get Person Training History",
+      "url": "{{apiBase}}/persons/{{personId}}/training-history",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "start-person-training",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Start Person Training",
+      "url": "{{apiBase}}/persons/{{personId}}/train",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"trainingType\": \"incremental\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "queue-person-training",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Queue Person Training",
+      "url": "{{apiBase}}/persons/{{personId}}/queue-training",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"trainingType\": \"incremental\",\n  \"config\": {}\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "process-training-queue",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Process Training Queue",
+      "url": "{{apiBase}}/training/process-queue",
+      "method": "POST",
+      "sortNum": 40000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"config\": {}\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "auto-train-people",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Auto-Train Eligible People",
+      "url": "{{apiBase}}/training/auto-train",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"config\": {}\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "training-queue",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Get Training Queue",
+      "url": "{{apiBase}}/training/queue",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "training-stats",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Get Training Statistics",
+      "url": "{{apiBase}}/training/stats",
+      "method": "GET",
+      "sortNum": 70000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "cancel-training-job",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Cancel Training Job",
+      "url": "{{apiBase}}/training/jobs/{{jobId}}",
+      "method": "DELETE",
+      "sortNum": 80000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "retry-training-job",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Retry Training Job",
+      "url": "{{apiBase}}/training/jobs/{{jobId}}/retry",
+      "method": "POST",
+      "sortNum": 90000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "cleanup-training-history",
+      "colId": "",
+      "containerId": "training-management",
+      "name": "Cleanup Training History",
+      "url": "{{apiBase}}/training/cleanup",
+      "method": "POST",
+      "sortNum": 100000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"daysToKeep\": 30\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "screenshot-candidates",
+      "colId": "",
+      "containerId": "junk-management",
+      "name": "Get Screenshot Candidates",
+      "url": "{{apiBase}}/junk/candidates",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "update-junk-status",
+      "colId": "",
+      "containerId": "junk-management",
+      "name": "Update Junk Status",
+      "url": "{{apiBase}}/junk/{{imageId}}/status",
+      "method": "PUT",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"status\": \"confirmed_junk\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "batch-update-junk",
+      "colId": "",
+      "containerId": "junk-management",
+      "name": "Batch Update Junk Status",
+      "url": "{{apiBase}}/junk/batch-update",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"imageIds\": [1, 2, 3],\n  \"status\": \"confirmed_junk\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "junk-stats",
+      "colId": "",
+      "containerId": "junk-management",
+      "name": "Get Junk Statistics",
+      "url": "{{apiBase}}/junk/stats",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "run-screenshot-detection",
+      "colId": "",
+      "containerId": "junk-management",
+      "name": "Run Screenshot Detection",
+      "url": "{{apiBase}}/junk/detect",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 100,\n  \"overwrite\": false\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "start-face-recognition-job",
+      "colId": "",
+      "containerId": "background-jobs",
+      "name": "Start Face Recognition Job",
+      "url": "{{apiBase}}/jobs/face-recognition",
+      "method": "POST",
+      "sortNum": 10000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 100,\n  \"minConfidence\": 0.9,\n  \"autoAssign\": true\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "start-thumbnail-job",
+      "colId": "",
+      "containerId": "background-jobs",
+      "name": "Start Thumbnail Job",
+      "url": "{{apiBase}}/jobs/thumbnail",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 100,\n  \"overwrite\": false,\n  \"size\": 256,\n  \"quality\": 85\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "cleanup-jobs",
+      "colId": "",
+      "containerId": "background-jobs",
+      "name": "Cleanup Jobs",
+      "url": "{{apiBase}}/jobs/cleanup",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"olderThanDays\": 7,\n  \"keepCompleted\": 10\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "process-image-from-url",
+      "colId": "",
+      "containerId": "image-processing",
+      "name": "Process Image from URL",
+      "url": "{{apiBase}}/process/image",
+      "method": "POST",
+      "sortNum": 10000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"url\": \"https://example.com/image.jpg\",\n  \"filename\": \"sample-image.jpg\",\n  \"dateTaken\": \"2023-12-01T10:30:00.000Z\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "process-image-from-path",
+      "colId": "",
+      "containerId": "image-processing",
+      "name": "Process Image from File Path",
+      "url": "{{apiBase}}/process/image",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"path\": \"/path/to/local/image.jpg\",\n  \"dateTaken\": \"2023-12-01T10:30:00.000Z\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-processing-status",
+      "colId": "",
+      "containerId": "image-processing",
+      "name": "Get Processing Status",
+      "url": "{{apiBase}}/process/{{imageId}}/status",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    }
+  ],
+  "environments": [
+    {
+      "_id": "photo-processing-env",
+      "name": "Photo Processing Local",
+      "default": true,
+      "data": [
+        {
+          "name": "baseUrl",
+          "value": "http://localhost:9000"
+        },
+        {
+          "name": "apiBase", 
+          "value": "{{baseUrl}}/api"
+        },
+        {
+          "name": "personId",
+          "value": "1"
+        },
+        {
+          "name": "faceId",
+          "value": "123"
+        },
+        {
+          "name": "imageId",
+          "value": "456"
+        },
+        {
+          "name": "clusterId",
+          "value": "789"
+        },
+        {
+          "name": "jobId",
+          "value": "job_123456"
+        },
+        {
+          "name": "relativePath",
+          "value": "2024/01/sample-image.jpg"
+        },
+        {
+          "name": "limit",
+          "value": "50"
+        },
+        {
+          "name": "confidence",
+          "value": "0.75"
+        },
+        {
+          "name": "minConfidence",
+          "value": "0.8"
+        },
+        {
+          "name": "maxConfidence",
+          "value": "0.95"
+        },
+        {
+          "name": "similarityThreshold",
+          "value": "0.75"
+        },
+        {
+          "name": "ageMin",
+          "value": "20"
+        },
+        {
+          "name": "ageMax",
+          "value": "50"
+        },
+        {
+          "name": "gender",
+          "value": "male"
+        },
+        {
+          "name": "dateFrom",
+          "value": "2023-01-01"
+        },
+        {
+          "name": "dateTo",
+          "value": "2023-12-31"
+        },
+        {
+          "name": "camera",
+          "value": "iPhone"
+        },
+        {
+          "name": "searchQuery",
+          "value": "person,dog,car"
+        },
+        {
+          "name": "sampleMediaPath",
+          "value": "2025/06/android_3cb06a34.JPG"
+        }
+      ]
+    }
+  ]
+}

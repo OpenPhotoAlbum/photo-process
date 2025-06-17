@@ -1,0 +1,88 @@
+{
+  "client": "Thunder Client",
+  "environmentName": "Photo Processing Local",
+  "dateExported": "2025-01-14T12:00:00.000Z",
+  "version": "1.1",
+  "variables": [
+    {
+      "name": "baseUrl",
+      "value": "http://localhost:9000"
+    },
+    {
+      "name": "apiBase",
+      "value": "{{baseUrl}}/api"
+    },
+    {
+      "name": "personId",
+      "value": "1"
+    },
+    {
+      "name": "faceId",
+      "value": "123"
+    },
+    {
+      "name": "imageId",
+      "value": "456"
+    },
+    {
+      "name": "clusterId",
+      "value": "789"
+    },
+    {
+      "name": "jobId",
+      "value": "job_123456"
+    },
+    {
+      "name": "relativePath",
+      "value": "2024/01/sample-image.jpg"
+    },
+    {
+      "name": "limit",
+      "value": "50"
+    },
+    {
+      "name": "confidence",
+      "value": "0.75"
+    },
+    {
+      "name": "minConfidence",
+      "value": "0.8"
+    },
+    {
+      "name": "maxConfidence",
+      "value": "0.95"
+    },
+    {
+      "name": "similarityThreshold",
+      "value": "0.75"
+    },
+    {
+      "name": "ageMin",
+      "value": "20"
+    },
+    {
+      "name": "ageMax",
+      "value": "50"
+    },
+    {
+      "name": "gender",
+      "value": "male"
+    },
+    {
+      "name": "dateFrom",
+      "value": "2023-01-01"
+    },
+    {
+      "name": "dateTo",
+      "value": "2023-12-31"
+    },
+    {
+      "name": "camera",
+      "value": "iPhone"
+    },
+    {
+      "name": "searchQuery",
+      "value": "person,dog,car"
+    }
+  ]
+}

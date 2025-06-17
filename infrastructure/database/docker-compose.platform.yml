@@ -1,0 +1,41 @@
+version: '3.8'
+
+# Database service for the photo management platform
+# This integrates with the main platform docker-compose.yml
+
+services:
+  database:
+    image: mysql:8.0
+    container_name: photo-platform-database
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_password}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-photo_process}
+      - MYSQL_USER=${MYSQL_USER:-photo_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-photo_password}
+      - MYSQL_AUTH_PLUGIN=caching_sha2_password
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"  # Use 3307 to avoid conflicts
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max-connections=1001
+      --innodb-buffer-pool-size=512M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
+      timeout: 10s
+      retries: 10
+      interval: 30s
+    networks:
+      - photo-platform
+
+volumes:
+  mysql_data:
+
+networks:
+  photo-platform:
+    external: true

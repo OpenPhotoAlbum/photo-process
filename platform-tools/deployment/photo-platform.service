@@ -1,0 +1,26 @@
+[Unit]
+Description=Photo Management Platform
+Documentation=https://github.com/yourusername/photo-platform
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/mnt/hdd/photo-process
+ExecStart=/mnt/hdd/photo-process/platform-tools/deployment/start-platform.sh
+ExecStop=/usr/bin/docker compose -f /mnt/hdd/photo-process/docker-compose.platform.yml down
+TimeoutStartSec=300
+Restart=on-failure
+RestartSec=30
+
+# Environment variables
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+
+# User and group (adjust as needed)
+User=stephen
+Group=stephen
+
+[Install]
+WantedBy=multi-user.target
