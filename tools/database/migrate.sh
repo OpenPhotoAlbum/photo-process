@@ -1,1 +1,0 @@
-npx knex migrate:latest
