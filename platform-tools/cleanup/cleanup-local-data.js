@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
 const knex = require('knex');
-const config = require('../../infrastructure/database/knexfile.platform');
+const knexConfig = require('../../infrastructure/database/knexfile.platform');
 const fs = require('fs').promises;
 const path = require('path');
 
+// Use development environment by default
+const environment = process.env.NODE_ENV || 'development';
+const config = knexConfig[environment];
 const db = knex(config);
 
 // Helper function to count files recursively

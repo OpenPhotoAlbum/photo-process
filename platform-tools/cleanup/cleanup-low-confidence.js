@@ -16,7 +16,6 @@ try {
 const { db } = require('../../services/api/build/models/database');
 const { configManager } = require('../../services/api/build/util/config-manager');
 const fs = require('fs');
-const path = require('path');
 
 async function main() {
     const args = process.argv.slice(2);

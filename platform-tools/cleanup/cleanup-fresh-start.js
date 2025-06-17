@@ -18,10 +18,16 @@
  *   --keep-db           Don't clear database tables
  */
 
-const { db } = require('../../services/api/build/models/database');
+const knex = require('knex');
+const knexConfig = require('../../infrastructure/database/knexfile.platform');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
+
+// Use development environment by default
+const environment = process.env.NODE_ENV || 'development';
+const config = knexConfig[environment];
+const db = knex(config);
 
 const args = process.argv.slice(2);
 const keepCompreFace = args.includes('--keep-compreface');
