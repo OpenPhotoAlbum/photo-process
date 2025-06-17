@@ -9,28 +9,28 @@ module.exports = {
   },
   
   // Module paths
-  roots: ['<rootDir>/services/api', '<rootDir>/tests'],
+  roots: ['<rootDir>/services/api', '<rootDir>/platform-tests'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   
   // Test patterns
   testMatch: [
-    '<rootDir>/tests/**/*.test.ts',
-    '<rootDir>/tests/**/*.spec.ts'
+    '<rootDir>/platform-tests/**/*.test.ts',
+    '<rootDir>/platform-tests/**/*.spec.ts'
   ],
   
   // Module name mapping for absolute imports
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/services/api/$1',
     '^@api/(.*)$': '<rootDir>/services/api/$1',
-    '^@tests/(.*)$': '<rootDir>/tests/$1'
+    '^@tests/(.*)$': '<rootDir>/platform-tests/$1'
   },
   
   // Setup files
   setupFiles: [
-    '<rootDir>/tests/helpers/env-setup.js'
+    '<rootDir>/platform-tests/helpers/env-setup.js'
   ],
   setupFilesAfterEnv: [
-    '<rootDir>/tests/helpers/setup.ts'
+    '<rootDir>/platform-tests/helpers/setup.ts'
   ],
   
   // Coverage configuration

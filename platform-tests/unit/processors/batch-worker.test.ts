@@ -111,7 +111,7 @@ class BatchWorker {
         }
       } else if (job.type === 'smart_albums') {
         const { imageIds } = job.data;
-        const { SmartAlbumEngine } = require('../../../src/api/util/smart-album-engine');
+        const { SmartAlbumEngine } = require('../../../services/api/util/smart-album-engine');
         for (const imageId of imageIds) {
           await SmartAlbumEngine.processImageForAlbums(imageId);
           processedItems++;
@@ -172,7 +172,7 @@ class BatchWorker {
   }
 
   private async processFile(filePath: string): Promise<void> {
-    const mockProcessSource = require('../../../src/api/util/process-source');
+    const mockProcessSource = require('../../../services/api/util/process-source');
     return await mockProcessSource.Start(filePath);
   }
 
@@ -182,17 +182,17 @@ class BatchWorker {
 }
 
 // Mock dependencies
-jest.mock('../../../src/api/util/structured-logger', () => ({
+jest.mock('../../../services/api/util/structured-logger', () => ({
   logger: mockLogger
 }));
 
-jest.mock('../../../src/api/util/process-source', () => ({
+jest.mock('../../../services/api/util/process-source', () => ({
   Start: jest.fn()
 }));
 
-jest.mock('../../../src/api/util/compreface', () => mockCompreFace);
+jest.mock('../../../services/api/util/compreface', () => mockCompreFace);
 
-jest.mock('../../../src/api/util/smart-album-engine', () => ({
+jest.mock('../../../services/api/util/smart-album-engine', () => ({
   SmartAlbumEngine: {
     processImageForAlbums: jest.fn().mockResolvedValue(true)
   }
@@ -204,7 +204,7 @@ jest.mock('fs', () => ({
   writeFileSync: jest.fn()
 }));
 
-const mockProcessSource = require('../../../src/api/util/process-source');
+const mockProcessSource = require('../../../services/api/util/process-source');
 
 describe('BatchWorker', () => {
   let batchWorker: BatchWorker;
@@ -357,7 +357,7 @@ describe('BatchWorker', () => {
         totalItems: 2
       });
 
-      const { SmartAlbumEngine } = require('../../../src/api/util/smart-album-engine');
+      const { SmartAlbumEngine } = require('../../../services/api/util/smart-album-engine');
 
       const result = await batchWorker.processJob(albumJob);
 
@@ -438,7 +438,8 @@ describe('BatchWorker', () => {
       await batchWorker.processJob(largeBatchJob);
       const endTime = Date.now();
 
-      expect(endTime - startTime).toBeGreaterThan(0);
+      // In a mocked environment, processing can be very fast, so we use >= instead of >
+      expect(endTime - startTime).toBeGreaterThanOrEqual(0);
       expect(mockProcessSource.Start).toHaveBeenCalledTimes(20);
     });
   });

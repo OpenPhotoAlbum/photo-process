@@ -108,7 +108,7 @@ open coverage/lcov-report/index.html
 ### Test Structure
 
 ```typescript
-import { ComponentUnderTest } from '../../services/api/src/api/util/component';
+import { ComponentUnderTest } from '../../services/api/util/component';
 import { createMockData } from '../helpers/mocks';
 
 describe('ComponentUnderTest', () => {
@@ -162,7 +162,7 @@ const mockJob = createMockBatchJob({
 ### API Service Integration
 
 Tests are configured to work with the new platform structure:
-- Imports point to `../../services/api/src/`
+- Imports point to `../../services/api/`
 - TypeScript compilation uses API service's tsconfig
 - Module resolution supports both relative and absolute imports
 
@@ -234,7 +234,7 @@ cd services/api && npm run build
 
 This testing suite was migrated from the legacy monolithic structure with the following changes:
 
-1. **Import Paths**: Updated from `../../src/` to `../../services/api/src/`
+1. **Import Paths**: Updated from `../../src/` to `../../services/api/`
 2. **Jest Configuration**: Modified for platform structure
 3. **Module Resolution**: Added platform-specific path mapping
 4. **Coverage Paths**: Updated to include services directory

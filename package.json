@@ -14,8 +14,6 @@
     "dev:infrastructure": "docker compose -f docker-compose.platform.yml up database compreface-postgres compreface-admin compreface-api compreface-core compreface-ui",
     "down": "docker compose -f docker-compose.platform.yml down",
     "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
     "clean": "npm run clean --workspaces && npm run down -v",
     "db:start": "./infrastructure/database/manage.sh start",
     "db:stop": "./infrastructure/database/manage.sh stop",

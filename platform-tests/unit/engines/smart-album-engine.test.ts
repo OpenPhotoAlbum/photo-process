@@ -2,7 +2,7 @@ import { resetAllMocks } from '../../helpers/mocks';
 import { SmartAlbum, Image } from '../../helpers/types';
 
 // Mock dependencies to avoid importing real modules
-jest.mock('../../../src/api/util/structured-logger', () => ({
+jest.mock('../../../services/api/util/structured-logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),

@@ -283,5 +283,3 @@ When changing:
 - Database schema or connection methods
 
 Always check and update corresponding scripts in platform-tools/
-
-**Reminder**: Always make sure the server is running when you are finished

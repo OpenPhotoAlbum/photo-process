@@ -2,7 +2,7 @@ import { resetAllMocks } from '../../helpers/mocks';
 import { JobPriority, JobStatus, BatchJob } from '../../helpers/types';
 
 // Mock all external dependencies before importing BatchProcessor
-jest.mock('../../../src/api/util/structured-logger', () => ({
+jest.mock('../../../services/api/util/structured-logger', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -10,7 +10,7 @@ jest.mock('../../../src/api/util/structured-logger', () => ({
   }
 }));
 
-jest.mock('../../../src/api/util/config-manager', () => ({
+jest.mock('../../../services/api/util/config-manager', () => ({
   configManager: {
     getServer: () => ({
       scanBatchSize: 2

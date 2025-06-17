@@ -92,7 +92,7 @@ class MockParallelScanner {
 
   async filterUnprocessedFiles(files: string[]): Promise<string[]> {
     try {
-      const { db } = require('../../../src/api/models/database');
+      const { db } = require('../../../services/api/models/database');
       const unprocessed: string[] = [];
 
       for (const filePath of files) {
@@ -242,11 +242,11 @@ class MockBatchProcessor {
 // Mock dependencies
 jest.mock('fs');
 jest.mock('path');
-jest.mock('../../../src/api/util/structured-logger', () => ({
+jest.mock('../../../services/api/util/structured-logger', () => ({
   logger: mockLogger
 }));
 
-jest.mock('../../../src/api/util/config-manager', () => ({
+jest.mock('../../../services/api/util/config-manager', () => ({
   configManager: {
     getProcessing: () => ({
       maxWorkers: 4,
@@ -263,7 +263,7 @@ jest.mock('../../../src/api/util/config-manager', () => ({
 }));
 
 // Mock the database to simulate file checking
-jest.mock('../../../src/api/models/database', () => ({
+jest.mock('../../../services/api/models/database', () => ({
   db: {
     select: jest.fn().mockReturnThis(),
     from: jest.fn().mockReturnThis(),
@@ -395,12 +395,12 @@ describe('ParallelScanner', () => {
   describe('File Filtering', () => {
     beforeEach(() => {
       // Mock database responses for file filtering
-      const { db } = require('../../../src/api/models/database');
+      const { db } = require('../../../services/api/models/database');
       db.first.mockResolvedValue(null); // No existing files by default
     });
 
     test('should identify unprocessed files when skipExisting is true', async () => {
-      const { db } = require('../../../src/api/models/database');
+      const { db } = require('../../../services/api/models/database');
       
       // First file exists, second doesn't
       db.first
@@ -423,7 +423,7 @@ describe('ParallelScanner', () => {
     });
 
     test('should handle database errors during filtering', async () => {
-      const { db } = require('../../../src/api/models/database');
+      const { db } = require('../../../services/api/models/database');
       db.first.mockRejectedValue(new Error('Database connection failed'));
 
       const allFiles = ['/test/photo1.jpg'];
@@ -491,7 +491,7 @@ describe('ParallelScanner', () => {
       mockFs.readdirSync.mockReturnValue(['photo1.jpg', 'photo2.jpg'] as any);
       
       // Mock database - no existing files
-      const { db } = require('../../../src/api/models/database');
+      const { db } = require('../../../services/api/models/database');
       db.first.mockResolvedValue(null);
 
       const result = await parallelScanner.scanDirectory('/test/source', {
@@ -509,7 +509,7 @@ describe('ParallelScanner', () => {
       mockFs.readdirSync.mockReturnValue(['photo1.jpg', 'photo2.jpg'] as any);
       
       // Mock database - first file exists
-      const { db } = require('../../../src/api/models/database');
+      const { db } = require('../../../services/api/models/database');
       db.first
         .mockResolvedValueOnce({ id: 1 })
         .mockResolvedValueOnce(null);
@@ -570,7 +570,7 @@ describe('ParallelScanner', () => {
     test('should track statistics across multiple operations', async () => {
       // Perform multiple scan operations
       mockFs.readdirSync.mockReturnValue(['photo1.jpg'] as any);
-      const { db } = require('../../../src/api/models/database');
+      const { db } = require('../../../services/api/models/database');
       db.first.mockResolvedValue(null);
 
       await parallelScanner.scanDirectory('/test/source1');

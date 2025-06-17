@@ -32,9 +32,46 @@ testDirs.forEach(dir => {
   }
 });
 
-// Set other config to prevent validation warnings
+// Set CompreFace config
 process.env.COMPREFACE_API_KEY = 'test-api-key';
-process.env.COMPREFACE_BASE_URL = 'http://compreface-ui:80';
+process.env.COMPREFACE_URL = 'http://compreface-ui:80';
+process.env.COMPREFACE_DETECT_API_KEY = 'test-detect-key';
+process.env.COMPREFACE_RECOGNIZE_API_KEY = 'test-recognize-key';
+process.env.COMPREFACE_TIMEOUT = '10000';
+process.env.COMPREFACE_MAX_CONCURRENCY = '5';
+
+// Set processing configuration to prevent validation errors
+process.env.OBJECT_DETECTION_ENABLED = 'true';
+process.env.OBJECT_DETECTION_MIN_CONFIDENCE = '0.75';
+process.env.FACE_DETECTION_ENABLED = 'true';
+process.env.FACE_DETECTION_CONFIDENCE_DETECTION = '0.8';
+process.env.FACE_DETECTION_CONFIDENCE_REVIEW = '0.75';
+process.env.FACE_DETECTION_CONFIDENCE_AUTO_ASSIGN = '1.0';
+process.env.FACE_DETECTION_CONFIDENCE_GENDER = '0.7';
+process.env.FACE_DETECTION_CONFIDENCE_AGE = '0.7';
+process.env.FACE_RECOGNITION_CONFIDENCE_REVIEW = '0.75';
+process.env.FACE_RECOGNITION_CONFIDENCE_AUTO_ASSIGN = '1.0';
+process.env.FACE_RECOGNITION_CONFIDENCE_SIMILARITY = '0.65';
+process.env.SCREENSHOT_DETECTION_ENABLED = 'true';
+process.env.SCREENSHOT_DETECTION_THRESHOLD = '60';
+
+// Set server configuration
+process.env.API_PORT = '9000';
+process.env.API_HOST = '0.0.0.0';
+process.env.SERVER_PORT = '9000';
+process.env.GALLERY_PAGE_SIZE = '50';
+process.env.SEARCH_LIMIT = '100';
+process.env.SCAN_BATCH_SIZE = '2';
+
+// Set image processing configuration
+process.env.IMAGE_THUMBNAIL_SIZE = '256';
+process.env.IMAGE_JPEG_QUALITY = '85';
+
+// Set feature flags
+process.env.FEATURE_FACE_RECOGNITION = 'true';
+process.env.FEATURE_OBJECT_DETECTION = 'true';
+process.env.FEATURE_SCREENSHOT_DETECTION = 'true';
+process.env.FEATURE_API_CONFIG = 'false';
 
 // Mock console methods to suppress noisy output
 const originalConsole = global.console;

@@ -9,6 +9,7 @@
   - Separate application from backend services
   
 ### Feature Ideas
+- **GeoLocation**: Lets use the samples provided in infrastructure/database/seeds to create new DB schema for connecting images to Geolocations. Will require new tables and associations
 - **Astrophotography Detection**: Can we detect if a photo contains stars/night sky?
 - **Emotion-Based Search**: Endpoint to find all faces of a person showing specific emotions (smiling, sad, etc.)
 - **Lightbox Face Tagging**: Allow tagging faces in lightbox view with boxes drawn around known faces
