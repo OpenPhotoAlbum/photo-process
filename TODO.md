@@ -9,7 +9,22 @@ This file tracks current development priorities and tasks for the Photo Manageme
 - [x] Set up basic structure and navigation
 - [x] Copy existing documentation into proper format
 - [x] Configure for Photo Management Platform branding
-- **Status**: Complete - Running at http://localhost:3000/
+- [x] Install advanced plugins (OpenAPI, Mermaid diagrams)
+- [x] Restructure into logical documentation "books"
+  - [x] Getting Started section (intro, installation)
+  - [x] User Guide section (photo management with AI features)
+  - [x] Configuration guides (environment, database)
+  - [x] Development documentation (setup, workflow, architecture)
+  - [x] Deployment guides (Docker, manual, production)
+  - [x] API Reference section
+- [x] Add interactive features:
+  - [x] Tabbed content for different deployment methods
+  - [x] Admonitions (tips, warnings, info callouts)
+  - [x] Live code examples with syntax highlighting
+  - [x] Architecture diagrams with Mermaid
+  - [x] Multi-level navigation with emojis
+  - [x] Advanced plugins (Mermaid diagrams)
+- **Status**: Basic site complete, advanced features in progress - Running at http://localhost:3000/
 
 ### 🔍 Training Management Endpoints
 - [ ] Investigate Training Management endpoints - at least one is broken

@@ -264,6 +264,8 @@ See Thunder Client collection for complete API documentation.
 - When changing architecture, update the structure diagram
 - When adding new commands, update the "Development Commands" section
 - When changing deployment process, update the "Quick Start" section
+- When changing anything, ensure that we update the docs-site
+- Always refer to the TODO.md
 
 The README.md is the first thing users see and must always reflect the current state of the platform.
 

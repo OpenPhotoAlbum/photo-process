@@ -50,7 +50,10 @@
     "deploy": "./platform-tools/deployment/deploy.sh",
     "maintenance:backfill-dates": "node platform-tools/maintenance/backfill-dates.js",
     "test:no-legacy": "./test-no-legacy.sh",
-    "legacy:remove": "echo 'Removing legacy directory...' && rm -rf legacy && echo 'Legacy directory removed!'"
+    "legacy:remove": "echo 'Removing legacy directory...' && rm -rf legacy && echo 'Legacy directory removed!'",
+    "docs:dev": "cd docs-site && npm start",
+    "docs:build": "cd docs-site && npm run build",
+    "docs:serve": "cd docs-site && npm run serve"
   },
   "dependencies": {
     "chalk": "^5.4.1",

@@ -44,28 +44,26 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           // Remove edit URL for now - can be added later if docs are on GitHub
           // editUrl: 'https://github.com/your-org/photo-platform/edit/main/docs-site/',
+          routeBasePath: 'docs',
+          // Enable advanced markdown features
+          remarkPlugins: [],
+          rehypePlugins: [],
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
+        blog: false, // Disable blog
         theme: {
           customCss: './src/css/custom.css',
         },
       } satisfies Preset.Options,
     ],
   ],
+
+  // Enable Mermaid diagrams
+  themes: ['@docusaurus/theme-mermaid'],
+  
+  // Markdown configuration for advanced features
+  markdown: {
+    mermaid: true,
+  },
 
   themeConfig: {
     // Replace with your project's social card
@@ -89,7 +87,6 @@ const config: Config = {
           position: 'left',
           label: 'API Reference',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/your-org/photo-platform',
           label: 'GitHub',
@@ -129,10 +126,6 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
             {
               label: 'GitHub',
               href: 'https://github.com/facebook/docusaurus',

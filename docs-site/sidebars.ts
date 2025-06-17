@@ -15,10 +15,24 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   // Main documentation sidebar
   docsSidebar: [
-    'intro',
     {
       type: 'category',
-      label: 'Configuration',
+      label: '🚀 Getting Started',
+      items: [
+        'getting-started/intro',
+        'getting-started/installation',
+      ],
+    },
+    {
+      type: 'category',
+      label: '📖 User Guide',
+      items: [
+        'user-guide/photo-management',
+      ],
+    },
+    {
+      type: 'category',
+      label: '🔧 Configuration',
       items: [
         'configuration/index',
         'configuration/database',
@@ -26,14 +40,14 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Development',
+      label: '👨‍💻 Development',
       items: [
         'development/setup',
       ],
     },
     {
       type: 'category',
-      label: 'Deployment',
+      label: '🚀 Deployment',
       items: [
         'deployment/index',
       ],
@@ -44,7 +58,7 @@ const sidebars: SidebarsConfig = {
   apiSidebar: [
     {
       type: 'category',
-      label: 'API Reference',
+      label: '📚 API Reference',
       items: [
         'api/overview',
       ],
