@@ -267,4 +267,21 @@ See Thunder Client collection for complete API documentation.
 
 The README.md is the first thing users see and must always reflect the current state of the platform.
 
+## Tooling Script Maintenance
+
+**IMPORTANT**: Keep all tooling scripts updated for platform architecture
+- **Development Scripts**: Update start-dev.sh, npm scripts, Docker commands
+- **Cleanup Scripts**: Update database paths, API URLs, service endpoints in platform-tools/cleanup/
+- **Maintenance Scripts**: Update import paths, service URLs in platform-tools/maintenance/
+- **Database Scripts**: Update connection strings and paths in platform-tools/database/
+- **Testing Scripts**: Update paths and service URLs in platform-tools/testing/
+
+When changing:
+- Service URLs (API, CompreFace, database ports)
+- File paths (moving to services/, infrastructure/)
+- Docker configuration
+- Database schema or connection methods
+
+Always check and update corresponding scripts in platform-tools/
+
 **Reminder**: Always make sure the server is running when you are finished

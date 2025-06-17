@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { generateImageDataJson } = require('./build/util/process-source');
+const { generateImageDataJsonHashed } = require('../../services/api/build/util/process-source');
 
 async function testFullProcessing() {
     try {

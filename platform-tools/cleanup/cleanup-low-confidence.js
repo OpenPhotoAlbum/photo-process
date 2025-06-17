@@ -1,18 +1,20 @@
 #!/usr/bin/env node
 
 const { execSync } = require('child_process');
+const path = require('path');
 
 // Ensure TypeScript is compiled first
 console.log('📦 Compiling TypeScript...');
 try {
-    execSync('npx tsc', { stdio: 'inherit' });
+    const apiDir = path.join(__dirname, '../../services/api');
+    execSync('npm run build', { cwd: apiDir, stdio: 'inherit' });
 } catch (error) {
     console.error('❌ TypeScript compilation failed:', error.message);
     process.exit(1);
 }
 
-const { db } = require('./build/models/database');
-const config = require('./build/config').default;
+const { db } = require('../../services/api/build/models/database');
+const { configManager } = require('../../services/api/build/util/config-manager');
 const fs = require('fs');
 const path = require('path');
 

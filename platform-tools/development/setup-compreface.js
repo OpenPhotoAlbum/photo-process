@@ -145,7 +145,7 @@ async function main() {
     if (!keysWork) {
         console.log('\n⚠️  API keys need to be configured in CompreFace');
         console.log('\n📋 Manual setup required:');
-        console.log('1. Open http://localhost:8000 in your browser');
+        console.log('1. Open http://localhost:8001 in your browser');
         console.log('2. Create a new account or log in');
         console.log('3. Create a new application');
         console.log('4. Create Face Detection and Face Recognition services');

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Development startup script for Photo Platform
-# Starts the platform database and API server
+# Uses Docker Compose to start all platform services
 
 set -e
 
@@ -37,62 +37,56 @@ fi
 
 log_info "Starting Photo Platform development environment..."
 
-# Start platform database
-log_info "Starting MySQL database..."
-if docker compose -f docker-compose.platform.yml up -d database; then
-    log_success "Database started on port 3307"
-else
-    log_error "Failed to start database"
-    exit 1
-fi
-
-# Wait for database to be ready
-log_info "Waiting for database to be ready..."
-sleep 5
-
-# Check if API is already running
-if pgrep -f "node.*build/index.js" > /dev/null; then
-    log_warning "API server is already running"
-    log_info "Restarting API server..."
-    pkill -f "node.*build/index.js" 2>/dev/null || true
+# Check if services are already running
+if docker compose -f docker-compose.platform.yml ps --services --filter "status=running" | grep -q .; then
+    log_warning "Some services are already running. Stopping them first..."
+    docker compose -f docker-compose.platform.yml down
     sleep 2
 fi
 
-# Start API server
-log_info "Starting API server..."
-cd services/api
-
-# Build if needed
-if [ ! -f "build/index.js" ] || [ "src/index.ts" -nt "build/index.js" ]; then
-    log_info "Building TypeScript..."
-    tsc
+# Start all platform services
+log_info "Starting all platform services (database, CompreFace, API)..."
+if docker compose -f docker-compose.platform.yml up -d; then
+    log_success "All services started successfully"
+else
+    log_error "Failed to start platform services"
+    exit 1
 fi
 
-# Start server
-nohup node build/index.js > server.log 2>&1 &
-SERVER_PID=$!
-echo "Server PID: $SERVER_PID"
+# Wait for services to be ready
+log_info "Waiting for services to be ready..."
+sleep 10
 
-# Wait for server to start
-sleep 3
-
-# Test if server is responding
-if curl -s http://localhost:9000/ > /dev/null 2>&1; then
-    log_success "API server is running on http://localhost:9000"
+# Test if API server is responding
+log_info "Testing API server connectivity..."
+if curl -s http://localhost:9000/api/persons > /dev/null 2>&1; then
+    log_success "API server is responding on http://localhost:9000"
 else
-    log_error "API server failed to start. Check server.log for details"
-    tail -10 server.log
+    log_error "API server is not responding. Checking logs..."
+    docker compose -f docker-compose.platform.yml logs api | tail -20
     exit 1
+fi
+
+# Test if CompreFace is responding
+log_info "Testing CompreFace connectivity..."
+if curl -s http://localhost:8001 > /dev/null 2>&1; then
+    log_success "CompreFace UI is responding on http://localhost:8001"
+else
+    log_warning "CompreFace UI may still be starting up"
 fi
 
 echo ""
 log_success "Development environment is ready!"
 echo ""
-echo "🌐 API: http://localhost:9000"
+echo "🌐 API: http://localhost:9000/api/persons"
+echo "🤖 CompreFace: http://localhost:8001"
 echo "🗄️  Database: localhost:3307"
-echo "📋 API Status: curl http://localhost:9000/"
-echo "📊 Gallery: curl http://localhost:9000/api/gallery"
+echo "📊 Gallery: http://localhost:9000/api/gallery"
+echo "📋 Scan Status: http://localhost:9000/scan/status"
 echo ""
-echo "To stop:"
-echo "  pkill -f 'node.*build/index.js'  # Stop API"
-echo "  docker compose -f docker-compose.platform.yml down  # Stop database"
+echo "To view logs:"
+echo "  docker compose -f docker-compose.platform.yml logs -f api"
+echo "  docker compose -f docker-compose.platform.yml logs -f database"
+echo ""
+echo "To stop all services:"
+echo "  docker compose -f docker-compose.platform.yml down"

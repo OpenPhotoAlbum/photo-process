@@ -2,8 +2,8 @@
 
 const fetch = require('node-fetch');
 
-const COMPREFACE_URL = 'http://localhost:8000';
-const API_KEY = 'b6dd9990-6905-40b8-80d3-4655196ab139';
+const COMPREFACE_URL = 'http://localhost:8001';
+const API_KEY = '8152b5da-cdd5-4631-b720-80f3907ea64d';
 
 async function cleanupCompreFace() {
     console.log('🤖 COMPREFACE CLEANUP SCRIPT 🤖');
@@ -88,7 +88,7 @@ async function cleanupCompreFace() {
     } catch (error) {
         console.error('\n❌ Error during CompreFace cleanup:', error);
         console.log('\n💡 Tips:');
-        console.log('   - Make sure CompreFace is running (http://localhost:8000)');
+        console.log('   - Make sure CompreFace is running (http://localhost:8001)');
         console.log('   - Check that the API key is correct');
     }
 }

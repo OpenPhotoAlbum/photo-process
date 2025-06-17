@@ -18,7 +18,7 @@
  *   --keep-db           Don't clear database tables
  */
 
-const { db } = require('./build/models/database');
+const { db } = require('../../services/api/build/models/database');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');

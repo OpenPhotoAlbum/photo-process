@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { detectObjects } = require('./build/util/object-detection');
+const { detectObjects } = require('../../services/api/build/util/object-detection');
 
 async function testObjectDetection() {
     try {

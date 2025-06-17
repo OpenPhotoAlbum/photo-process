@@ -367,7 +367,7 @@ show_status() {
     fi
     
     # CompreFace health check
-    if curl -s http://localhost:8000 > /dev/null 2>&1; then
+    if curl -s http://localhost:8001 > /dev/null 2>&1; then
         echo "✅ CompreFace Health: OK"
     else
         echo "❌ CompreFace Health: FAILED"
