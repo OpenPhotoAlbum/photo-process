@@ -1,11 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import { promises as fsPromises } from 'fs';
-import chokidar from 'chokidar';
 import crypto from 'crypto';
 import { Logger } from '../logger';
 import { configManager } from './config-manager';
-import { knex } from '../conn';
+import knex from '../conn';
 
 const logger = Logger.getInstance();
 
@@ -22,21 +21,17 @@ export interface FileIndexRecord {
 }
 
 export class FileTracker {
-    private watcher: chokidar.FSWatcher | null = null;
     private isScanning = false;
     private readonly supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'];
 
     /**
-     * Initialize the file tracker with database scanning and file watching
+     * Initialize the file tracker with database scanning
      */
     async initialize(): Promise<void> {
         logger.info('🔍 Initializing File Tracker...');
         
         // Run initial database scan to catch existing files
         await this.performInitialScan();
-        
-        // Start file system watching for real-time detection
-        await this.startFileWatching();
         
         logger.info('✅ File Tracker initialized successfully');
     }
@@ -80,56 +75,6 @@ export class FileTracker {
         }
     }
 
-    /**
-     * Start file system watching for real-time file detection
-     */
-    async startFileWatching(): Promise<void> {
-        const sourceDir = configManager.getStorage().sourceDir;
-        
-        logger.info(`👀 Starting file system watcher on: ${sourceDir}`);
-        
-        this.watcher = chokidar.watch(sourceDir, {
-            ignored: /(^|[\/\\])\../, // ignore dotfiles
-            persistent: true,
-            ignoreInitial: true, // Don't fire events for existing files
-            followSymlinks: false,
-            depth: 10, // Reasonable depth limit
-            awaitWriteFinish: {
-                stabilityThreshold: 2000, // Wait 2s for file writes to complete
-                pollInterval: 100
-            }
-        });
-
-        this.watcher
-            .on('add', async (filePath: string, stats?: fs.Stats) => {
-                if (this.isSupportedImageFile(filePath)) {
-                    logger.info(`📁 New file detected: ${filePath}`);
-                    if (stats) {
-                        await this.addFileToIndex(filePath, stats);
-                    }
-                }
-            })
-            .on('change', async (filePath: string, stats?: fs.Stats) => {
-                if (this.isSupportedImageFile(filePath)) {
-                    logger.info(`🔄 File modified: ${filePath}`);
-                    if (stats) {
-                        await this.updateFileInIndex(filePath, stats);
-                    }
-                }
-            })
-            .on('unlink', async (filePath: string) => {
-                if (this.isSupportedImageFile(filePath)) {
-                    logger.info(`🗑️ File deleted: ${filePath}`);
-                    await this.removeFileFromIndex(filePath);
-                }
-            })
-            .on('error', error => {
-                logger.error('❌ File watcher error:', error);
-            })
-            .on('ready', () => {
-                logger.info('✅ File watcher ready and monitoring for changes');
-            });
-    }
 
     /**
      * Get pending files for processing
@@ -223,7 +168,7 @@ export class FileTracker {
                 failed: 0
             };
             
-            stats.forEach(stat => {
+            stats.forEach((stat: any) => {
                 result[stat.processing_status] = parseInt(stat.count as string);
             });
             
@@ -309,13 +254,6 @@ export class FileTracker {
     }
 
     /**
-     * Update file in index (for file changes)
-     */
-    private async updateFileInIndex(filePath: string, stats: fs.Stats): Promise<void> {
-        await this.addFileToIndex(filePath, stats); // Same logic handles updates
-    }
-
-    /**
      * Remove file from index
      */
     private async removeFileFromIndex(filePath: string): Promise<void> {
@@ -335,16 +273,6 @@ export class FileTracker {
         return this.supportedExtensions.includes(ext);
     }
 
-    /**
-     * Stop file watching
-     */
-    async stop(): Promise<void> {
-        if (this.watcher) {
-            await this.watcher.close();
-            this.watcher = null;
-            logger.info('🛑 File watcher stopped');
-        }
-    }
 }
 
 // Singleton instance

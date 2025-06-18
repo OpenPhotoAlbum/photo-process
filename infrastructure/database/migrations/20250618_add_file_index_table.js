@@ -7,7 +7,7 @@ exports.up = function(knex) {
         table.string('file_path', 500).primary();
         table.bigInteger('file_size').notNullable();
         table.datetime('file_mtime').notNullable();
-        table.char('file_hash', 64).nullable();
+        table.string('file_hash', 64).nullable();
         table.datetime('discovered_at').defaultTo(knex.fn.now());
         table.enum('processing_status', ['pending', 'processing', 'completed', 'failed']).defaultTo('pending');
         table.datetime('last_processed').nullable();

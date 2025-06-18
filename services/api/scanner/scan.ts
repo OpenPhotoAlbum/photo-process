@@ -5,6 +5,7 @@ import mime from 'mime-types';
 import { generateImageDataJsonHashed, storeImageDataHashed } from '../util/process-source';
 import { HashManager } from '../util/hash-manager';
 import { ImageRepository } from '../models/database';
+import { fileTracker, FileIndexRecord } from '../util/file-tracker';
 import { Logger } from '../logger';
 import winston from 'winston';
 
@@ -80,7 +81,7 @@ async function* getFiles(dir: string): any {
 const getDirectories = async (source: string) =>
     (await readdir(source, { withFileTypes: true }))
       .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name)
+      .map(dirent => dirent.name);
 
 // Legacy run function removed - use runHashed instead
 
@@ -131,7 +132,7 @@ const runHashed = async (fileToScan: string): Promise<{imageId: number}> => {
 // Legacy Start function removed - use StartHashed instead
 
 /**
- * Hash-based scanner with database integration
+ * Hash-based scanner with FileTracker integration for fast discovery
  */
 export const StartHashed = async (scanDir: string, limit?: number) => {
     // Initialize scan state
@@ -145,93 +146,31 @@ export const StartHashed = async (scanDir: string, limit?: number) => {
     };
 
     const processed: { imageId: number }[] = [];
-    const files: any[] = [];
     const errors: any[] = [];
-    let found_files = 0;
     
     try {
-        logger.info(`${logPrefix} Starting optimized scan with limit: ${limit || 'unlimited'}`);
+        logger.info(`${logPrefix} Starting FileTracker-based scan with limit: ${limit || 'unlimited'}`);
         
-        // Handle both directory structure and flat structure
-        const dirs = await getDirectories(scanDir);
-        logger.info(`${logPrefix} Found directories in ${scanDir}: ${dirs.join(', ')}`);
-    
-    if (dirs.length > 0) {
-        // Optimized: stop when we have enough files
-        outer: for (const d of dirs) {
-            logger.info(`${logPrefix} Scanning directory: ${d}`);
-            for await (const f of getFiles(scanDir + '/' + d)) {
-                found_files++;
-                
-                // Log progress every 1000 files
-                if (found_files % 1000 === 0) {
-                    logger.info(`${logPrefix} Discovery progress: ${found_files} files checked so far, found ${files.length} images...`);
-                }
-                
-                const mt = mime.lookup(f);
-                const mimeTypeChecks = mt && supportedMIMEtypeInput.includes(mt as string)
-                
-                if (mimeTypeChecks && blacklist(f)) {
-                    // Check if already processed immediately
-                    try {
-                        const hash = await HashManager.calculateFileHash(f);
-                        const existing = await ImageRepository.findByHash(hash);
-                        if (!existing) {
-                            files.push(f);
-                            logger.info(`${logPrefix} Found unprocessed file: ${f} (${files.length}/${limit || 'unlimited'})`);
-                            
-                            // Early exit if we have enough files
-                            if (limit && files.length >= limit) {
-                                logger.info(`${logPrefix} Reached limit of ${limit} files, stopping discovery`);
-                                break outer;
-                            }
-                        }
-                    } catch (error) {
-                        logger.error(`Error checking hash for ${f}:`, error);
-                    }
-                }
-            }
-        }
-    } else {
-        // Flat directory - optimized version
-        logger.info(`${logPrefix} Scanning flat directory...`);
-        for await (const f of getFiles(scanDir)) {
-            found_files++;
-            
-            // Log progress every 1000 files
-            if (found_files % 1000 === 0) {
-                logger.info(`${logPrefix} Discovery progress: ${found_files} files checked so far, found ${files.length} images...`);
-            }
-            
-            const mt = mime.lookup(f);
-            const mimeTypeChecks = mt && supportedMIMEtypeInput.includes(mt as string)
-            
-            if (mimeTypeChecks && blacklist(f)) {
-                // Check if already processed immediately
-                try {
-                    const hash = await HashManager.calculateFileHash(f);
-                    const existing = await ImageRepository.findByHash(hash);
-                    if (!existing) {
-                        files.push(f);
-                        logger.info(`${logPrefix} Found unprocessed file: ${f} (${files.length}/${limit || 'unlimited'})`);
-                        
-                        // Early exit if we have enough files
-                        if (limit && files.length >= limit) {
-                            logger.info(`${logPrefix} Reached limit of ${limit} files, stopping discovery`);
-                            break;
-                        }
-                    }
-                } catch (error) {
-                    logger.error(`Error checking hash for ${f}:`, error);
-                }
-            }
-        }
-    }
+        // Initialize FileTracker if not already done
+        await fileTracker.initialize();
+        
+        // Get pending files from FileTracker (much faster than directory traversal)
+        const pendingFiles = await fileTracker.getPendingFiles(limit || 1000);
+        logger.info(`${logPrefix} FileTracker found ${pendingFiles.length} pending files`);
+        
+        // Filter to supported image types
+        const files = pendingFiles
+            .filter(record => {
+                const mt = mime.lookup(record.file_path);
+                return mt && supportedMIMEtypeInput.includes(mt as string) && blacklist(record.file_path);
+            })
+            .map(record => record.file_path)
+            .slice(0, limit || pendingFiles.length);
 
-    logger.info(`${logPrefix} Discovery complete: found ${files.length} unprocessed files after checking ${found_files} total files`);
-    
-    // Update total files count in state
-    currentScanState.totalFiles = files.length;
+        logger.info(`${logPrefix} Discovery complete: found ${files.length} unprocessed image files`);
+        
+        // Update total files count in state
+        currentScanState.totalFiles = files.length;
 
     if (files.length === 0) {
         logger.info(`${logPrefix} No new files to process`);
@@ -257,10 +196,42 @@ export const StartHashed = async (scanDir: string, limit?: number) => {
             const results = await Promise.allSettled(fileChunk.map(async (f) => {
                 logger.info(`${logPrefix} Starting processing: ${f}`);
                 currentScanState.currentFile = f;
-                const result = await runHashed(f);
-                currentScanState.processed++;
-                logger.info(`${logPrefix} Completed processing: ${f} (${currentScanState.processed}/${currentScanState.totalFiles})`);
-                return result;
+                
+                // Mark file as processing in FileTracker
+                await fileTracker.markFileAsProcessing(f);
+                
+                try {
+                    const result = await runHashed(f);
+                    
+                    // Mark file as completed with hash
+                    const hash = await HashManager.calculateFileHash(f);
+                    await fileTracker.markFileAsCompleted(f, hash);
+                    
+                    currentScanState.processed++;
+                    logger.info(`${logPrefix} Completed processing: ${f} (${currentScanState.processed}/${currentScanState.totalFiles})`);
+                    return result;
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    
+                    // Handle duplicates as successful completion, not failures
+                    if (errorMessage.includes('Duplicate file detected')) {
+                        logger.info(`${logPrefix} Duplicate file detected: ${f} - marking as completed`);
+                        
+                        // Extract hash from duplicate error message
+                        const hashMatch = errorMessage.match(/Hash: ([a-f0-9]+)/);
+                        const hash = hashMatch ? hashMatch[1] : undefined;
+                        
+                        await fileTracker.markFileAsCompleted(f, hash);
+                        currentScanState.processed++;
+                        
+                        // Return a success result for duplicates
+                        return { imageId: -1, duplicate: true };
+                    } else {
+                        // Real errors should be marked as failed
+                        await fileTracker.markFileAsFailed(f, errorMessage);
+                        throw error;
+                    }
+                }
             }));
             
             for (const result of results) {
@@ -327,6 +298,14 @@ export const Status = async () => {
         }
     }
 
+    // Get FileTracker statistics
+    let fileTrackerStats = null;
+    try {
+        fileTrackerStats = await fileTracker.getStats();
+    } catch (error) {
+        logger.warn('Could not get FileTracker stats:', error);
+    }
+
     return {
         message: currentScanState.status,
         processed: currentScanState.processed,
@@ -336,6 +315,7 @@ export const Status = async () => {
         started_at: currentScanState.startedAt?.toISOString() || null,
         completed_at: currentScanState.completedAt?.toISOString() || null,
         error: currentScanState.error,
-        current_file: currentScanState.currentFile
+        current_file: currentScanState.currentFile,
+        file_tracker: fileTrackerStats
     };
 }
