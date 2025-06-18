@@ -4,6 +4,23 @@ This file tracks current development priorities and tasks for the Photo Manageme
 
 ## 🔥 High Priority
 
+### 📱 Mobile App Advanced Features
+- [ ] **Auto-Upload System**: Implement background photo synchronization
+  - [ ] Camera roll monitoring with React Native MediaLibrary API
+  - [ ] WiFi-preferred upload scheduling with cellular data controls
+  - [ ] Upload queue with retry logic and exponential backoff
+  - [ ] Background sync using Expo TaskManager
+  - [ ] User controls: enable/disable, quality settings, data limits
+  - [ ] Conflict resolution for duplicates and modified photos
+- [ ] **Push Notifications**: Real-time engagement and updates
+  - [ ] Expo Notifications integration for cross-platform support
+  - [ ] Firebase/APNs setup for reliable notification delivery
+  - [ ] Backend notification service with user preferences
+  - [ ] Processing status notifications ("15 photos processed")
+  - [ ] Memory notifications ("On this day 3 years ago")
+  - [ ] Smart reminders ("Haven't backed up in 3 days")
+  - [ ] System updates (sync status, storage warnings)
+
 ### 📁 Media Path Restructuring
 - [x] **PLANNING PHASE**: Design flattened media path structure ✅ COMPLETED
   - [x] Create comprehensive plan for new path structure (date-based organization)

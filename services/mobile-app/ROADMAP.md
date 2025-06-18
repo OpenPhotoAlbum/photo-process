@@ -101,11 +101,51 @@ This roadmap outlines the planned expansion of our React Native mobile app from 
 - **Duplicate Detection**: Find and manage duplicate/similar photos
 - **Smart Notifications**: "You haven't seen these photos in a while"
 
+### 2.2 Auto-Upload & Sync 🔄
+**Goal**: Seamless background photo synchronization with intelligent uploading
+
+#### Features
+- **Auto-Upload Recent Images**: 
+  - Background monitoring of camera roll for new photos
+  - Intelligent upload scheduling (WiFi preferred, low battery awareness)
+  - User controls: enable/disable, upload quality settings, data usage limits
+  - Progress tracking and retry logic for failed uploads
+- **Selective Sync**: Choose which albums/folders to auto-upload
+- **Background Processing**: Queue uploads when app is backgrounded
+- **Conflict Resolution**: Handle duplicates and modified photos intelligently
+
+### 2.3 Push Notifications & Real-time Updates 📲
+**Goal**: Keep users engaged with meaningful, timely photo-related notifications
+
+#### Features
+- **Processing Notifications**: 
+  - "Your 15 photos have been processed and are ready to view"
+  - "New faces detected - help us identify them"
+- **Memory Notifications**: 
+  - "On this day 3 years ago" with photo preview
+  - "We found 5 new photos with [Person Name]"
+- **Smart Reminders**: 
+  - "You haven't backed up photos in 3 days"
+  - "25 photos are ready to upload when connected to WiFi"
+- **Social Features**: Share albums, collaborative tagging notifications
+- **System Updates**: Processing complete, storage warnings, sync status
+
 #### Technical Implementation
-- Temporal analysis algorithms for memory detection
-- Person co-occurrence analysis
-- Push notifications with Expo Notifications
-- Machine learning insights from backend processing
+- **Auto-Upload System**:
+  - React Native Background Tasks and App State monitoring
+  - Expo MediaLibrary API for camera roll access
+  - Upload queue with retry logic and exponential backoff
+  - WiFi detection and cellular data usage controls
+  - Background sync using Expo TaskManager
+- **Push Notifications**:
+  - Expo Notifications for cross-platform push notifications
+  - Firebase/APNs integration for reliable delivery
+  - Backend notification service with user preferences
+  - Real-time photo processing status updates
+- **AI Features**:
+  - Temporal analysis algorithms for memory detection
+  - Person co-occurrence analysis
+  - Machine learning insights from backend processing
 
 ### 2.2 Advanced Person Management 👥
 **Goal**: Complete control over person recognition and organization
