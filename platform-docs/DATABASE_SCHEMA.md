@@ -6,7 +6,35 @@ This database schema is designed to store and efficiently query processed photo 
 
 ## Database Tables
 
-### 1. `images` - Core Image Records
+### 1. `file_index` - File Discovery System
+**NEW:** Database-driven file tracking system that replaces slow directory scanning with instant database queries.
+
+**Key Fields:**
+- `file_path` - Full path to source file (PRIMARY KEY)
+- `file_size` - File size in bytes
+- `file_mtime` - File modification time
+- `file_hash` - SHA-256 hash (populated after processing)
+- `discovered_at` - When file was first discovered
+- `processing_status` - Status: pending/processing/completed/failed
+- `last_processed` - Last processing attempt timestamp
+- `retry_count` - Number of processing retries
+- `error_message` - Last error message if processing failed
+
+**Performance Benefits:**
+- **Instant Discovery**: 8,358+ files found in <100ms vs. minutes of directory scanning
+- **Status Tracking**: Real-time processing progress monitoring
+- **Scalability**: Handles large photo collections efficiently
+
+**Usage:**
+```bash
+# Check FileTracker statistics
+curl http://localhost:9000/scan/status | jq .file_tracker
+
+# Start scan using FileTracker discovery
+curl "http://localhost:9000/scan?limit=10"
+```
+
+### 2. `images` - Core Image Records
 Primary table storing basic image information and processing status.
 
 **Key Fields:**

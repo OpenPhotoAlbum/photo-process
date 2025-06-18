@@ -13,6 +13,7 @@ import * as Jobs from './routes/jobs';
 import * as Process from './routes/process';
 import { StartupValidator } from './util/startup-validator';
 import { configManager } from './util/config-manager';
+import { fileTracker } from './util/file-tracker';
 
 const logger = Logger.getInstance();
 
@@ -24,6 +25,10 @@ const main = async () => {
         // StartupValidator.printReport(validationReport);
         
         logger.info('Starting API...');
+        
+        // Initialize FileTracker once at startup
+        logger.info('Initializing FileTracker...');
+        await fileTracker.initialize();
         
         const app = express()
         const port = configManager.getServer().port

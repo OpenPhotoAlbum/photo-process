@@ -186,12 +186,13 @@ export const StartHashed = async (scanDir: string, limit?: number) => {
 
     logger.info(`${logPrefix} Starting processing phase for ${files.length} files`);
     
-    // Process files in batches
-    const batch = 2;
+    // Process files in smaller batches to prevent blocking
+    const batch = 1; // Process one file at a time to maximize responsiveness
     const chunkedFiles = chunk(files, batch);
 
-    for await (const fileChunk of chunkedFiles) {
-        logger.info(`${logPrefix} Processing batch of ${fileChunk.length} files...`);
+    // Process batches asynchronously to avoid blocking the event loop
+    const processBatchAsync = async (fileChunk: string[], batchIndex: number) => {
+        logger.info(`${logPrefix} Processing batch ${batchIndex + 1} of ${fileChunk.length} files...`);
         try {
             const results = await Promise.allSettled(fileChunk.map(async (f) => {
                 logger.info(`${logPrefix} Starting processing: ${f}`);
@@ -246,6 +247,28 @@ export const StartHashed = async (scanDir: string, limit?: number) => {
             logger.error('Error processing batch:', error);
             errors.push(error);
         }
+    };
+
+    // Process batches with non-blocking behavior
+    for (let i = 0; i < chunkedFiles.length; i++) {
+        const fileChunk = chunkedFiles[i];
+        
+        // Yield control to event loop between each file
+        await new Promise(resolve => setImmediate(resolve));
+        
+        // Process batch without blocking - fire and forget style
+        processBatchAsync(fileChunk, i).catch(err => {
+            logger.error(`Batch ${i} processing failed:`, err);
+            errors.push(err);
+        });
+        
+        // Add a small delay between batches to ensure responsiveness
+        await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    
+    // Wait for all batches to complete
+    while (currentScanState.processed < files.length && errors.length === 0) {
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     // Complete scan state

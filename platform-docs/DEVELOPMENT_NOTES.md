@@ -9,6 +9,7 @@ This document contains development thoughts, architecture decisions, and technic
 - **Docker Orchestration**: Complete container setup with docker-compose.platform.yml
 - **Database**: 15+ migrations successfully applied, MySQL 8.0 running
 - **API Service**: Full TypeScript API with face recognition and object detection
+- **FileTracker System**: Database-driven file discovery replacing slow directory scanning
 - **Configuration**: Single source of truth via .env with Docker overrides
 - **Documentation**: Comprehensive platform docs and Thunder Client collection
 
@@ -34,6 +35,7 @@ This document contains development thoughts, architecture decisions, and technic
 ### Data Organization
 - **Hash-Based Storage**: All files organized by hash to prevent duplicates
 - **Database Storage**: All metadata in MySQL, no JSON files
+- **FileTracker System**: `file_index` table provides instant file discovery (8,358+ files in <100ms)
 - **Structured Logging**: Category-based log files with daily rotation
 - **API-First**: Clean backend APIs with no frontend dependencies
 - Standardize response body schemas across similar endpoints

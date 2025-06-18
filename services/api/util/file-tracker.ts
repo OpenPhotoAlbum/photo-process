@@ -7,6 +7,7 @@ import { configManager } from './config-manager';
 import knex from '../conn';
 
 const logger = Logger.getInstance();
+const fileTrackerLogger = Logger.getInstance('file-tracker');
 
 export interface FileIndexRecord {
     file_path: string;
@@ -22,18 +23,47 @@ export interface FileIndexRecord {
 
 export class FileTracker {
     private isScanning = false;
+    private isInitialized = false;
     private readonly supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'];
 
     /**
      * Initialize the file tracker with database scanning
      */
     async initialize(): Promise<void> {
+        if (this.isInitialized) {
+            logger.info('🔍 File Tracker already initialized, skipping scan');
+            return;
+        }
+        
         logger.info('🔍 Initializing File Tracker...');
+        this.isInitialized = true;
         
-        // Run initial database scan to catch existing files
-        await this.performInitialScan();
+        // Only run initial scan if there are no files in the index
+        const stats = await this.getStats();
+        const totalFiles = stats.pending + stats.processing + stats.completed + stats.failed;
         
-        logger.info('✅ File Tracker initialized successfully');
+        if (totalFiles === 0) {
+            logger.info('📂 File index is empty, performing initial scan...');
+            // Run initial database scan in background (non-blocking)
+            this.performInitialScanBackground();
+        } else {
+            logger.info(`✅ File Tracker initialized with ${totalFiles} files already indexed`);
+        }
+    }
+
+    /**
+     * Perform initial scan of source directories to populate file_index (background, non-blocking)
+     */
+    private performInitialScanBackground(): void {
+        if (this.isScanning) {
+            logger.warn('Initial scan already in progress, skipping...');
+            return;
+        }
+
+        // Run scan in background without blocking
+        setImmediate(async () => {
+            await this.performInitialScan();
+        });
     }
 
     /**
@@ -46,7 +76,7 @@ export class FileTracker {
         }
 
         this.isScanning = true;
-        logger.info('📂 Starting initial file system scan...');
+        logger.info('📂 Starting initial file system scan (background)...');
         
         try {
             const sourceDir = configManager.getStorage().sourceDir;
@@ -54,7 +84,7 @@ export class FileTracker {
             let scannedCount = 0;
             let newCount = 0;
 
-            await this.scanDirectory(sourceDir, async (filePath: string, stats: fs.Stats) => {
+            await this.scanDirectoryNonBlocking(sourceDir, async (filePath: string, stats: fs.Stats) => {
                 scannedCount++;
                 
                 const isNew = await this.addFileToIndex(filePath, stats);
@@ -180,7 +210,7 @@ export class FileTracker {
     }
 
     /**
-     * Scan directory recursively
+     * Scan directory recursively (legacy method, kept for compatibility)
      */
     private async scanDirectory(dirPath: string, fileCallback: (filePath: string, stats: fs.Stats) => Promise<void>): Promise<void> {
         try {
@@ -194,6 +224,34 @@ export class FileTracker {
                 } else if (entry.isFile() && this.isSupportedImageFile(fullPath)) {
                     const stats = await fsPromises.stat(fullPath);
                     await fileCallback(fullPath, stats);
+                }
+            }
+        } catch (error) {
+            logger.error(`❌ Failed to scan directory: ${dirPath}`, error);
+        }
+    }
+
+    /**
+     * Scan directory recursively with non-blocking behavior
+     */
+    private async scanDirectoryNonBlocking(dirPath: string, fileCallback: (filePath: string, stats: fs.Stats) => Promise<void>, fileCount = { count: 0 }): Promise<void> {
+        try {
+            const entries = await fsPromises.readdir(dirPath, { withFileTypes: true });
+            
+            for (const entry of entries) {
+                const fullPath = path.join(dirPath, entry.name);
+                
+                if (entry.isDirectory()) {
+                    await this.scanDirectoryNonBlocking(fullPath, fileCallback, fileCount);
+                } else if (entry.isFile() && this.isSupportedImageFile(fullPath)) {
+                    const stats = await fsPromises.stat(fullPath);
+                    await fileCallback(fullPath, stats);
+                    fileCount.count++;
+                    
+                    // Yield control to event loop every 50 files to prevent blocking
+                    if (fileCount.count % 50 === 0) {
+                        await new Promise(resolve => setImmediate(resolve));
+                    }
                 }
             }
         } catch (error) {
@@ -229,7 +287,7 @@ export class FileTracker {
                             retry_count: 0,
                             error_message: null
                         });
-                    logger.info(`🔄 Updated modified file in index: ${filePath}`);
+                    fileTrackerLogger.info(`🔄 Updated modified file in index: ${filePath}`);
                     return true;
                 }
                 return false; // File unchanged
@@ -245,7 +303,7 @@ export class FileTracker {
                 retry_count: 0
             });
             
-            logger.info(`📝 Added new file to index: ${filePath}`);
+            fileTrackerLogger.info(`📝 Added new file to index: ${filePath}`);
             return true;
         } catch (error) {
             logger.error(`❌ Failed to add file to index: ${filePath}`, error);
@@ -259,7 +317,7 @@ export class FileTracker {
     private async removeFileFromIndex(filePath: string): Promise<void> {
         try {
             await knex('file_index').where('file_path', filePath).del();
-            logger.info(`🗑️ Removed file from index: ${filePath}`);
+            fileTrackerLogger.info(`🗑️ Removed file from index: ${filePath}`);
         } catch (error) {
             logger.error(`❌ Failed to remove file from index: ${filePath}`, error);
         }
@@ -271,6 +329,26 @@ export class FileTracker {
     private isSupportedImageFile(filePath: string): boolean {
         const ext = path.extname(filePath).toLowerCase();
         return this.supportedExtensions.includes(ext);
+    }
+
+    /**
+     * Perform incremental scan for new files only (much faster)
+     * This could be called periodically or on-demand
+     */
+    async performIncrementalScan(): Promise<{ newFiles: number }> {
+        if (this.isScanning) {
+            logger.warn('Scan already in progress, skipping incremental scan');
+            return { newFiles: 0 };
+        }
+
+        logger.info('🔍 Starting incremental scan for new files...');
+        
+        // For now, we'll just return existing stats
+        // In the future, this could use file watching or other efficient methods
+        const stats = await this.getStats();
+        logger.info(`📁 Current file index: ${stats.pending} pending, ${stats.completed} completed`);
+        
+        return { newFiles: 0 };
     }
 
 }

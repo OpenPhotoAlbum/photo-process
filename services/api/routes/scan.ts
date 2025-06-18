@@ -3,6 +3,7 @@ import { StartHashed, Status } from '../scanner/scan';
 import { Request, Response } from 'express';
 import { jobQueue } from '../util/job-queue';
 import { configManager } from '../util/config-manager';
+import { workerScanner } from '../scanner/scan-worker';
 
 const logger = Logger.getInstance();
 
@@ -10,9 +11,31 @@ export const ScanStartResolver = async (request: Request, response: Response) =>
     try {
         const limit = request.query.limit ? parseInt(request.query.limit as string) : undefined;
         const async = request.query.async === 'true'; // Check if async mode is requested
+        const useWorkers = request.query.workers !== 'false'; // Use workers by default
         
-        if (async) {
-            // Use background job system (recommended)
+        if (useWorkers) {
+            // Use worker-based scanning (recommended - truly non-blocking)
+            logger.info(`Starting worker-based scan with limit: ${limit || 'unlimited'}`);
+            
+            // Start scan in background
+            workerScanner.startScan(configManager.getStorage().sourceDir, limit)
+                .then(result => {
+                    logger.info(`Worker scan completed: ${result.successful} successful, ${result.failed} failed`);
+                })
+                .catch(error => {
+                    logger.error('Worker scan failed:', error);
+                });
+            
+            // Return immediately
+            response.send({
+                success: true,
+                message: 'Worker-based scan started in background',
+                mode: 'worker-based',
+                statusUrl: '/scan/status'
+            });
+            
+        } else if (async) {
+            // Use background job system (legacy)
             logger.info(`Starting async hash-based scan job with limit: ${limit || 'unlimited'}`);
             
             const jobId = jobQueue.addJob('scan', {
@@ -33,7 +56,7 @@ export const ScanStartResolver = async (request: Request, response: Response) =>
             });
             
         } else {
-            // Direct hash-based processing (synchronous)
+            // Direct hash-based processing (synchronous - not recommended)
             logger.info(`Starting synchronous hash-based scan with limit: ${limit || 'unlimited'}`);
             
             const scanResults = await StartHashed(configManager.getStorage().sourceDir, limit);
@@ -59,6 +82,24 @@ export const ScanStartResolver = async (request: Request, response: Response) =>
 };
 
 export const ScanStatusResolver = async (request: Request, response: Response) => {
-    const res = await Status();
-    response.send(res);
+    // Get status from original scanner
+    const scanStatus = await Status();
+    
+    // Add worker scanner progress if available
+    const workerProgress = workerScanner.getProgress();
+    if (workerProgress.total > 0) {
+        response.send({
+            ...scanStatus,
+            worker: {
+                processed: workerProgress.processed,
+                total: workerProgress.total,
+                successful: workerProgress.successful,
+                failed: workerProgress.failed,
+                percentage: Math.round((workerProgress.processed / workerProgress.total) * 100),
+                currentFile: workerProgress.currentFile
+            }
+        });
+    } else {
+        response.send(scanStatus);
+    }
 };

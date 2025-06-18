@@ -1,7 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Dimensions, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Dimensions, RefreshControl, TouchableOpacity, Modal } from 'react-native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Image } from 'expo-image';
+import { PhotoDetailScreen } from './screens/PhotoDetailScreen';
+import { SimplePhotoDetailScreen } from './screens/SimplePhotoDetailScreen';
+import { BasicImageTest } from './screens/BasicImageTest';
+import { NativeImageTest } from './screens/NativeImageTest';
 
 // Try wireless IP - your Linux machine has two network interfaces
 const API_BASE = 'http://192.168.40.103:9000';
@@ -37,6 +41,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<MediaItem | null>(null);
   
   // Debounce ref to prevent multiple requests
   const isLoadingMore = useRef(false);
@@ -164,7 +169,11 @@ export default function App() {
       }
       
       return (
-        <View style={[styles.photoItem, { backgroundColor }]}>
+        <TouchableOpacity 
+          style={[styles.photoItem, { backgroundColor }]}
+          onPress={() => setSelectedPhoto(item)}
+          activeOpacity={0.7}
+        >
           {isLoading && (
             <View style={styles.loadingOverlay}>
               <ActivityIndicator size="small" color="#666" />
@@ -215,7 +224,7 @@ export default function App() {
               });
             }}
           />
-        </View>
+        </TouchableOpacity>
       );
     } catch (error) {
       console.log(`Error rendering photo item: ${item.filename}`, error);
@@ -265,6 +274,7 @@ export default function App() {
   }
 
   return (
+    <>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Photos</Text>
@@ -322,6 +332,23 @@ export default function App() {
       
       <StatusBar style="light" />
     </SafeAreaView>
+    
+    {/* Photo Detail Modal - Full Screen */}
+    <Modal
+      visible={!!selectedPhoto}
+      animationType="slide"
+      presentationStyle="fullScreen"
+    >
+      {selectedPhoto && (
+        <PhotoDetailScreen
+          imageId={selectedPhoto.id}
+          imageUrl={selectedPhoto.media_url}
+          filename={selectedPhoto.filename}
+          onClose={() => setSelectedPhoto(null)}
+        />
+      )}
+    </Modal>
+  </>
   );
 }
 

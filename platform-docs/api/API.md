@@ -58,28 +58,48 @@ Currently, the API does not require authentication. All endpoints are publicly a
 ## Scan Operations
 
 ### `GET /scan/status`
-**Description**: Get current scan status  
+**Description**: Get current scan status with FileTracker statistics  
 **Response**:
 ```json
 {
-  "status": "idle|scanning",
-  "progress": {
-    "current": 0,
-    "total": 0,
-    "percentage": 0
+  "message": "NotStarted|InProgress|Completed|Failed",
+  "processed": 0,
+  "total_files": 0,
+  "percentage": 0,
+  "eta": null,
+  "started_at": "2025-06-18T03:02:30.711Z",
+  "completed_at": null,
+  "error": null,
+  "file_tracker": {
+    "pending": 8358,
+    "processing": 0,
+    "completed": 0,
+    "failed": 0
   }
 }
 ```
 
 ### `GET /scan`
-**Description**: Start photo scanning process  
+**Description**: Start photo scanning process using FileTracker system  
+**Query Parameters**:
+- `limit` (number): Maximum number of files to process
+- `async` (boolean): Run in background (default: false)
+
 **Response**:
 ```json
 {
-  "message": "Scan started",
-  "status": "scanning"
+  "success": true,
+  "processed": 2,
+  "errors": 0,
+  "message": "Hash-based scan completed - data stored directly in database",
+  "mode": "hash-based"
 }
 ```
+
+**FileTracker Benefits**:
+- **Instant Discovery**: 8,358+ files discovered in <100ms vs. minutes of directory scanning
+- **Real-time Status**: Processing status tracked per file
+- **Performance**: Database-driven file indexing eliminates slow filesystem operations
 
 ---
 

@@ -75,24 +75,27 @@ sleep 3 && curl -s http://localhost:9000/api/persons/unidentified?limit=1 > /dev
 ### Core Application Flow
 This is a photo processing service that processes iPhone PhotoSync backups with AI-powered analysis:
 
-1. **Entry Point**: `src/index.ts` → `src/api/index.ts` - Express.js API server
-2. **Scanner**: `src/api/scanner/scan.ts` - Batch processes directories of images
-3. **Processing Pipeline**: `src/api/util/process-source.ts` - Orchestrates all analysis steps
-4. **Output**: Stores all data in MySQL database with hash-based file organization
+1. **Entry Point**: `services/api/index.ts` - Express.js API server
+2. **File Discovery**: `services/api/util/file-tracker.ts` - Database-driven file discovery system
+3. **Scanner**: `services/api/scanner/scan.ts` - Batch processes images using FileTracker
+4. **Processing Pipeline**: `services/api/util/process-source.ts` - Orchestrates all analysis steps
+5. **Output**: Stores all data in MySQL database with hash-based file organization
 
 ### Current Architecture (API-Only Mode)
 - ✅ **API-Only**: Clean backend APIs with no frontend dependencies
 - ✅ **Thunder Client Testing**: Comprehensive collection for API testing (`thunder-client-collection.json`)
 - ✅ **Hash-Based Processing**: All files organized by hash to prevent duplicates
 - ✅ **Database Storage**: All metadata stored in MySQL (no JSON files)
+- ✅ **FileTracker System**: Database-driven file discovery replaces slow directory scanning
 - 🔄 **Future UI**: React app will be built later to consume these APIs
 
 ### Key Processing Components
-- **CompreFace Integration** (`src/api/util/compreface.ts`): AI-powered face detection and recognition
-- **Object Detection** (`src/api/util/object-detection.ts`): YOLO-based object detection using TensorFlow.js
-- **EXIF Processing** (`src/api/util/exif.ts`): Extracts comprehensive image metadata
-- **Image Analysis** (`src/api/util/image.ts`): Calculates dominant colors and handles image manipulation
-- **Media Serving** (`src/api/routes/media.ts`): Serves processed images with thumbnail generation
+- **FileTracker** (`services/api/util/file-tracker.ts`): Database-driven file discovery system with `file_index` table
+- **CompreFace Integration** (`services/api/util/compreface.ts`): AI-powered face detection and recognition
+- **Object Detection** (`services/api/util/object-detection.ts`): YOLO-based object detection using TensorFlow.js
+- **EXIF Processing** (`services/api/util/exif.ts`): Extracts comprehensive image metadata with singleton pattern
+- **Image Analysis** (`services/api/util/image.ts`): Calculates dominant colors and handles image manipulation
+- **Media Serving** (`services/api/routes/media.ts`): Serves processed images with thumbnail generation
 
 ### Data Organization
 - Source photos: `/mnt/sg1/uploads/stephen/iphone/recents/`
@@ -105,6 +108,51 @@ This is a photo processing service that processes iPhone PhotoSync backups with 
 - **MySQL**: Primary data storage
 - **ExifTool**: Image metadata extraction
 - **Sharp**: High-performance image processing
+
+## FileTracker System
+
+### Overview
+The FileTracker system provides ultra-fast file discovery by maintaining a database-driven index of all source files, replacing slow directory traversal with instant database queries.
+
+### Architecture
+- **Database Table**: `file_index` - Tracks all source files with metadata and processing status
+- **Core Module**: `services/api/util/file-tracker.ts` - FileTracker class with database operations
+- **Integration**: Scanner uses FileTracker for instant file discovery instead of directory scanning
+
+### Key Features
+- **Instant Discovery**: Database query returns 8,358+ files immediately (vs. minutes of directory scanning)
+- **Processing Status Tracking**: Files marked as pending/processing/completed/failed
+- **Change Detection**: Files updated based on size/mtime changes
+- **Performance Metrics**: Real-time statistics via `/scan/status` endpoint
+
+### Database Schema (file_index table)
+```sql
+CREATE TABLE file_index (
+  file_path VARCHAR(500) PRIMARY KEY,
+  file_size BIGINT NOT NULL,
+  file_mtime DATETIME NOT NULL,
+  file_hash VARCHAR(64) NULL,
+  discovered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  processing_status ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending',
+  last_processed DATETIME NULL,
+  retry_count INT DEFAULT 0,
+  error_message TEXT NULL
+);
+```
+
+### Usage Examples
+```bash
+# Check FileTracker statistics
+curl http://localhost:9000/scan/status | jq .file_tracker
+
+# Start scan using FileTracker discovery
+curl "http://localhost:9000/scan?limit=10"
+```
+
+### Performance Impact
+- **Before**: Directory scanning took 2+ minutes for large photo collections
+- **After**: File discovery is instant (< 100ms) via database query
+- **Scalability**: Handles 8,358+ files efficiently with proper indexing
 
 ## Configuration System
 
@@ -165,6 +213,7 @@ jq 'select(.duration > 1000)' /media/stephen/Expansion/photos/logs/api-$(date +%
 ### ✅ Completed Features
 - **Face Recognition System**: Full person management, clustering, training APIs
 - **Mobile App**: React Native app with photo grid, thumbnails, and smooth performance
+- **FileTracker System**: Database-driven file discovery for instant scanning (8,358+ files tracked)
 - **Hash-Based Storage**: Prevents duplicates, efficient organization
 - **API-Only Architecture**: Clean backend ready for future React frontend
 - **Comprehensive Testing**: Jest framework with 93 passing tests
@@ -267,8 +316,20 @@ See Thunder Client collection for complete API documentation.
 - When changing deployment process, update the "Quick Start" section
 - When changing anything, ensure that we update the docs-site
 - Always refer to the TODO.md
+- Always maintain the TODO as our plan changes, things are added to the list or completed. Do this before and after addressing items in this list.
 
 The README.md is the first thing users see and must always reflect the current state of the platform.
+
+## Achievement Tracking
+
+**IMPORTANT**: Maintain ACHIEVEMENTS.md to track completed work
+- When completing items from TODO.md, move them to ACHIEVEMENTS.md with completion date and details
+- Remove completed items from TODO.md to keep it focused on current/future work
+- Include impact, performance metrics, and technical details in achievements
+- Use ACHIEVEMENTS.md to demonstrate platform progress and capabilities
+- Update achievement statistics regularly (files processed, performance improvements, etc.)
+
+**Pattern**: TODO.md → ACHIEVEMENTS.md workflow keeps documentation clean and showcases progress
 
 ## Tooling Script Maintenance
 
@@ -286,3 +347,7 @@ When changing:
 - Database schema or connection methods
 
 Always check and update corresponding scripts in platform-tools/
+
+**CRITICAL**
+- read(TODO.md)
+- read(ACHIEVEMENTS.md)

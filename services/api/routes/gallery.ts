@@ -52,7 +52,7 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
                 'images.id',
                 'images.filename',
                 'images.original_path',
-                // 'images.relative_media_path', // TODO: Enable after migrations
+                'images.relative_media_path', // Hash-based processed image path
                 'images.thumbnail_path',
                 'images.dominant_color',
                 'images.date_taken',
@@ -359,6 +359,10 @@ export const GalleryRoutes = {
                     'detected_faces.id',
                     'detected_faces.face_image_path',
                     'detected_faces.relative_face_path',
+                    'detected_faces.x_min',
+                    'detected_faces.y_min',
+                    'detected_faces.x_max',
+                    'detected_faces.y_max',
                     'detected_faces.detection_confidence',
                     'detected_faces.person_id',
                     'persons.name as person_name'

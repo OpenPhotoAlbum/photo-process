@@ -119,6 +119,10 @@ export class StructuredLogger {
             audit: {
                 filename: path.join(logsDir, 'audit-%DATE%.log'),
                 level: 'info'
+            },
+            'file-tracker': {
+                filename: path.join(logsDir, 'file-tracker-%DATE%.log'),
+                level: 'info'
             }
         };
         
