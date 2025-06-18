@@ -198,6 +198,27 @@ This file tracks current development priorities and tasks for the Photo Manageme
 - [ ] Build React frontend in services/web-app/ with TypeScript (lower priority - mobile first)
 - [ ] Fix remaining platform tools that have config manager import issues
 
+### 🚀 Future Product Ecosystem (Post-Core Platform)
+**See `MODULE_EXPANSION.md` for comprehensive specialized product planning**
+
+- [ ] **Phase 1: FamilyTree Product** (genealogy and family relationships)
+  - [ ] Design relationship data models and database schema
+  - [ ] Create family tree visualization components
+  - [ ] Implement genealogy-focused UI and navigation
+  - [ ] Build family event tracking system
+- [ ] **Phase 2: PeopleStories Product** (personal narratives and timelines)
+  - [ ] Add life milestone tracking and personal timeline features
+  - [ ] Create narrative creation tools and story building
+  - [ ] Implement travel history and location-based stories
+  - [ ] Build relationship network visualization
+- [ ] **Phase 3: AstroVault Product** (astrophotography specialization)
+  - [ ] Design astrophotography metadata schema
+  - [ ] Create technical sharing and community features
+  - [ ] Build equipment tracking and progression system
+  - [ ] Implement specialized astro photo analysis tools
+
+**Vision**: Transform into Atlassian-style product ecosystem where each specialized product leverages shared photo data and infrastructure while solving distinct user needs.
+
 ## 📋 Medium Priority
 
 ### 🔧 Technical Improvements

@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'getting-started/intro',
         'getting-started/installation',
+        'getting-started/roadmap',
       ],
     },
     {

@@ -48,6 +48,16 @@ This application represents a journey toward digital self-reliance - breaking fr
 
 ### Phase 3: Native Mobile (Polish)
 - Native iOS app development (once backend is trusted)
+
+### Phase 4: Specialized Product Ecosystem (Expansion)
+**See `MODULE_EXPANSION.md` for comprehensive specialized product planning**
+
+Following an Atlassian-style model, expand beyond core photo management into specialized products:
+- **FamilyTree**: Visual genealogy and relationship mapping through photos
+- **PeopleStories**: Personal narratives and life journey documentation  
+- **AstroVault**: Astrophotography specialization with technical metadata and community
+
+Each product leverages shared infrastructure (authentication, media processing, AI services) while solving distinct user needs, creating a comprehensive ecosystem for photo-related activities.
 - Push notifications for processing status
 - Seamless photo sharing integration
 - Offline viewing capabilities

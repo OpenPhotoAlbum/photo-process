@@ -8,6 +8,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This vision should guide all feature decisions, design choices, and technical priorities. The core goal is digital independence with smart organization - breaking free from Big Tech photo storage while building intelligent personal photo management.
 
+**See `MODULE_EXPANSION.md` for future specialized product ecosystem planning.**
+
+This document outlines the long-term vision for expanding beyond core photo management into specialized products like AstroVault (astrophotography), FamilyTree (genealogy), and PeopleStories (personal narratives), following an Atlassian-style product suite model.
+
 ## Development Commands
 
 ### Build and Run
