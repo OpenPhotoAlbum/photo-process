@@ -15,14 +15,14 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://your-username.github.io',
+  url: 'https://OpenPhotoAlbum.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/photo-process/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'your-username', // Your GitHub username
+  organizationName: 'OpenPhotoAlbum', // Your GitHub username
   projectName: 'photo-process', // Your repo name
 
   onBrokenLinks: 'throw',
