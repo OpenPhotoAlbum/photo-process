@@ -11,16 +11,16 @@ photo-process/
 ├── VISION.md                    # Product vision and goals
 ├── docker-compose.platform.yml # Main Docker orchestration
 ├── services/                   # Microservices
-│   ├── api/                   # TypeScript API service
-│   ├── mobile-app/            # React Native mobile app
+│   ├── api/                   # TypeScript API service (worker threads, FileTracker)
+│   ├── mobile-app/            # React Native mobile app (auto-upload, face recognition)
 │   ├── processing/            # Background processing service (planned)
 │   └── web-app/               # React frontend (planned)
 ├── infrastructure/            # Infrastructure as code
-│   ├── database/             # MySQL with migrations
-│   ├── compreface/           # Face recognition service
+│   ├── database/             # MySQL with 20+ migrations
+│   ├── compreface/           # Face recognition service (CompreFace)
 │   └── search/               # Search service (planned)
-├── platform-docs/           # Complete documentation
-├── platform-tests/          # Testing infrastructure  
+├── platform-docs/           # Complete documentation + docs-site
+├── platform-tests/          # Testing infrastructure (93 passing tests)
 ├── platform-tools/          # Development and maintenance tools
 └── shared/                   # Shared resources and utilities
 ```
@@ -41,11 +41,14 @@ curl http://localhost:8001  # CompreFace UI
 
 ### **Platform Status**
 - ✅ **Backend API** - Full TypeScript API with face recognition and object detection
-- ✅ **Mobile App** - React Native app with photo grid, thumbnails, and infinite scroll
-- ✅ **Database** - MySQL with complete schema (15+ migrations)
-- ✅ **AI Services** - CompreFace face recognition fully integrated
-- ✅ **Docker Setup** - Complete container orchestration
-- ✅ **Tools & Testing** - Comprehensive development toolkit
+- ✅ **Mobile App** - Complete React Native app with auto-upload, face recognition, and photo management
+- ✅ **Auto-Upload System** - Real-time camera roll sync with AI-powered processing
+- ✅ **Database** - MySQL with complete schema (20+ migrations)
+- ✅ **AI Services** - CompreFace face recognition + YOLO object detection fully integrated
+- ✅ **Worker Threads** - Non-blocking background processing for image analysis
+- ✅ **FileTracker System** - Database-driven file discovery (8,358+ files tracked)
+- ✅ **Docker Setup** - Complete container orchestration with development workflow
+- ✅ **Tools & Testing** - Comprehensive development toolkit with 93 passing tests
 - 🔄 **Frontend** - React app ready to be built in `services/web-app/`
 
 ## 📚 **Documentation**
@@ -75,6 +78,12 @@ npm run db:create-migration   # Create new migration
 curl http://localhost:9000/scan?limit=10        # Start scan
 curl http://localhost:9000/scan/status          # Check status
 
+# Mobile App Development (Linux → Mac → iPhone workflow)
+cd services/mobile-app
+bash sync-to-mac.sh            # Sync to Mac for building
+# On Mac: npx expo start       # Run in Expo Go for development
+# On Mac: eas build --platform ios --profile preview # Build standalone app
+
 # Maintenance
 npm run maintenance:retroactive  # Add features to existing photos
 npm run cleanup:menu            # Interactive cleanup options
@@ -97,19 +106,66 @@ Core principles:
 
 ## 🏁 **Current Features**
 
-### ✅ **Implemented**
-- **Photo Processing**: Batch processing with EXIF extraction, thumbnail generation
-- **Face Recognition**: CompreFace integration with person management and clustering
-- **Object Detection**: YOLO-based detection with confidence filtering
-- **Smart Albums**: Auto-generated albums based on content analysis
-- **Hash-Based Storage**: Deduplication and organized file structure
-- **Screenshot Detection**: Automatic identification and classification
-- **Astrophotography Detection**: Specialized detection for night sky photos
+### ✅ **Core Platform**
+- **Photo Processing**: Worker thread-based processing with EXIF extraction and thumbnail generation
+- **Face Recognition**: CompreFace integration with person management, clustering, and training
+- **Object Detection**: YOLO-based detection with confidence filtering and 80+ object classes
+- **Smart Albums**: Auto-generated albums based on content analysis and metadata
+- **Hash-Based Storage**: Deduplication and organized file structure prevents duplicates
+- **Screenshot Detection**: Automatic identification and classification of screenshots
+- **Astrophotography Detection**: Specialized detection for night sky and space photography
+- **FileTracker System**: Database-driven file discovery replaces slow directory scanning
+
+### ✅ **Mobile Application**
+- **Photo Grid**: Infinite scroll gallery with thumbnail optimization and dominant color backgrounds
+- **Photo Details**: Full-screen view with pinch-to-zoom, face detection visualization, and metadata display
+- **Face Recognition**: Tap faces to assign to persons with real-time training integration
+- **Photo Upload**: Camera and gallery selection with progress tracking and duplicate detection
+- **Auto-Upload**: Real-time camera roll sync with background processing and network-aware uploading
+- **Person Management**: Complete person assignment and training workflow
+- **Map Integration**: GPS location display with OpenStreetMap tile compositing
+
+### ✅ **Technical Infrastructure**
+- **Worker Threads**: Non-blocking image processing prevents API blocking during CPU-intensive operations
+- **FileTracker**: Database-indexed file discovery enables instant scanning of 8,358+ files
+- **Structured Logging**: Category-based log files with JSON format for easy analysis
+- **Docker Orchestration**: Complete development and production environment via Docker Compose
+- **Migration System**: Comprehensive database migrations with automatic schema updates
+- **Testing Suite**: 93 passing tests covering unit, integration, and end-to-end scenarios
 
 ### 🔄 **In Progress**
 - **React Frontend**: Building user interface in `services/web-app/`
 - **Advanced Search**: Enhanced search with filters and faceting
-- **Performance Optimization**: Background processing improvements
+- **Smart Album Enhancement**: Auto-generation based on advanced content analysis
+
+## 📱 **Mobile App**
+
+### **React Native Application**
+The mobile app provides a complete photo management experience with native iOS functionality:
+
+**Key Features:**
+- **Auto-Upload**: Automatic camera roll sync with AI processing
+- **Face Recognition**: Tap faces to assign to persons
+- **Photo Grid**: Infinite scroll with thumbnail optimization
+- **Photo Details**: Full-screen view with metadata and GPS maps
+- **Upload Management**: Camera/gallery selection with progress tracking
+
+**Development Workflow:**
+```bash
+# Linux development → Mac build → iPhone testing
+cd services/mobile-app
+bash sync-to-mac.sh                    # Sync to Mac
+# On Mac: eas build --platform ios     # Build standalone app
+```
+
+**Auto-Upload System:**
+- **Environment Detection**: Demo mode in Expo Go, full functionality in standalone builds
+- **Permissions**: Proper iOS permissions for camera roll and background processing
+- **Network Awareness**: WiFi-only option with cellular fallback
+- **Duplicate Prevention**: Uses same hash-based system as platform
+- **Background Processing**: Continues uploading when app is closed
+
+See `services/mobile-app/README.md` for complete mobile development guide.
 
 ## 📁 **Architecture Notes**
 

@@ -15,15 +15,15 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://photo-platform-docs.github.io',
+  url: 'https://your-username.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl: '/photo-process/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'photo-platform', // Usually your GitHub org/user name.
-  projectName: 'photo-platform-docs', // Usually your repo name.
+  organizationName: 'your-username', // Your GitHub username
+  projectName: 'photo-process', // Your repo name
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

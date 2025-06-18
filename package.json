@@ -52,7 +52,8 @@
     "legacy:remove": "echo 'Removing legacy directory...' && rm -rf legacy && echo 'Legacy directory removed!'",
     "docs:dev": "cd docs-site && npm start",
     "docs:build": "cd docs-site && npm run build",
-    "docs:serve": "cd docs-site && npm run serve"
+    "docs:serve": "cd docs-site && npm run serve",
+    "docs:deploy": "cd docs-site && npm run deploy:github"
   },
   "dependencies": {
     "chalk": "^5.4.1",
