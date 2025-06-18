@@ -1,0 +1,146 @@
+{
+  "_comment": "Default configuration values for Photo Processing Service",
+  "_description": "These are the fallback values used when no other configuration is provided. Override via environment variables, config/settings.json, or runtime API.",
+  "_priority": "Runtime API > config/settings.json > Environment Variables > THIS FILE",
+  
+  "database": {
+    "host": null,
+    "port": null,
+    "user": null,
+    "password": null,
+    "database": null,
+    "rootPassword": null
+  },
+  
+  "storage": {
+    "sourceDir": null,
+    "processedDir": null,
+    "thumbnailDir": null,
+    "cacheDir": null,
+    "logsDir": null
+  },
+  
+  "processing": {
+    "objectDetection": {
+      "enabled": true,
+      "confidence": {
+        "detection": 0.75,
+        "search": 0.5,
+        "highQuality": 0.85
+      },
+      "batchSize": 2,
+      "imageResize": {
+        "width": 640,
+        "height": 640
+      }
+    },
+    "faceDetection": {
+      "enabled": true,
+      "confidence": {
+        "detection": 0.8,
+        "review": 0.75,
+        "autoAssign": 1.00,
+        "gender": 0.7,
+        "age": 0.7
+      }
+    },
+    "faceRecognition": {
+      "confidence": {
+        "review": 0.75,
+        "autoAssign": 1.00,
+        "similarity": 0.65
+      },
+      "workflow": {
+        "enableAutoAssignment": false,
+        "enableReviewQueue": true,
+        "maxReviewQueueSize": 1000
+      }
+    },
+    "screenshotDetection": {
+      "enabled": true,
+      "threshold": 60
+    }
+  },
+  
+  "compreface": {
+    "baseUrl": "http://compreface-api:8080",
+    "apiKey": null,
+    "detectApiKey": "1e52245a-bbce-4e05-aa82-b53d548123e1",
+    "recognizeApiKey": "8152b5da-cdd5-4631-b720-80f3907ea64d",
+    "timeout": 10000,
+    "maxConcurrency": 5
+  },
+  
+  "image": {
+    "thumbnailSize": 256,
+    "jpegQuality": 85,
+    "supportedFormats": [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".bmp"],
+    "cacheTimeout": 86400
+  },
+  
+  "server": {
+    "port": 9000,
+    "galleryPageSize": 50,
+    "searchLimit": 100,
+    "scanBatchSize": 2
+  },
+  
+  "features": {
+    "enableFaceRecognition": true,
+    "enableObjectDetection": true,
+    "enableScreenshotDetection": true,
+    "enableApiConfig": false
+  },
+  
+  "_notes": {
+    "storage": "All paths must be provided via environment variables (.env file)",
+    "database": "All database connection details must be provided via environment variables (.env file)",
+    "compreface": "All CompreFace URLs and API keys must be provided via environment variables (.env file)",
+    "processing": "Granular confidence thresholds allow separate control for review vs auto-assignment workflows",
+    "confidence": "Review thresholds (0.75) are lower than auto-assign (0.99) to give users control over automation",
+    "features": "Admin API disabled by default for security"
+  },
+
+  "_configDocumentation": {
+    "objectDetection": {
+      "confidence.detection": "Min confidence to detect and save objects to database",
+      "confidence.search": "Min confidence to show objects in search results (more liberal)",
+      "confidence.highQuality": "High confidence threshold for priority/featured objects",
+      "batchSize": "Number of images to process simultaneously",
+      "imageResize": "Resize images to these dimensions for object detection processing"
+    },
+    "faceDetection": {
+      "confidence.detection": "CompreFace API threshold for detecting faces in images",
+      "confidence.review": "Min confidence to show detected faces in manual review queue",
+      "confidence.autoAssign": "Min confidence to automatically assign faces without human review",
+      "confidence.gender": "Gender prediction confidence threshold",
+      "confidence.age": "Age prediction confidence threshold"
+    },
+    "faceRecognition": {
+      "confidence.review": "Show potential face matches for manual review at this confidence",
+      "confidence.autoAssign": "Auto-assign face to person without human review at this confidence",
+      "confidence.similarity": "Min similarity score to consider faces as potential matches",
+      "workflow.enableAutoAssignment": "Allow automatic face assignment to people",
+      "workflow.enableReviewQueue": "Show medium-confidence matches for manual review",
+      "workflow.maxReviewQueueSize": "Maximum number of items in manual review queue"
+    },
+    "screenshotDetection": {
+      "threshold": "Score threshold (0-100) for classifying images as screenshots"
+    },
+    "compreface": {
+      "apiKey": "Optional global API key for CompreFace service",
+      "detectApiKey": "Optional API key specifically for face detection",
+      "recognizeApiKey": "Optional API key specifically for face recognition",
+      "timeout": "Request timeout in milliseconds for CompreFace API calls",
+      "maxConcurrency": "Maximum number of concurrent requests to CompreFace"
+    },
+    "server": {
+      "galleryPageSize": "Number of items per page in gallery views",
+      "searchLimit": "Maximum number of search results to return",
+      "scanBatchSize": "Number of photos to process simultaneously during scanning"
+    },
+    "features": {
+      "enableApiConfig": "Enable admin panel API for runtime configuration changes"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 
 // Note: Cannot import logger here due to circular dependency
 
@@ -303,6 +304,9 @@ export class EnhancedConfigManager {
     private envFilePath: string;
     
     private constructor() {
+        // Load environment variables from .env file
+        dotenv.config({ path: path.join(process.cwd(), '.env') });
+        
         this.configFilePath = path.join(process.cwd(), 'config', 'settings.json');
         this.defaultsFilePath = path.join(process.cwd(), 'config', 'defaults.json');
         this.envFilePath = path.join(process.cwd(), '.env');

@@ -94,6 +94,7 @@ This is a photo processing service that processes iPhone PhotoSync backups with 
 - **CompreFace Integration** (`services/api/util/compreface.ts`): AI-powered face detection and recognition
 - **Object Detection** (`services/api/util/object-detection.ts`): YOLO-based object detection using TensorFlow.js
 - **EXIF Processing** (`services/api/util/exif.ts`): Extracts comprehensive image metadata with singleton pattern
+- **Geolocation System** (`services/api/util/geolocation.ts`): GPS-based location matching with comprehensive city database
 - **Image Analysis** (`services/api/util/image.ts`): Calculates dominant colors and handles image manipulation
 - **Media Serving** (`services/api/routes/media.ts`): Serves processed images with thumbnail generation
 
@@ -153,6 +154,105 @@ curl "http://localhost:9000/scan?limit=10"
 - **Before**: Directory scanning took 2+ minutes for large photo collections
 - **After**: File discovery is instant (< 100ms) via database query
 - **Scalability**: Handles 8,358+ files efficiently with proper indexing
+
+## Geolocation System
+
+### Overview
+The Geolocation System provides intelligent location matching by linking photos with GPS coordinates to specific geographic locations using a comprehensive global database of countries, states, and cities.
+
+### Architecture
+- **Database Tables**: 
+  - `geo_countries` - Complete list of world countries with ISO codes
+  - `geo_states` - States/provinces linked to countries  
+  - `geo_cities` - 50K+ cities worldwide with precise lat/lng coordinates
+  - `image_geolocations` - Links images to specific cities with confidence scoring
+- **Core Module**: `services/api/util/geolocation.ts` - Geolocation service with spatial queries
+- **Integration**: Processing pipeline extracts GPS from EXIF and matches to nearest city
+
+### Key Features
+- **Spatial Matching**: Uses MySQL's ST_Distance_Sphere for accurate distance calculations
+- **Smart Confidence Scoring**: Rates location matches based on distance and GPS accuracy
+- **Global Coverage**: Comprehensive database with 50K+ cities, states, and countries
+- **Multiple Detection Methods**: EXIF GPS, manual tagging, and reverse geocoding support
+
+### Database Schema (geolocation tables)
+```sql
+-- Countries with ISO codes and phone codes
+CREATE TABLE geo_countries (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  country_code VARCHAR(2) NOT NULL,
+  iso3 VARCHAR(3),
+  country_name VARCHAR(100) NOT NULL,
+  phone_code VARCHAR(20)
+);
+
+-- States/provinces linked to countries
+CREATE TABLE geo_states (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  code VARCHAR(10) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  country_code VARCHAR(2) NOT NULL,
+  FOREIGN KEY (country_code) REFERENCES geo_countries(country_code)
+);
+
+-- Cities with precise GPS coordinates
+CREATE TABLE geo_cities (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  postal_code VARCHAR(20),
+  latitude DECIMAL(10,8) NOT NULL,
+  longitude DECIMAL(11,8) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  state_code VARCHAR(10),
+  county_name VARCHAR(100),
+  timezone VARCHAR(50),
+  INDEX idx_coordinates (latitude, longitude)
+);
+
+-- Image-location relationships with confidence scoring
+CREATE TABLE image_geolocations (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  image_id INT NOT NULL,
+  city_id INT NOT NULL,
+  confidence_score DECIMAL(3,2) NOT NULL,
+  detection_method ENUM('EXIF_GPS', 'CLOSEST_MATCH', 'MANUAL') NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (image_id) REFERENCES images(id),
+  FOREIGN KEY (city_id) REFERENCES geo_cities(id)
+);
+```
+
+### Core Functions
+```typescript
+// Find closest city within radius
+getClosestCityIdByCoords(lat: number, lon: number, radiusMiles?: number)
+
+// Link image to location with confidence
+linkImageToLocation(imageId: number, cityId: number, method: string)
+
+// Search images by location
+searchImagesByLocation(cityId?: number, stateCode?: string, countryCode?: string)
+
+// Get location hierarchy for image
+getImageLocationHierarchy(imageId: number)
+```
+
+### Usage Examples
+```bash
+# Search photos within 50 miles of San Francisco
+curl "http://localhost:9000/api/locations/search?lat=37.7749&lng=-122.4194&radius=50"
+
+# Get all photos from California
+curl "http://localhost:9000/api/locations/search?state=CA"
+
+# Get location data for specific image
+curl "http://localhost:9000/api/images/123/location"
+```
+
+### Performance Features
+- **Spatial Indexing**: Optimized lat/lng indexes for sub-second location queries
+- **Batch Processing**: Retroactive location assignment for existing photo collections
+- **Caching**: Location hierarchy cached for fast repeated queries
+- **Smart Fallbacks**: Graceful handling of missing GPS data or remote locations
 
 ## Configuration System
 
@@ -220,10 +320,11 @@ jq 'select(.duration > 1000)' /media/stephen/Expansion/photos/logs/api-$(date +%
 - **Structured Logging**: Multi-file system with JSON format
 
 ### 🚧 Next Priorities
-1. **Search & Discovery**: Advanced search with filters for objects, faces, dates
-2. **Smart Albums**: Auto-generated albums based on content
-3. **Performance Optimization**: Batch processing improvements
-4. **Scene Classification**: Detect scenes like "beach", "party", "nature"
+1. **Geolocation System**: GPS-based photo location matching with comprehensive global city database
+2. **Search & Discovery**: Advanced search with filters for objects, faces, dates, locations
+3. **Smart Albums**: Auto-generated albums based on content and location
+4. **Performance Optimization**: Batch processing improvements
+5. **Scene Classification**: Detect scenes like "beach", "party", "nature"
 
 ## Project File Structure
 
@@ -235,6 +336,7 @@ src/api/routes/
 ├── gallery.ts                  # Gallery viewing & management
 ├── search.ts                   # Object/metadata search
 ├── persons.ts                  # Person & face management (modularized)
+├── geolocation.ts              # Location-based photo search and filtering
 └── ...
 ```
 
@@ -245,6 +347,7 @@ src/api/util/
 ├── config-manager.ts          # Configuration system (596 lines - needs refactoring)
 ├── structured-logger.ts       # Logging system (351 lines)
 ├── process-source.ts          # Processing pipeline (156 lines)
+├── geolocation.ts             # GPS coordinate to location matching
 └── ...
 ```
 

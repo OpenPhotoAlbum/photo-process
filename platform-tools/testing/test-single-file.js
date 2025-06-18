@@ -11,7 +11,7 @@ const { execSync } = require('child_process');
 // Ensure TypeScript is compiled first
 console.log('📦 Compiling TypeScript...');
 try {
-    execSync('npx tsc', { stdio: 'inherit' });
+    execSync('npm run build', { cwd: path.join(__dirname, '../..'), stdio: 'inherit' });
 } catch (error) {
     console.error('❌ TypeScript compilation failed:', error.message);
     process.exit(1);
