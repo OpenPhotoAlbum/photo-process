@@ -1,7 +1,6 @@
 import path from 'node:path';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
-
 import { dominantColorFromImage } from './image';
 import { exifFromImage } from './exif';
 import { extractFaces } from './compreface';
@@ -27,10 +26,9 @@ export const extractFacesHashed = async (imagepath: string, fileInfo: HashFileIn
 
     // Ensure faces directory exists
     await fsPromises.mkdir(facesDir, { recursive: true });
-
     // Extract faces with hash-based naming
     const faces = await extractFaces(imagepath, facesDir);
-
+    logger.info(`[EXTRACT FACES] extractFacesHashed ${Object.keys(faces).length} faces from ${imagepath}`, faces);
     // Update face paths to use hash-based naming
     const hashedFaces: any = {};
     for (const [faceIndex, faceData] of Object.entries(faces)) {
@@ -105,6 +103,13 @@ export const generateImageDataJsonHashed = async (imagepath: string, dateTaken?:
         astro: { start: Date.now(), end: 0 }
     };
 
+    // Check configuration settings for conditional processing
+    const processingConfig = configManager.getProcessing();
+    const faceDetectionEnabled = processingConfig.faceDetection.enabled;
+    const objectDetectionEnabled = processingConfig.objectDetection.enabled;
+
+    logger.info(`Processing config - Face detection: ${faceDetectionEnabled}, Object detection: ${objectDetectionEnabled}`);
+
     const [exif, dominantColor, faces, allObjects, astroResult] = await Promise.all([
         // Extract EXIF data
         exifFromImage(fileInfo.fullPath).then(result => {
@@ -113,7 +118,25 @@ export const generateImageDataJsonHashed = async (imagepath: string, dateTaken?:
         }).catch(error => {
             timings.exif.end = Date.now();
             logger.error(`Failed to extract EXIF data from ${fileInfo.fullPath}:`, error);
-            throw new Error(`Failed to extract EXIF data: ${error.message}`);
+            // Return minimal EXIF data instead of failing the entire process
+            return {
+                FileName: path.basename(fileInfo.fullPath),
+                Directory: path.dirname(fileInfo.fullPath),
+                FileSize: 0,
+                FileModifyDate: new Date(),
+                FileAccessDate: new Date(),
+                FileInodeChangeDate: new Date(),
+                FilePermissions: 'rw-r--r--',
+                FileType: 'JPEG',
+                FileTypeExtension: 'jpg',
+                MIMEType: 'image/jpeg',
+                ImageWidth: 0,
+                ImageHeight: 0,
+                EncodingProcess: 'Baseline DCT, Huffman coding',
+                BitsPerSample: 8,
+                ColorComponents: 3,
+                YCbCrSubSampling: 'YCbCr4:2:0 (2 2)'
+            } as any;
         }
         ),
         // Extract dominant color
@@ -126,26 +149,34 @@ export const generateImageDataJsonHashed = async (imagepath: string, dateTaken?:
             return '#ffffff'; // Default to white if extraction fails
         }
         ),
-        // Extract faces with hash-based naming
-        extractFacesHashed(fileInfo.fullPath, fileInfo).then(result => {
-            timings.faces.end = Date.now();
-            return result;
-        }).catch(error => {
-            timings.faces.end = Date.now();
-            logger.error(`Failed to extract faces from ${fileInfo.fullPath}:`, error);
-            return {};
-        }
-        ),
-        // Object detection and astrophotography detection
-        detectObjects(fileInfo.fullPath).then(result => {
-            timings.objects.end = Date.now();
-            return result;
-        }).catch(error => {
-            timings.objects.end = Date.now();
-            logger.error(`Failed to detect objects in ${fileInfo.fullPath}:`, error);
-            return [];
-        }
-        ),
+        // Extract faces with hash-based naming (only if enabled)
+        faceDetectionEnabled ?
+            extractFacesHashed(fileInfo.fullPath, fileInfo).then(result => {
+                timings.faces.end = Date.now();
+                return result;
+            }).catch(error => {
+                timings.faces.end = Date.now();
+                logger.error(`[EXTRACT FACES] Failed to extract faces from ${fileInfo.fullPath}:`, error);
+                return {};
+            }) :
+            Promise.resolve({}).then(result => {
+                timings.faces.end = Date.now();
+                return result;
+            }),
+        // Object detection (only if enabled)
+        objectDetectionEnabled ?
+            detectObjects(fileInfo.fullPath).then(result => {
+                timings.objects.end = Date.now();
+                return result;
+            }).catch(error => {
+                timings.objects.end = Date.now();
+                logger.error(`[DETECT OBJECTS] Failed to detect objects in ${fileInfo.fullPath}:`, error);
+                return [];
+            }) :
+            Promise.resolve([]).then(result => {
+                timings.objects.end = Date.now();
+                return result;
+            }),
         // Astrophotography detection
         // Note: This is an optional step, so we handle it separately
         detectAstrophotography(fileInfo.fullPath).then(result => {
@@ -158,8 +189,6 @@ export const generateImageDataJsonHashed = async (imagepath: string, dateTaken?:
         }
         )
     ]);
-
-    console.log('\n'); console.log({ dominantColor, faces, allObjects, astroResult }); console.log('\n');
 
     // Filter objects by confidence threshold (0.75)
     const objects = filterByConfidence(allObjects);
@@ -268,7 +297,7 @@ export const storeImageDataHashed = async (
     processingResults: any
 ): Promise<number> => {
     const { exif, dominantColor, people, objects, screenshotDetection, astroResult } = processingResults;
-
+    logger.info(`[DB] Storing image data for ${originalPath} with hash ${fileInfo.hash}`);
     // Parse date taken from EXIF
     let dateTaken: Date | undefined;
     try {
@@ -288,6 +317,7 @@ export const storeImageDataHashed = async (
             }
         }
     } catch (error) {
+        logger.error(`Failed to parse date taken from EXIF for ${originalPath}:`, error);
         // Fall back to file modification time or current time
         const stats = fs.statSync(originalPath);
         dateTaken = stats.mtime;
@@ -370,6 +400,7 @@ export const storeImageDataHashed = async (
 
     // Store faces in detected_faces table
     if (people && Object.keys(people).length > 0) {
+        logger.info(`[DB - FACE] Storing ${Object.keys(people).length} faces for image ID ${imageId}`);
         for (const [faceKey, faceData] of Object.entries(people)) {
             const face = faceData as any;
 
@@ -379,27 +410,33 @@ export const storeImageDataHashed = async (
                 path.join(configManager.getStorage().processedDir, 'faces', relativeFacePath) :
                 undefined;
 
-            await FaceRepository.createFace({
-                image_id: imageId,
-                face_image_path: fullFacePath,
-                relative_face_path: relativeFacePath,
-                x_min: face.box?.x_min || face.x_min || 0,
-                y_min: face.box?.y_min || face.y_min || 0,
-                x_max: face.box?.x_max || face.x_max || 0,
-                y_max: face.box?.y_max || face.y_max || 0,
-                detection_confidence: face.detection_confidence || face.similarityResponse?.similarity || face.confidence || 0,
-                predicted_gender: face.predicted_gender || face.gender,
-                gender_confidence: face.gender_confidence,
-                age_min: face.age_min || face.age?.low,
-                age_max: face.age_max || face.age?.high,
-                age_confidence: face.age_confidence,
-                pitch: face.pitch,
-                roll: face.roll,
-                yaw: face.yaw,
-                landmarks: face.landmarks ? JSON.stringify(face.landmarks) : null,
-                face_embedding: face.embedding ? JSON.stringify(face.embedding) : null,
-                created_at: new Date()
-            });
+            try {
+                logger.info(`[DB - FACE] Storing face ${faceKey} for image ID ${imageId} at path ${fullFacePath}`);
+                await FaceRepository.createFace({
+                    image_id: imageId,
+                    face_image_path: fullFacePath,
+                    relative_face_path: relativeFacePath,
+                    x_min: face.box?.x_min || face.x_min || 0,
+                    y_min: face.box?.y_min || face.y_min || 0,
+                    x_max: face.box?.x_max || face.x_max || 0,
+                    y_max: face.box?.y_max || face.y_max || 0,
+                    detection_confidence: face.detection_confidence || face.box?.probability || face.confidence || 0,
+                    predicted_gender: face.gender?.value || face.predicted_gender,
+                    gender_confidence: face.gender?.probability || face.gender_confidence,
+                    age_min: face.age?.low || face.age_min,
+                    age_max: face.age?.high || face.age_max,
+                    age_confidence: face.age?.probability || face.age_confidence,
+                    pitch: face.pitch,
+                    roll: face.roll,
+                    yaw: face.yaw,
+                    landmarks: face.landmarks ? JSON.stringify(face.landmarks) : null,
+                    face_embedding: face.embedding ? JSON.stringify(face.embedding) : null,
+                    created_at: new Date()
+                });
+            } catch (error) {
+                logger.error(`[DB - FACE] Failed to store face data for image ID ${imageId}:`, error);
+                // Continue processing other faces even if one fails
+            }
         }
     }
 

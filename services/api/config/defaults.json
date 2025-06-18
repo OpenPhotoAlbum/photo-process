@@ -63,7 +63,7 @@
   },
   
   "compreface": {
-    "baseUrl": "http://compreface-ui:80",
+    "baseUrl": "http://compreface-api:8080",
     "apiKey": null,
     "detectApiKey": "1e52245a-bbce-4e05-aa82-b53d548123e1",
     "recognizeApiKey": "8152b5da-cdd5-4631-b720-80f3907ea64d",

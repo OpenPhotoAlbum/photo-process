@@ -34,16 +34,23 @@ const comprefaceApi = async (service: ComprefaceService, imagepath: string): Pro
     const detectionThreshold = faceDetectionConfig.confidence.detection;
     const query = `?limit=20&det_prob_threshold=${detectionThreshold}&face_plugins=landmarks&face_plugins=gender&face_plugins=age&face_plugins=pose`;
     const url = `${COMPREFACE_API_URL}${ComprefaceRoutes[service]}${query}`;
+    const apiKey = ComprefaceKeys[service];
+    
+    logger.info(`CompreFace API call: ${service} to ${url} with key: ${apiKey}`);
+    
     const response = await fetch(url, {
         method: 'POST',
         headers: {
             "content-type": "multipart/form-data",
-            'x-api-key': ComprefaceKeys[service],
+            'x-api-key': apiKey,
             ...formData.getHeaders()
         },
         body: formData
     });
     const result = await response.json();
+    
+    logger.info(`CompreFace response: ${JSON.stringify(result)}`);
+    
     return result;
 }
 
@@ -283,7 +290,16 @@ export const addFacesToSubjectBatch = async (subjectId: string, imagePaths: stri
 };
 
 export const extractFaces = async (imagepath: string, dest: string): Promise<Record<string, object>> => {
-    const { result } = await detectFacesFromImage(imagepath);
+    logger.info(`[EXTRACT FACES] from: ${imagepath}`);
+    const response = await detectFacesFromImage(imagepath);
+    logger.info(`[EXTRACT FACES] detectFacesFromImage response: ${JSON.stringify(response)}`);
+    
+    const { result } = response;
+    if (!result || Object.keys(result).length === 0) {
+        logger.warn(`[EXTRACT FACES] No faces detected in image: ${imagepath}`);
+        return {};
+    }
+    
     let i = 0;
     const faceData: Record<string, object> = {};
     for (const res in result) {
@@ -299,15 +315,32 @@ export const extractFaces = async (imagepath: string, dest: string): Promise<Rec
             height: box.y_max - box.y_min,
         };
 
-        // Create a relative path structure under dest directory
-        const relativePath = path.relative(configManager.getStorage().sourceDir, imagepath);
-        const filename = `${dest}/${path.dirname(relativePath)}/faces/${path.basename(imagepath, path.extname(imagepath))}__face_${i}${path.extname(imagepath)}`;
-        fs.mkdirSync(path.dirname(filename), { recursive: true });
-        await s.extract(extract).toFile(filename);
+        // Create face filename in the dest directory
+        const faceFilename = `${path.basename(imagepath, path.extname(imagepath))}__face_${i}${path.extname(imagepath)}`;
+        const filename = path.join(dest, faceFilename);
+        
+        logger.info(`[EXTRACT FACES] Saving face ${i} to: ${filename}`);
+        
+        // Ensure the dest directory exists
+        fs.mkdirSync(dest, { recursive: true });
+        try {
+            await s.extract(extract).toFile(filename);
+        } catch (error) {
+            logger.error(`[EXTRACT FACES] Error extracting face ${i} from ${imagepath}: ${error}`);
+            continue; // Skip this face if extraction fails
+        }
 
+        // Store face data with index as key and include the face image path
+        faceData[i.toString()] = {
+            ...result[res],
+            face_image_path: faceFilename,
+            x_min: box.x_min,
+            y_min: box.y_min,
+            x_max: box.x_max,
+            y_max: box.y_max
+        };
+        
         i++;
-
-        faceData[filename] = result[res];
     }
 
     return faceData;
