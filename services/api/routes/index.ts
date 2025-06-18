@@ -1,5 +1,5 @@
 export { Root, Health } from './root';
-export * from './media';
+export { Media, MapProxy } from './media';
 export * from './processed';
 export * as Scan from './scan';
 export * as Gallery from './gallery';

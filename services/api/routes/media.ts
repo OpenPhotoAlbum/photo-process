@@ -47,3 +47,36 @@ export const Media = async (request: Request, response: Response) => {
         }
     }
 }
+
+// Map proxy endpoint - return a simple text placeholder for now
+export const MapProxy = async (request: Request, response: Response) => {
+    try {
+        const { lat, lon } = request.query;
+        
+        if (!lat || !lon) {
+            return response.status(400).json({ error: 'Missing lat or lon parameters' });
+        }
+        
+        const latNum = parseFloat(lat as string);
+        const lonNum = parseFloat(lon as string);
+        
+        if (isNaN(latNum) || isNaN(lonNum)) {
+            return response.status(400).json({ error: 'Invalid lat or lon values' });
+        }
+        
+        // For now, just return coordinates info as JSON
+        // We can work on a better map solution later
+        response.json({
+            message: 'Map preview not yet implemented',
+            coordinates: {
+                latitude: latNum,
+                longitude: lonNum
+            },
+            suggestion: 'Click coordinates to open in Google Maps'
+        });
+        
+    } catch (error) {
+        console.error('Map proxy error:', error);
+        response.status(500).json({ error: 'Internal server error' });
+    }
+}

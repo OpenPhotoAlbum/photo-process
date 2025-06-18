@@ -101,6 +101,19 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
         
         const imagesWithFaces = await query;
         
+        // Get total count for the header (without limit)
+        const totalCountQuery = db('images')
+            .count('images.id as total')
+            .where('images.processing_status', 'completed');
+            
+        // Apply same filters as main query for consistent count
+        if (astroOnly) {
+            totalCountQuery.where('images.is_astrophotography', true);
+        }
+        
+        const totalResult = await totalCountQuery.first();
+        const totalCount = totalResult ? parseInt(totalResult.total as string) : 0;
+        
         // Get face image paths for each image in a separate optimized query
         const imageIds = imagesWithFaces.map((img: any) => img.id);
         const facesByImage: Record<number, string[]> = {};
@@ -146,6 +159,7 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
         const response: any = {
             limit,
             count: finalResults.length,
+            totalCount,
             images: finalResults,
             hasMore
         };

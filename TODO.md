@@ -160,7 +160,8 @@ This file tracks current development priorities and tasks for the Photo Manageme
 - **Achievement**: Complete React Native gallery app showing real photos with excellent performance
 
 ### 📱 Mobile App Phase 2 Features (Current Focus)
-- [x] Add photo detail view to mobile app with pinch-to-zoom and close button ✅ IN PROGRESS
+- [x] Add photo detail view to mobile app with pinch-to-zoom and close button ✅ COMPLETED
+- [x] Add metadata section below faces in photo detail modal with comprehensive image details ✅ COMPLETED
 - [ ] **Face Visualization System** 🔥 CURRENT PRIORITY
   - [ ] Add face detection visualization to mobile app
   - [ ] Show circular face thumbnails alongside main image
@@ -168,6 +169,10 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [ ] Implement person assignment interface for faces
   - [ ] Add face-to-person management UI
 - [ ] Implement multiple image sizes (thumbnail, medium, full) for mobile app performance
+- [ ] **Map Preview Enhancement** 🗺️ FUTURE IMPROVEMENT
+  - [ ] Implement proper map image previews for GPS coordinates
+  - [ ] Options: React Native SVG library, Canvas-based server generation, or paid map service
+  - [ ] Currently using clickable coordinates that open Google Maps (functional but no visual preview)
 - **Approach**: Enhance existing mobile app with AI-powered face recognition features
 - **Architecture**: Integrate with CompreFace face detection API endpoints
 
