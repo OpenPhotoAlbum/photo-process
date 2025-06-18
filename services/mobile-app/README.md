@@ -56,18 +56,21 @@ npx expo start
 
 ## Features
 
-### Current (Minimal App)
-- ✅ Connects to photo processing API
-- ✅ Displays single photo from gallery
-- ✅ Shows photo metadata (filename, date, faces, objects)
-- ✅ Error handling with helpful messages
+### Current (Phase 0 - Complete)
+- ✅ Photo gallery with infinite scroll and grid view
+- ✅ Photo detail view with pinch-to-zoom and metadata
+- ✅ Face recognition with person assignment
+- ✅ Map integration with GPS coordinates and thumbnails
+- ✅ Performance optimization with caching and thumbnails
+- ✅ Comprehensive error handling and loading states
 
-### Planned (Phase 1 - Trust & Reliability)
-- [ ] Photo grid with infinite scroll
-- [ ] Basic search functionality  
-- [ ] Person management and face assignment
-- [ ] Processing status monitoring
-- [ ] "Recently processed" views
+### Roadmap
+See `ROADMAP.md` for the complete development roadmap including:
+- **Phase 1**: Enhanced Discovery & Navigation (search, albums, navigation)
+- **Phase 2**: AI-Powered Intelligence (smart suggestions, person management)
+- **Phase 3**: Sharing & Collaboration (export, sync status)
+- **Phase 4**: Advanced Features (editing, maps, AI)
+- **Phase 5**: Platform Integration (settings, performance, offline)
 
 ## API Integration
 

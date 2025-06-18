@@ -103,8 +103,10 @@ export const MetadataSection: React.FC<MetadataProps> = ({ imageId }) => {
   };
 
   const getMapImageUrl = (lat: string, lon: string) => {
-    // Use our API proxy to serve map images
-    return `${API_BASE}/api/map?lat=${lat}&lon=${lon}`;
+    // Use our API proxy to serve map images (full mode for debugging)
+    const url = `${API_BASE}/api/map?lat=${lat}&lon=${lon}`;
+    console.log(`[MetadataSection] Requesting map image from: ${url}`);
+    return url;
   };
 
   if (loading) {
@@ -212,6 +214,37 @@ export const MetadataSection: React.FC<MetadataProps> = ({ imageId }) => {
           {renderSection('Basic Info', basicInfo)}
           {renderSection('Camera Settings', cameraInfo)}
           {renderSection('Location', locationInfo)}
+          
+          {/* Show map preview if location exists */}
+          {metadata.metadata?.latitude && metadata.metadata?.longitude && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Map Preview</Text>
+              <TouchableOpacity 
+                onPress={() => openInMaps(metadata.metadata!.latitude!, metadata.metadata!.longitude!)}
+                activeOpacity={0.8}
+                style={styles.mapContainer}
+              >
+                <Image
+                  source={{
+                    uri: getMapImageUrl(metadata.metadata.latitude, metadata.metadata.longitude)
+                  }}
+                  style={styles.mapPreview}
+                  resizeMode="cover"
+                  onLoad={() => console.log('Map image loaded successfully via OSM tiles')}
+                  onError={(error) => {
+                    console.log('Map image failed to load:', error.nativeEvent.error);
+                    if (metadata.metadata?.latitude && metadata.metadata?.longitude) {
+                      console.log('Map URL was:', getMapImageUrl(metadata.metadata.latitude, metadata.metadata.longitude));
+                    }
+                  }}
+                />
+                <View style={styles.mapOverlay}>
+                  <Text style={styles.mapOverlayText}>📍 Tap to open in Maps</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+          
           {renderSection('Technical', technicalInfo)}
         </View>
       )}

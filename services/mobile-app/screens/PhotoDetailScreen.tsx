@@ -13,6 +13,7 @@ import {
 import { ImageWithFaces } from '../components/ImageWithFaces';
 import { FaceRow } from '../components/FaceRow';
 import { MetadataSection } from '../components/MetadataSection';
+import { PersonSelectionModal } from '../components/PersonSelectionModal';
 import { FaceAPI } from '../services/FaceAPI';
 import { FaceData } from '../types/FaceTypes';
 
@@ -33,6 +34,8 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   onClose
 }) => {
   const [faces, setFaces] = useState<FaceData[]>([]);
+  const [selectedFace, setSelectedFace] = useState<FaceData | null>(null);
+  const [showPersonModal, setShowPersonModal] = useState(false);
 
   useEffect(() => {
     loadFaces();
@@ -49,19 +52,38 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   };
 
   const handleFacePress = (face: FaceData) => {
+    const isAssigned = face.person_name && face.person_id;
+    
     Alert.alert(
       'Face Details',
-      `Face ID: ${face.id}\\nConfidence: ${(parseFloat(face.detection_confidence) * 100).toFixed(1)}%\\nPerson: ${face.person_name || 'Unassigned'}`,
+      `Face ID: ${face.id}\nConfidence: ${(parseFloat(face.detection_confidence) * 100).toFixed(1)}%\nPerson: ${face.person_name || 'Unassigned'}`,
       [
-        { text: 'OK' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Assign Person',
+          text: isAssigned ? 'Reassign Person' : 'Assign Person',
           onPress: () => {
-            // TODO: Implement person assignment
-            Alert.alert('Coming Soon', 'Person assignment feature will be implemented next!');
+            setSelectedFace(face);
+            setShowPersonModal(true);
           }
         }
       ]
+    );
+  };
+
+  const handlePersonAssignment = (faceId: number, personId: number, personName: string) => {
+    // Update the face in our local state
+    setFaces(prevFaces => 
+      prevFaces.map(face => 
+        face.id === faceId 
+          ? { ...face, person_id: personId, person_name: personName }
+          : face
+      )
+    );
+
+    Alert.alert(
+      'Success!',
+      `Face assigned to ${personName}`,
+      [{ text: 'OK' }]
     );
   };
 
@@ -104,6 +126,17 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
         {/* Metadata section */}
         <MetadataSection imageId={imageId} />
       </ScrollView>
+
+      {/* Person Selection Modal */}
+      <PersonSelectionModal
+        visible={showPersonModal}
+        face={selectedFace}
+        onClose={() => {
+          setShowPersonModal(false);
+          setSelectedFace(null);
+        }}
+        onAssignComplete={handlePersonAssignment}
+      />
     </SafeAreaView>
   );
 };

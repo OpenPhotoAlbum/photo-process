@@ -120,6 +120,7 @@ const main = async () => {
     
     // Image processing API routes
     app.post('/api/process/image', Process.processImage as any);
+    app.post('/api/process/upload', Process.upload.single('photo'), Process.uploadPhoto as any);
     app.get('/api/process/:id/status', Process.getProcessingStatus as any);
     
     // System configuration API route

@@ -6,9 +6,9 @@ import { PhotoDetailScreen } from './screens/PhotoDetailScreen';
 import { SimplePhotoDetailScreen } from './screens/SimplePhotoDetailScreen';
 import { BasicImageTest } from './screens/BasicImageTest';
 import { NativeImageTest } from './screens/NativeImageTest';
-
-// Try wireless IP - your Linux machine has two network interfaces
-const API_BASE = 'http://192.168.40.103:9000';
+import { SlideOutMenu } from './components/SlideOutMenu';
+import { UploadResponse } from './services/UploadAPI';
+import { API_BASE } from './config';
 
 // Calculate grid dimensions
 const screenWidth = Dimensions.get('window').width;
@@ -100,12 +100,29 @@ export default function App() {
       }
       
       if (reset) {
-        setPhotos(data.images);
+        // When resetting, deduplicate to avoid React key collisions
+        setPhotos(prevPhotos => {
+          const existingIds = new Set(prevPhotos.map(p => p.id));
+          const deduplicatedImages = data.images.filter(img => !existingIds.has(img.id));
+          
+          // Keep existing photos that aren't in the new data (like immediate uploads)
+          // and add new photos from API
+          const finalPhotos = [
+            ...prevPhotos.filter(p => !data.images.some(img => img.id === p.id)),
+            ...data.images
+          ].sort((a, b) => b.id - a.id); // Sort by ID descending (newest first)
+          
+          console.log(`Photos after reset: ${finalPhotos.length} (was: ${prevPhotos.length}, from API: ${data.images.length})`);
+          return finalPhotos;
+        });
       } else {
         setPhotos(prev => {
-          const newPhotos = [...prev, ...data.images];
-          console.log(`Total photos after load: ${newPhotos.length}`);
-          return newPhotos;
+          // For pagination, avoid duplicates when adding more photos
+          const existingIds = new Set(prev.map(p => p.id));
+          const newImages = data.images.filter(img => !existingIds.has(img.id));
+          const finalPhotos = [...prev, ...newImages];
+          console.log(`Total photos after load: ${finalPhotos.length} (added: ${newImages.length})`);
+          return finalPhotos;
         });
       }
       
@@ -145,6 +162,56 @@ export default function App() {
     cursorRef.current = null;
     fetchPhotos(true);
   }, [fetchPhotos]);
+
+  // Handle photo upload completion
+  const handleUploadComplete = useCallback((response: UploadResponse) => {
+    console.log('Photo uploaded successfully:', response);
+    
+    if (!response.duplicate && response.imageId) {
+      // Check if photo already exists to avoid duplicates
+      setPhotos(prev => {
+        const exists = prev.some(photo => photo.id === response.imageId);
+        if (exists) {
+          console.log('Photo already exists in gallery, skipping immediate add');
+          return prev;
+        }
+        
+        // Create new photo item for immediate display
+        const newPhoto: MediaItem = {
+          id: response.imageId!,  // We already checked it exists above
+          filename: response.upload?.originalFilename || 'uploaded_photo.jpg',
+          dateTaken: response.upload?.uploadedAt || new Date().toISOString(),
+          media_url: response.media?.url || '',
+          thumbnail_url: response.media?.thumbnailUrl || '',
+          dominant_color: response.processing?.dominantColor || '#333',
+          faces: [], // Will be populated when we refresh
+          objects: [] // Will be populated when we refresh
+        };
+        
+        console.log('Added uploaded photo to gallery immediately:', newPhoto);
+        return [newPhoto, ...prev];
+      });
+      
+      // Update total count only if we don't already have this photo
+      setTotalCount(prev => {
+        const currentCount = prev || 0;
+        return currentCount + 1;
+      });
+    }
+    
+    // Do a background refresh to get complete data and ensure consistency
+    // Use a small delay to ensure the API has finished processing
+    setTimeout(() => {
+      console.log('Doing background refresh to sync complete photo data...');
+      handleRefresh();
+    }, 1500); // Slightly longer delay to ensure processing is complete
+  }, [handleRefresh]);
+
+  // Handle photo upload error
+  const handleUploadError = useCallback((error: string) => {
+    console.error('Photo upload failed:', error);
+    // Error is already shown in PhotoUpload component
+  }, []);
 
   // Render individual photo item
   const renderPhoto = ({ item }: { item: MediaItem }) => {
@@ -335,6 +402,12 @@ export default function App() {
             <Text style={styles.emptySubtext}>Pull down to refresh</Text>
           </View>
         }
+      />
+      
+      {/* Slide-out Menu */}
+      <SlideOutMenu
+        onUploadComplete={handleUploadComplete}
+        onUploadError={handleUploadError}
       />
       
       <StatusBar style="light" />

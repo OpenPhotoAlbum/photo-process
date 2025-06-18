@@ -21,7 +21,7 @@ services:
       - /mnt/hdd/photo-process:/mnt/hdd/photo-process
       - /mnt/sg1/uploads:/mnt/sg1/uploads
       - ./services/api:/app
-      - /app/node_modules
+      - api_node_modules:/app/node_modules
       - ./shared:/app/shared
       - ./logs:/app/logs
     networks:
@@ -172,6 +172,7 @@ services:
 volumes:
   mysql_data:
   compreface_postgres_data:
+  api_node_modules:
 
 networks:
   photo-platform:
