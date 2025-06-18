@@ -8,6 +8,8 @@ import { BasicImageTest } from './screens/BasicImageTest';
 import { NativeImageTest } from './screens/NativeImageTest';
 import { SlideOutMenu } from './components/SlideOutMenu';
 import { UploadResponse } from './services/UploadAPI';
+import { autoUploadService } from './services/AutoUploadService';
+import { AutoUploadSettingsScreen } from './screens/AutoUploadSettingsScreen';
 import { API_BASE } from './config';
 
 // Calculate grid dimensions
@@ -44,6 +46,12 @@ export default function App() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<MediaItem | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const [showAutoUploadSettings, setShowAutoUploadSettings] = useState(false);
+  
+  // Debug auto-upload state changes
+  useEffect(() => {
+    console.log('App: showAutoUploadSettings changed to:', showAutoUploadSettings);
+  }, [showAutoUploadSettings]);
   
   // Debounce ref to prevent multiple requests
   const isLoadingMore = useRef(false);
@@ -142,9 +150,24 @@ export default function App() {
     }
   }, []);
 
-  // Initial load
+  // Initial load and auto-upload initialization
   useEffect(() => {
     fetchPhotos(true);
+    
+    // Initialize auto-upload service
+    autoUploadService.initialize().then((initialized) => {
+      if (initialized) {
+        console.log('Auto-upload service initialized successfully');
+        // Check if auto-upload is enabled and start monitoring
+        autoUploadService.getSettings().then((settings) => {
+          if (settings.enabled) {
+            autoUploadService.startMonitoring();
+          }
+        });
+      } else {
+        console.log('Auto-upload service initialization failed');
+      }
+    });
   }, []);
 
   // Handle load more when approaching end of list
@@ -408,6 +431,10 @@ export default function App() {
       <SlideOutMenu
         onUploadComplete={handleUploadComplete}
         onUploadError={handleUploadError}
+        onAutoUploadPress={() => {
+          console.log('Auto-upload press received in App');
+          setShowAutoUploadSettings(true);
+        }}
       />
       
       <StatusBar style="light" />
@@ -428,6 +455,20 @@ export default function App() {
         />
       )}
     </Modal>
+
+    {/* Auto-Upload Settings Overlay */}
+    {showAutoUploadSettings && (
+      <View style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999
+      }}>
+        <AutoUploadSettingsScreen onClose={() => setShowAutoUploadSettings(false)} />
+      </View>
+    )}
   </>
   );
 }

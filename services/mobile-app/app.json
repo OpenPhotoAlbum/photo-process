@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile-app",
-    "slug": "mobile-app",
+    "name": "Photo Platform",
+    "slug": "photo-platform-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,20 +10,66 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.photoplatform.mobile",
+      "appleTeamId": "3QK8WU4MS5",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to automatically upload and organize your photos with AI-powered analysis.",
+        "NSPhotoLibraryAddUsageDescription": "This app needs access to save processed photos back to your photo library.",
+        "NSCameraUsageDescription": "This app needs camera access to take new photos for upload and processing.",
+        "UIBackgroundModes": ["background-fetch", "background-processing"]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.photoplatform.mobile",
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.INTERNET",
+        "android.permission.WAKE_LOCK",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Photo Platform to access your photos for automatic upload and AI-powered organization.",
+          "savePhotosPermission": "Allow Photo Platform to save processed photos to your library.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Photo Platform to access your photos for upload and processing.",
+          "cameraPermission": "Allow Photo Platform to take photos for upload and processing."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d8f95eed-45ee-439d-98f6-8dde014459fa"
+      }
     }
   }
 }

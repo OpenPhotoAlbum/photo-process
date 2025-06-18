@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { PhotoUpload } from './PhotoUpload';
 import { UploadResponse } from '../services/UploadAPI';
+import { AutoUploadSettingsScreen } from '../screens/AutoUploadSettingsScreen';
 
 const { width: screenWidth } = Dimensions.get('window');
 const MENU_WIDTH = screenWidth * 0.8;
@@ -20,11 +21,13 @@ const MENU_WIDTH = screenWidth * 0.8;
 interface SlideOutMenuProps {
   onUploadComplete?: (response: UploadResponse) => void;
   onUploadError?: (error: string) => void;
+  onAutoUploadPress?: () => void;
 }
 
 export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
   onUploadComplete,
   onUploadError,
+  onAutoUploadPress,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
@@ -158,6 +161,23 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
 
                 <View style={styles.menuSection}>
                   <Text style={styles.sectionTitle}>Settings</Text>
+                  <TouchableOpacity 
+                    style={styles.menuItemActive} 
+                    onPress={() => {
+                      console.log('Auto-Upload clicked!');
+                      // Close the slide-out menu first
+                      closeMenu();
+                      // Then call parent callback
+                      setTimeout(() => {
+                        onAutoUploadPress?.();
+                      }, 100);
+                    }}
+                  >
+                    <Ionicons name="cloud-upload" size={20} color="#007AFF" />
+                    <Text style={styles.menuItemTextActive}>Auto-Upload</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#007AFF" />
+                  </TouchableOpacity>
+                  
                   <TouchableOpacity style={styles.menuItem} disabled>
                     <Ionicons name="settings" size={20} color="#999" />
                     <Text style={styles.menuItemTextDisabled}>Preferences</Text>
@@ -175,6 +195,7 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
           </Animated.View>
         </View>
       </Modal>
+
     </>
   );
 };
@@ -275,6 +296,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
     fontStyle: 'italic',
+  },
+  menuItemActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#f0f8ff',
+    marginBottom: 8,
+  },
+  menuItemTextActive: {
+    fontSize: 16,
+    color: '#007AFF',
+    marginLeft: 12,
+    flex: 1,
+    fontWeight: '500',
   },
   menuFooter: {
     padding: 20,

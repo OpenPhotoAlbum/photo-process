@@ -1,6 +1,6 @@
 # Photo Management Mobile App
 
-React Native app built with Expo for viewing and managing photos from the photo processing platform.
+Complete React Native mobile app with auto-upload, face recognition, and AI-powered photo management. Built with Expo and supports both development (Expo Go) and production (standalone) deployment.
 
 ## Development Workflow
 
@@ -45,52 +45,137 @@ rsync -av /mnt/hdd/photo-process/services/mobile-app/ username@mac-ip:/path/to/m
 ./sync-to-mac.sh
 ```
 
-#### 4. Run on Mac
+#### 4. Development vs Production Builds
+
+**Development (Expo Go):**
 ```bash
-# On Mac
+# On Mac - runs in Expo Go with demo mode
 cd /path/to/mobile-app
 npx expo start
-
 # Scan QR code with Expo Go app on iPhone
 ```
 
-## Features
+**Production (Standalone App):**
+```bash
+# On Mac - builds native iOS app with full functionality
+eas build --platform ios --profile preview
+# Install .ipa file on iPhone for real auto-upload testing
+```
 
-### Current (Phase 0 - Complete)
-- ✅ Photo gallery with infinite scroll and grid view
-- ✅ Photo detail view with pinch-to-zoom and metadata
-- ✅ Face recognition with person assignment
-- ✅ Map integration with GPS coordinates and thumbnails
-- ✅ Performance optimization with caching and thumbnails
-- ✅ Comprehensive error handling and loading states
+## 🚀 **Features**
 
-### Roadmap
-See `ROADMAP.md` for the complete development roadmap including:
-- **Phase 1**: Enhanced Discovery & Navigation (search, albums, navigation)
-- **Phase 2**: AI-Powered Intelligence (smart suggestions, person management)
-- **Phase 3**: Sharing & Collaboration (export, sync status)
-- **Phase 4**: Advanced Features (editing, maps, AI)
-- **Phase 5**: Platform Integration (settings, performance, offline)
+### ✅ **Core Application**
+- **Photo Gallery**: Infinite scroll grid with thumbnail optimization and dominant color backgrounds
+- **Photo Details**: Full-screen view with pinch-to-zoom, metadata display, and face visualization
+- **Face Recognition**: Tap faces to assign to persons with real-time CompreFace training
+- **Photo Upload**: Camera and gallery selection with progress tracking and duplicate detection
+- **Map Integration**: GPS location display with OpenStreetMap tile compositing
 
-## API Integration
+### ✅ **Auto-Upload System**
+- **Camera Roll Sync**: Automatic detection and upload of new photos
+- **Environment Detection**: Demo mode in Expo Go, full functionality in standalone builds
+- **Background Processing**: Continues uploading when app is closed (standalone only)
+- **Network Awareness**: WiFi-only option with cellular fallback
+- **Duplicate Prevention**: Uses same hash-based deduplication as platform
+- **Settings Management**: Quality control, daily limits, and upload statistics
+- **Permission Handling**: Proper iOS permissions for camera roll and background processing
 
-Connects to the existing photo processing backend:
-- **Gallery**: `GET /api/gallery` - Photo listing
-- **Media**: `GET /media/{id}` - Photo files
-- **Search**: `GET /api/search/*` - Search functionality
-- **Persons**: `GET /api/persons` - Person management
+### ✅ **Technical Infrastructure**
+- **Smart Service Loading**: Automatically detects environment and loads appropriate functionality
+- **Error Handling**: Comprehensive error states with user-friendly messages
+- **Performance Optimization**: Image caching, lazy loading, and memory management
+- **Offline Support**: Graceful degradation when API is unavailable
+- **Progress Tracking**: Real-time upload progress and statistics
 
-## Error Handling
+### 🔄 **Planned Enhancements**
+- **Advanced Search**: Filters for objects, faces, dates, and locations
+- **Smart Albums**: AI-generated albums based on content analysis
+- **Enhanced Person Management**: Bulk face assignment and training improvements
+- **Export Functionality**: Share and export photos in various formats
 
-The app includes comprehensive error handling for:
-- Network connectivity issues
-- API server not running
-- No photos in gallery
-- Image loading failures
+## 🏗️ **Auto-Upload Architecture**
 
-## Development Notes
+### **Environment Detection**
+The app automatically detects whether it's running in Expo Go (development) or a standalone build (production):
 
-- **TypeScript**: Full type safety with React Native
-- **Mobile-First**: Optimized for iPhone usage patterns
-- **Vision Alignment**: Follows VISION.md Phase 1 goals
-- **Code Sharing**: Structured for future web app code reuse
+```typescript
+// AutoUploadService.ts
+private checkEnvironment(): void {
+  this.isStandalone = Constants.executionEnvironment === 'standalone';
+  console.log('Running in', this.isStandalone ? 'standalone app' : 'Expo Go');
+}
+```
+
+### **Smart Module Loading**
+Native modules are conditionally loaded based on environment:
+
+```typescript
+// Only load native modules in standalone builds
+if (this.isStandalone) {
+  MediaLibrary = await import('expo-media-library');
+  Network = await import('expo-network');
+  TaskManager = await import('expo-task-manager');
+  BackgroundFetch = await import('expo-background-fetch');
+}
+```
+
+### **Graceful Degradation**
+- **Expo Go**: Demo mode with simulated functionality and UI exploration
+- **Standalone**: Full camera roll access, background processing, and real uploads
+
+### **Upload Pipeline**
+1. **Scan**: Monitor camera roll for new photos since last scan
+2. **Queue**: Add new photos to upload queue with retry logic
+3. **Network Check**: Verify WiFi/cellular based on user preferences
+4. **Upload**: Process queue with configurable concurrency limits
+5. **Track**: Monitor daily usage and apply limits
+
+## 📡 **API Integration**
+
+### **Core Endpoints**
+- **Gallery**: `GET /api/gallery` - Photo listing with pagination
+- **Media**: `GET /media/{id}` - Photo files and thumbnails
+- **Upload**: `POST /api/upload` - Photo upload with processing
+- **Persons**: `GET /api/persons` - Person management and assignment
+- **Faces**: `POST /api/faces/{id}/assign` - Face-to-person assignment
+- **Training**: `POST /api/compreface/train` - Trigger face recognition training
+
+### **Auto-Upload Endpoints**
+- **Upload Queue**: Uses existing upload endpoint with duplicate detection
+- **Hash Verification**: Leverages platform's hash-based deduplication
+- **Processing Integration**: Automatic AI processing (faces, objects, metadata)
+
+## 🛠️ **Development Guide**
+
+### **Environment Variables**
+```bash
+# config.ts
+export const API_BASE = 'http://192.168.40.103:9000';
+```
+
+### **Building & Testing**
+```bash
+# Development build (Expo Go)
+npx expo start
+
+# Production build (Standalone)
+eas build --platform ios --profile preview
+
+# Install on device
+# Download .ipa from EAS and install via Xcode
+```
+
+### **Debugging**
+- **Demo Mode**: Test UI without native dependencies
+- **Standalone Mode**: Test real camera roll and background processing
+- **Network Testing**: Verify API connectivity from device
+- **Permission Testing**: Ensure camera roll permissions work correctly
+
+## 📱 **Technical Stack**
+
+- **React Native**: Cross-platform mobile development
+- **Expo SDK 53**: Development platform and build tools
+- **TypeScript**: Type safety and developer experience
+- **Expo Image**: High-performance image rendering with caching
+- **AsyncStorage**: Persistent settings and queue storage
+- **Native Modules**: Camera roll, network detection, background tasks
