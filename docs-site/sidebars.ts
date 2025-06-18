@@ -60,6 +60,7 @@ const sidebars: SidebarsConfig = {
         'mobile-app/setup',
         'mobile-app/development',
         'mobile-app/features',
+        'mobile-app/roadmap',
       ],
     },
   ],
