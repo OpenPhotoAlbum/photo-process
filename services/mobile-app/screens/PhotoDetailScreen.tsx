@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ImageWithFaces } from '../components/ImageWithFaces';
 import { FaceRow } from '../components/FaceRow';
+import { MetadataSection } from '../components/MetadataSection';
 import { FaceAPI } from '../services/FaceAPI';
 import { FaceData } from '../types/FaceTypes';
 
@@ -99,6 +100,9 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
         {faces.length > 0 && (
           <FaceRow faces={faces} onFacePress={handleFacePress} />
         )}
+        
+        {/* Metadata section */}
+        <MetadataSection imageId={imageId} />
       </ScrollView>
     </SafeAreaView>
   );

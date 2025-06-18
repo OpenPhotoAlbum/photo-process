@@ -31,6 +31,7 @@ interface GalleryResponse {
   hasMore: boolean;
   nextCursor: string | null;
   count: number;
+  totalCount: number;
 }
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<MediaItem | null>(null);
+  const [totalCount, setTotalCount] = useState<number>(0);
   
   // Debounce ref to prevent multiple requests
   const isLoadingMore = useRef(false);
@@ -86,10 +88,16 @@ export default function App() {
       const data: GalleryResponse = await response.json();
       console.log('API Response:', {
         imageCount: data.images.length,
+        totalCount: data.totalCount,
         hasMore: data.hasMore,
         nextCursor: data.nextCursor,
         firstId: data.images[0]?.id
       });
+      
+      // Update total count from API response
+      if (data.totalCount && data.totalCount !== totalCount) {
+        setTotalCount(data.totalCount);
+      }
       
       if (reset) {
         setPhotos(data.images);
@@ -279,8 +287,7 @@ export default function App() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Photos</Text>
         <Text style={styles.headerSubtitle}>
-          {visiblePhotos.length} photos
-          {failedImages.size > 0 && ` (${failedImages.size} hidden)`}
+          {totalCount > 0 ? `${totalCount} photos` : `${visiblePhotos.length} photos`}
         </Text>
       </View>
       
