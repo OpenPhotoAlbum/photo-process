@@ -1,7 +1,7 @@
 {
   "client": "Thunder Client",
   "collectionName": "Photo Processing API",
-  "dateExported": "2025-01-14T12:00:00.000Z",
+  "dateExported": "2025-01-18T12:00:00.000Z",
   "version": "1.1",
   "folders": [
     {
@@ -87,6 +87,13 @@
       "containerId": "",
       "created": "2025-01-14T12:00:00.000Z",
       "sortNum": 120000
+    },
+    {
+      "_id": "geolocation",
+      "name": "🌍 Geolocation",
+      "containerId": "",
+      "created": "2025-01-18T12:00:00.000Z",
+      "sortNum": 130000
     }
   ],
   "requests": [
@@ -1287,6 +1294,146 @@
       "headers": [],
       "params": [],
       "tests": []
+    },
+    {
+      "_id": "find-closest-city",
+      "colId": "",
+      "containerId": "geolocation",
+      "name": "Find Closest City",
+      "url": "{{apiBase}}/locations/closest",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [
+        {
+          "name": "lat",
+          "value": "{{sanFranciscoLat}}",
+          "isDisabled": false
+        },
+        {
+          "name": "lng",
+          "value": "{{sanFranciscoLng}}",
+          "isDisabled": false
+        },
+        {
+          "name": "radius",
+          "value": "10",
+          "isDisabled": true
+        }
+      ],
+      "tests": [
+        {
+          "type": "json-query",
+          "custom": "json.city.city",
+          "action": "isnotempty",
+          "value": ""
+        },
+        {
+          "type": "json-query", 
+          "custom": "json.location.fullLocationString",
+          "action": "contains",
+          "value": "United States"
+        }
+      ]
+    },
+    {
+      "_id": "search-by-location",
+      "colId": "",
+      "containerId": "geolocation",
+      "name": "Search Photos by Location",
+      "url": "{{apiBase}}/locations/search",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [
+        {
+          "name": "cityId",
+          "value": "31597",
+          "isDisabled": true
+        },
+        {
+          "name": "state",
+          "value": "CA",
+          "isDisabled": true
+        },
+        {
+          "name": "country",
+          "value": "US",
+          "isDisabled": true
+        },
+        {
+          "name": "lat",
+          "value": "{{sanFranciscoLat}}",
+          "isDisabled": true
+        },
+        {
+          "name": "lng",
+          "value": "{{sanFranciscoLng}}",
+          "isDisabled": true
+        },
+        {
+          "name": "radius",
+          "value": "{{searchRadius}}",
+          "isDisabled": true
+        },
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "offset",
+          "value": "0",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "location-statistics",
+      "colId": "",
+      "containerId": "geolocation",
+      "name": "Get Location Statistics",
+      "url": "{{apiBase}}/locations/stats",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-image-location",
+      "colId": "",
+      "containerId": "geolocation",
+      "name": "Get Image Location",
+      "url": "{{apiBase}}/locations/images/{{imageId}}/location",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "retroactive-geolocation",
+      "colId": "",
+      "containerId": "geolocation",
+      "name": "Process Retroactive Geolocation",
+      "url": "{{apiBase}}/locations/retroactive",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 100,\n  \"radius\": 25\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
     }
   ],
   "environments": [
@@ -1378,6 +1525,34 @@
         {
           "name": "sampleMediaPath",
           "value": "2025/06/android_3cb06a34.JPG"
+        },
+        {
+          "name": "sanFranciscoLat",
+          "value": "37.7749"
+        },
+        {
+          "name": "sanFranciscoLng",
+          "value": "-122.4194"
+        },
+        {
+          "name": "newYorkLat",
+          "value": "40.7128"
+        },
+        {
+          "name": "newYorkLng",
+          "value": "-74.0060"
+        },
+        {
+          "name": "losAngelesLat",
+          "value": "34.0522"
+        },
+        {
+          "name": "losAngelesLng",
+          "value": "-118.2437"
+        },
+        {
+          "name": "searchRadius",
+          "value": "25"
         }
       ]
     }

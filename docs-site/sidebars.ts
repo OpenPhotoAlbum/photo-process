@@ -75,6 +75,7 @@ const sidebars: SidebarsConfig = {
         'api/media-static',
         'api/gallery',
         'api/search',
+        'api/geolocation',
         'api/persons',
         'api/faces',
         'api/training',

@@ -786,19 +786,49 @@ export const DatabaseUtils = {
         const image = await ImageRepository.findById(image_id);
         if (!image) return null;
         
-        const [metadata, faces, tags, objects] = await Promise.all([
+        // Get geolocation data
+        const locationQuery = db('image_geolocations as il')
+            .leftJoin('geo_cities as gc', 'il.city_id', 'gc.id')
+            .leftJoin('geo_states as gs', 'gc.state_code', 'gs.code')
+            .leftJoin('geo_countries as gco', 'gs.country_code', 'gco.country_code')
+            .select([
+                'gc.city as location_city',
+                'gs.name as location_state',
+                'gco.country_name as location_country',
+                'il.confidence_score as location_confidence',
+                'il.distance_miles as location_distance'
+            ])
+            .where('il.image_id', image_id)
+            .first();
+        
+        const [metadata, faces, tags, objects, locationData] = await Promise.all([
             MetadataRepository.getMetadataByImage(image_id),
             FaceRepository.getFacesByImage(image_id),
             db('image_tags').where({ image_id }),
-            ObjectRepository.getObjectsByImage(image_id)
+            ObjectRepository.getObjectsByImage(image_id),
+            locationQuery
         ]);
+        
+        // Format location data
+        const location = locationData?.location_city ? {
+            city: locationData.location_city,
+            state: locationData.location_state,
+            country: locationData.location_country,
+            confidence: parseFloat(locationData.location_confidence) || null,
+            distance_miles: parseFloat(locationData.location_distance) || null,
+            coordinates: (metadata?.latitude && metadata?.longitude) ? {
+                latitude: parseFloat(metadata.latitude.toString()),
+                longitude: parseFloat(metadata.longitude.toString())
+            } : null
+        } : null;
         
         return {
             ...image,
             metadata,
             faces,
             tags,
-            objects
+            objects,
+            location
         };
     },
     

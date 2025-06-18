@@ -48,6 +48,11 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
         
         let query = db('images')
             .leftJoin('detected_faces', 'images.id', 'detected_faces.image_id')
+            .leftJoin('image_geolocations as il', 'images.id', 'il.image_id')
+            .leftJoin('geo_cities as gc', 'il.city_id', 'gc.id')
+            .leftJoin('geo_states as gs', 'gc.state_code', 'gs.code')
+            .leftJoin('geo_countries as gco', 'gs.country_code', 'gco.country_code')
+            .leftJoin('image_metadata as im', 'images.id', 'im.image_id')
             .select([
                 'images.id',
                 'images.filename',
@@ -57,7 +62,16 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
                 'images.dominant_color',
                 'images.date_taken',
                 'images.date_processed',
-                'images.processing_status'
+                'images.processing_status',
+                // GPS coordinates with fallback to metadata table
+                db.raw('COALESCE(images.gps_latitude, im.latitude) as gps_latitude'),
+                db.raw('COALESCE(images.gps_longitude, im.longitude) as gps_longitude'),
+                // Geolocation data
+                'gc.city as location_city',
+                'gs.name as location_state',
+                'gco.country_name as location_country',
+                'il.confidence_score as location_confidence',
+                'il.distance_miles as location_distance'
                 // 'images.is_astrophotography', // TODO: Enable after migrations
                 // 'images.astro_confidence', // TODO: Enable after migrations
                 // 'images.astro_classification' // TODO: Enable after migrations
@@ -80,7 +94,26 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
                 //     queryBuilder.where('images.is_astrophotography', true);
                 // }
             })
-            .groupBy('images.id')
+            .groupBy([
+                'images.id', 
+                'images.filename', 
+                'images.original_path', 
+                'images.relative_media_path', 
+                'images.thumbnail_path', 
+                'images.dominant_color', 
+                'images.date_taken', 
+                'images.date_processed', 
+                'images.processing_status',
+                'images.gps_latitude',
+                'images.gps_longitude',
+                'im.latitude',
+                'im.longitude',
+                'gc.city',
+                'gs.name',
+                'gco.country_name',
+                'il.confidence_score',
+                'il.distance_miles'
+            ])
             .orderBy('images.date_processed', 'desc')  // Most recently processed first
             .orderBy('images.id', 'desc') // Secondary sort by ID for consistent pagination
             .limit(limit + 1); // +1 to check if there are more results
@@ -140,14 +173,35 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
         const hasMore = imagesWithFaces.length > limit;
         const results = hasMore ? imagesWithFaces.slice(0, limit) : imagesWithFaces;
         
-        // Combine results and add media URLs
-        const finalResults = results.map((image: any) => ({
-            ...image,
-            face_count: parseInt(image.face_count as string),
-            faces: facesByImage[image.id as number] || [],
-            media_url: getMediaUrl(image),
-            thumbnail_url: getMediaUrl(image) + '?thumb=1'
-        }));
+        // Combine results and add media URLs and location data
+        const finalResults = results.map((image: any) => {
+            const location = image.location_city ? {
+                city: image.location_city,
+                state: image.location_state,
+                country: image.location_country,
+                confidence: parseFloat(image.location_confidence) || null,
+                distance_miles: parseFloat(image.location_distance) || null,
+                coordinates: (image.gps_latitude && image.gps_longitude) ? {
+                    latitude: parseFloat(image.gps_latitude),
+                    longitude: parseFloat(image.gps_longitude)
+                } : null
+            } : null;
+
+            return {
+                ...image,
+                face_count: parseInt(image.face_count as string),
+                faces: facesByImage[image.id as number] || [],
+                media_url: getMediaUrl(image),
+                thumbnail_url: getMediaUrl(image) + '?thumb=1',
+                location,
+                // Clean up the raw location fields
+                location_city: undefined,
+                location_state: undefined,
+                location_country: undefined,
+                location_confidence: undefined,
+                location_distance: undefined
+            };
+        });
         
         // Generate next cursor from the last item (always use ID for consistency)
         let nextCursor = null;
@@ -273,7 +327,9 @@ export const GalleryRoutes = {
                 face_count: faceCounts[image.id!] || 0,
                 faces: facesByImage[image.id!] || [],
                 media_url: getMediaUrl(image),
-                thumbnail_url: getMediaUrl(image) + '?thumb=1'
+                thumbnail_url: getMediaUrl(image) + '?thumb=1',
+                // Note: location data would need to be added to searchImages query if needed
+                location: null // TODO: Add location joins to ImageRepository.searchImages
             }));
             
             res.json({

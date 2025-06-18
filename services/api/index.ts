@@ -11,6 +11,7 @@ import { requestLogger, errorLogger } from './middleware/request-logger';
 import * as Junk from './routes/junk';
 import * as Jobs from './routes/jobs';
 import * as Process from './routes/process';
+import * as Geolocation from './routes/geolocation';
 import { StartupValidator } from './util/startup-validator';
 import { configManager } from './util/config-manager';
 import { fileTracker } from './util/file-tracker';
@@ -122,6 +123,13 @@ const main = async () => {
     app.post('/api/process/image', Process.processImage as any);
     app.post('/api/process/upload', Process.upload.single('photo'), Process.uploadPhoto as any);
     app.get('/api/process/:id/status', Process.getProcessingStatus as any);
+    
+    // Geolocation API routes
+    app.get('/api/locations/search', Geolocation.searchByLocation as any);
+    app.get('/api/locations/stats', Geolocation.getLocationStats as any);
+    app.get('/api/locations/closest', Geolocation.getClosestCity as any);
+    app.get('/api/locations/images/:id/location', Geolocation.getImageLocation as any);
+    app.post('/api/locations/retroactive', Geolocation.processRetroactiveGeolocation as any);
     
     // System configuration API route
     app.get('/api/config', (req, res) => {

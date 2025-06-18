@@ -12,6 +12,7 @@ import { configManager } from './config-manager';
 import { HashManager, HashFileInfo } from './hash-manager';
 import { ImageRepository, MetadataRepository, ObjectRepository, FaceRepository } from '../models/database';
 import { SmartAlbumEngine } from './smart-album-engine';
+import { GeolocationService } from './geolocation';
 
 const logger = Logger.getInstance();
 
@@ -323,7 +324,14 @@ export const storeImageDataHashed = async (
         dateTaken = stats.mtime;
     }
 
-    // Create image record with hash-based fields
+    // Extract GPS coordinates for geolocation
+    const gpsLatitude = parseNumeric(exif.GPSLatitude);
+    const gpsLongitude = parseNumeric(exif.GPSLongitude);
+    const gpsAltitude = parseNumeric(exif.GPSAltitude);
+    const gpsDirection = exif.GPSImgDirection?.toString();
+    const gpsSpeed = parseNumeric(exif.GPSSpeed);
+
+    // Create image record with hash-based fields and GPS data
     const imageData = {
         filename: path.basename(originalPath),
         original_path: originalPath,
@@ -348,7 +356,13 @@ export const storeImageDataHashed = async (
         astro_confidence: astroResult.confidence,
         astro_details: JSON.stringify(astroResult.details),
         astro_classification: astroResult.classification,
-        astro_detected_at: astroResult.isAstro ? new Date() : undefined
+        astro_detected_at: astroResult.isAstro ? new Date() : undefined,
+        // GPS data from EXIF
+        gps_latitude: gpsLatitude,
+        gps_longitude: gpsLongitude,
+        gps_altitude: gpsAltitude,
+        gps_direction: gpsDirection,
+        gps_speed: gpsSpeed
     };
 
     // Create the image record first
@@ -437,6 +451,31 @@ export const storeImageDataHashed = async (
                 logger.error(`[DB - FACE] Failed to store face data for image ID ${imageId}:`, error);
                 // Continue processing other faces even if one fails
             }
+        }
+    }
+
+    // Process geolocation if GPS coordinates are available
+    if (gpsLatitude && gpsLongitude) {
+        try {
+            logger.info(`Processing geolocation for image ${imageId} at ${gpsLatitude}, ${gpsLongitude}`);
+            const locationInfo = await GeolocationService.processImageLocation(
+                imageId,
+                { 
+                    latitude: gpsLatitude, 
+                    longitude: gpsLongitude, 
+                    altitude: gpsAltitude 
+                },
+                25 // Search within 25 miles
+            );
+            
+            if (locationInfo) {
+                logger.info(`Successfully linked image ${imageId} to ${locationInfo.fullLocationString} (${locationInfo.distanceMiles.toFixed(2)} miles away)`);
+            } else {
+                logger.info(`No location found within 25 miles for image ${imageId}`);
+            }
+        } catch (geoError) {
+            // Log error but don't fail the entire process
+            logger.error(`Failed to process geolocation for image ${imageId}:`, geoError);
         }
     }
 

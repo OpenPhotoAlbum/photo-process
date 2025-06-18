@@ -1,7 +1,7 @@
 {
     "client": "Thunder Client",
     "environmentName": "Photo Platform - Development",
-    "dateExported": "2025-06-16T06:45:00.000Z",
+    "dateExported": "2025-01-18T12:00:00.000Z",
     "version": "1.2",
     "variables": [
         {
@@ -63,6 +63,34 @@
         {
             "name": "lowConfidence",
             "value": "0.5"
+        },
+        {
+            "name": "sanFranciscoLat",
+            "value": "37.7749"
+        },
+        {
+            "name": "sanFranciscoLng",
+            "value": "-122.4194"
+        },
+        {
+            "name": "newYorkLat",
+            "value": "40.7128"
+        },
+        {
+            "name": "newYorkLng",
+            "value": "-74.0060"
+        },
+        {
+            "name": "losAngelesLat",
+            "value": "34.0522"
+        },
+        {
+            "name": "losAngelesLng",
+            "value": "-118.2437"
+        },
+        {
+            "name": "searchRadius",
+            "value": "25"
         }
     ]
 }

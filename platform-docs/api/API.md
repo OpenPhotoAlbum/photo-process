@@ -212,6 +212,148 @@ Currently, the API does not require authentication. All endpoints are publicly a
 
 ---
 
+## Geolocation API
+
+### `GET /api/locations/search`
+**Description**: Search images by location parameters  
+**Query Parameters**:
+- `cityId` (number): Search by specific city ID
+- `state` (string): Search by state code (e.g., "CA", "NY")
+- `country` (string): Search by country code (e.g., "US", "CA")
+- `lat` (number): Latitude for radius search
+- `lng` (number): Longitude for radius search
+- `radius` (number): Radius in miles for coordinate search (default: 10)
+- `limit` (number): Maximum results to return (default: 50)
+- `offset` (number): Results offset for pagination (default: 0)
+
+**Response**:
+```json
+{
+  "images": [
+    {
+      "id": 1,
+      "filename": "IMG_001.jpg",
+      "city": "San Francisco",
+      "state_name": "California",
+      "country_name": "United States",
+      "gps_latitude": 37.7749,
+      "gps_longitude": -122.4194,
+      "confidence_score": 0.95,
+      "distance_miles": 0.5
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "count": 25
+  },
+  "searchCriteria": {
+    "state": "CA",
+    "limit": 50
+  }
+}
+```
+
+### `GET /api/locations/stats`
+**Description**: Get location statistics showing photo counts by location  
+**Response**:
+```json
+{
+  "locationStats": [
+    {
+      "city": "Austin",
+      "state_name": "Texas",
+      "country_name": "United States",
+      "photo_count": 150,
+      "min_distance": 0.1,
+      "max_distance": 2.5,
+      "avg_distance": 0.8
+    }
+  ],
+  "totalLocations": 59
+}
+```
+
+### `GET /api/locations/closest`
+**Description**: Find closest city to given coordinates  
+**Query Parameters**:
+- `lat` (number, required): Latitude
+- `lng` (number, required): Longitude
+- `radius` (number): Search radius in miles (default: 10)
+
+**Response**:
+```json
+{
+  "city": {
+    "id": 31597,
+    "city": "San Francisco",
+    "state_code": "CA",
+    "postal_code": "94102",
+    "distance_in_miles": 0.32
+  },
+  "location": {
+    "cityId": 31597,
+    "cityName": "San Francisco",
+    "stateName": "California",
+    "stateCode": "CA",
+    "countryName": "United States",
+    "countryCode": "US",
+    "fullLocationString": "San Francisco, California, United States"
+  },
+  "searchRadius": 10,
+  "coordinates": {
+    "latitude": 37.7749,
+    "longitude": -122.4194
+  }
+}
+```
+
+### `GET /api/locations/images/:id/location`
+**Description**: Get location information for a specific image  
+**Path Parameters**:
+- `id` (number): Image ID
+
+**Response**:
+```json
+{
+  "imageId": 456,
+  "location": {
+    "city": "Austin",
+    "state": "Texas",
+    "country": "United States",
+    "coordinates": {
+      "latitude": 30.2672,
+      "longitude": -97.7431
+    },
+    "confidence": 0.94,
+    "distance": 1.2
+  }
+}
+```
+
+### `POST /api/locations/retroactive`
+**Description**: Process geolocation for existing images with GPS data  
+**Request Body**:
+```json
+{
+  "limit": 100,
+  "radius": 25
+}
+```
+
+**Response**:
+```json
+{
+  "message": "Retroactive geolocation processing completed",
+  "totalImages": 100,
+  "processed": 95,
+  "skipped": 5,
+  "searchRadius": 25
+}
+```
+
+---
+
 ## Person Management
 
 ### `GET /api/persons`
