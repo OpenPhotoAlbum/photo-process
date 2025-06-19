@@ -7,6 +7,51 @@ import sharp from 'sharp';
 import { Logger } from '../logger';
 import { configManager } from './config-manager';
 
+// Transform coordinates from display orientation to raw file orientation for Sharp extraction
+const transformCoordinatesForOrientation = (
+    x_min: number, y_min: number, x_max: number, y_max: number,
+    displayWidth: number, displayHeight: number, orientation: number
+) => {
+    let left, top, width, height;
+    
+    switch (orientation) {
+        case 6: // 90° CW rotation (portrait photo)
+            left = y_min;
+            top = displayWidth - x_max;
+            width = y_max - y_min;
+            height = x_max - x_min;
+            break;
+        case 8: // 90° CCW rotation
+            left = displayHeight - y_max;
+            top = x_min;
+            width = y_max - y_min;
+            height = x_max - x_min;
+            break;
+        case 3: // 180° rotation
+            left = displayWidth - x_max;
+            top = displayHeight - y_max;
+            width = x_max - x_min;
+            height = y_max - y_min;
+            break;
+        case 5: // 90° CW + horizontal flip
+        case 7: // 90° CCW + horizontal flip
+            // These are less common, handle similarly to 6/8 but with flip
+            left = y_min;
+            top = displayWidth - x_max;
+            width = y_max - y_min;
+            height = x_max - x_min;
+            break;
+        default:
+            // No transformation needed
+            left = x_min;
+            top = y_min;
+            width = x_max - x_min;
+            height = y_max - y_min;
+    }
+    
+    return { left, top, width, height };
+};
+
 const logger = Logger.getInstance();
 
 const COMPREFACE_API_URL = `${configManager.getCompreFace().baseUrl}/api/v1`;
@@ -300,20 +345,45 @@ export const extractFaces = async (imagepath: string, dest: string): Promise<Rec
         return {};
     }
     
+    // Get image metadata to handle EXIF orientation
+    const imageMetadata = await sharp(imagepath).metadata();
+    const { width: rawWidth, height: rawHeight, orientation = 1 } = imageMetadata;
+    
+    // Determine if image needs rotation based on EXIF orientation
+    const needsRotation = orientation >= 5 && orientation <= 8;
+    const displayWidth = needsRotation ? rawHeight : rawWidth;
+    const displayHeight = needsRotation ? rawWidth : rawHeight;
+    
+    logger.info(`[EXTRACT FACES] Image ${imagepath}: raw(${rawWidth}x${rawHeight}) display(${displayWidth}x${displayHeight}) orientation(${orientation})`);
+    
     let i = 0;
     const faceData: Record<string, object> = {};
     for (const res in result) {
-        // Use Sharp WITHOUT withMetadata() to avoid EXIF orientation being applied
-        // This ensures face coordinates from CompreFace match the raw image orientation
-        const s = sharp(imagepath);
         const { box } = result[res];
-
-        const extract = {
-            left: box.x_min,
-            top: box.y_min,
-            width: box.x_max - box.x_min,
-            height: box.y_max - box.y_min,
-        };
+        
+        // CompreFace returns coordinates based on display orientation
+        // Convert them to raw file coordinates for Sharp extraction
+        let extractCoords;
+        if (needsRotation) {
+            // Transform display coordinates to raw file coordinates based on orientation
+            extractCoords = transformCoordinatesForOrientation(
+                box.x_min, box.y_min, box.x_max, box.y_max,
+                displayWidth, displayHeight, orientation
+            );
+        } else {
+            // No rotation needed, use coordinates as-is
+            extractCoords = {
+                left: box.x_min,
+                top: box.y_min,
+                width: box.x_max - box.x_min,
+                height: box.y_max - box.y_min,
+            };
+        }
+        
+        logger.info(`[EXTRACT FACES] Face ${i}: original box(${box.x_min},${box.y_min},${box.x_max},${box.y_max}) -> extract(${extractCoords.left},${extractCoords.top},${extractCoords.width},${extractCoords.height})`);
+        
+        // Use Sharp WITHOUT withMetadata() and apply our coordinate transformation
+        const s = sharp(imagepath);
 
         // Create face filename in the dest directory
         const faceFilename = `${path.basename(imagepath, path.extname(imagepath))}__face_${i}${path.extname(imagepath)}`;
@@ -324,7 +394,7 @@ export const extractFaces = async (imagepath: string, dest: string): Promise<Rec
         // Ensure the dest directory exists
         fs.mkdirSync(dest, { recursive: true });
         try {
-            await s.extract(extract).toFile(filename);
+            await s.extract(extractCoords).toFile(filename);
         } catch (error) {
             logger.error(`[EXTRACT FACES] Error extracting face ${i} from ${imagepath}: ${error}`);
             continue; // Skip this face if extraction fails
