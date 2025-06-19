@@ -138,7 +138,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <View style={styles.dateSection}>
                 <TouchableOpacity
                   style={styles.dateButton}
-                  onPress={() => setShowStartDatePicker(true)}
+                  onPress={() => {
+                    console.log('Opening start date picker');
+                    setShowStartDatePicker(true);
+                  }}
                 >
                   <Text style={styles.dateLabel}>From:</Text>
                   <Text style={styles.dateValue}>
@@ -148,7 +151,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
                 <TouchableOpacity
                   style={styles.dateButton}
-                  onPress={() => setShowEndDatePicker(true)}
+                  onPress={() => {
+                    console.log('Opening end date picker');
+                    setShowEndDatePicker(true);
+                  }}
                 >
                   <Text style={styles.dateLabel}>To:</Text>
                   <Text style={styles.dateValue}>
@@ -243,9 +249,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   </TouchableOpacity>
                 </View>
 
-                {availableCities.length > 0 && (
-                  <>
-                    <Text style={styles.subSectionTitle}>Cities ({availableCities.length})</Text>
+                <Text style={styles.subSectionTitle}>
+                  Cities ({availableCities.length} available)
+                </Text>
+                {availableCities.length > 0 ? (
                     <View style={styles.citiesContainer}>
                       {availableCities.slice(0, 10).map((city) => (
                         <TouchableOpacity
@@ -280,7 +287,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                         </TouchableOpacity>
                       ))}
                     </View>
-                  </>
+                ) : (
+                  <Text style={styles.noDataText}>Loading cities...</Text>
                 )}
               </View>
             )}
@@ -414,7 +422,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
         {/* Date Pickers */}
         {showStartDatePicker && (
-          <DateTimePicker
+          <>
+            {console.log('Rendering start date picker')}
+            <DateTimePicker
             value={localFilters.dateRange.startDate || new Date()}
             mode="date"
             display="default"
@@ -430,10 +440,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               }
             }}
           />
+          </>
         )}
 
         {showEndDatePicker && (
-          <DateTimePicker
+          <>
+            {console.log('Rendering end date picker')}
+            <DateTimePicker
             value={localFilters.dateRange.endDate || new Date()}
             mode="date"
             display="default"
@@ -449,6 +462,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               }
             }}
           />
+          </>
         )}
       </SafeAreaView>
     </Modal>
@@ -579,6 +593,13 @@ const styles = StyleSheet.create({
   },
   cityChipTextActive: {
     color: 'white',
+  },
+  noDataText: {
+    color: '#888',
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: 16,
   },
   footer: {
     padding: 16,

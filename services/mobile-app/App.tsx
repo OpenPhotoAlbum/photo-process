@@ -98,10 +98,15 @@ export default function App() {
   // Fetch available cities for filter
   const fetchAvailableCities = useCallback(async () => {
     try {
+      console.log('Fetching available cities...');
       const response = await fetch(`${API_BASE}/api/filters/cities`);
+      console.log('Cities response status:', response.status);
       if (response.ok) {
         const cities = await response.json();
+        console.log('Available cities loaded:', cities.length, cities.slice(0, 5));
         setAvailableCities(cities);
+      } else {
+        console.error('Failed to fetch cities, status:', response.status);
       }
     } catch (error) {
       console.error('Failed to fetch cities:', error);
