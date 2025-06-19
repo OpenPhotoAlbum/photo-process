@@ -66,7 +66,8 @@
           "photosPermission": "Allow Photo Platform to access your photos for upload and processing.",
           "cameraPermission": "Allow Photo Platform to take photos for upload and processing."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {
