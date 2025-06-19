@@ -365,13 +365,18 @@ class AutoUploadService {
         }
       }
 
-      // Get pending items
+      // Get pending items (including failed items that can be retried)
       const pendingItems = this.uploadQueue.filter(item => 
         item.status === 'pending' || 
         (item.status === 'failed' && item.retryCount < this.maxRetries)
       );
-
-      console.log(`AutoUploadService: Processing ${pendingItems.length} pending uploads`);
+      
+      console.log(`AutoUploadService: Processing queue - ${pendingItems.length} pending items`);
+      
+      if (pendingItems.length === 0) {
+        console.log('AutoUploadService: No pending uploads');
+        return;
+      }
 
       // Process uploads (limited concurrency)
       const activeUploadCount = this.activeUploads.size;

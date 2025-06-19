@@ -25,6 +25,7 @@
     "db:shell": "./infrastructure/database/manage.sh shell",
     "db:create-migration": "./platform-tools/database/create-migration.sh",
     "db:create-seed": "./platform-tools/database/create-seed.sh",
+    "mobile:sync-mac": "sh ./services/mobile-app/sync-to-mac.sh",
     "maintenance:retroactive": "node platform-tools/maintenance/retroactive-process.js",
     "maintenance:fix-dates": "node platform-tools/maintenance/fix-dates.js",
     "maintenance:update-objects": "node platform-tools/maintenance/update-objects.js",

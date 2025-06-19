@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
-  Switch
+  Switch,
+  TextInput,
+  FlatList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -23,6 +25,10 @@ export interface FilterOptions {
     hasGPS: boolean | null; // null = all, true = with GPS, false = without GPS
     selectedCities: string[];
   };
+  user: {
+    enabled: boolean;
+    selectedUsers: string[]; // stephen, cayce, google, etc.
+  };
   sort: {
     field: 'date_taken' | 'filename' | 'date_processed';
     direction: 'desc' | 'asc';
@@ -35,6 +41,7 @@ interface FilterPanelProps {
   filters: FilterOptions;
   onFiltersChange: (filters: FilterOptions) => void;
   availableCities: string[];
+  onCitySearch?: (search: string) => void;
 }
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({
@@ -42,16 +49,62 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onClose,
   filters,
   onFiltersChange,
-  availableCities
+  availableCities,
+  onCitySearch
 }) => {
   const [localFilters, setLocalFilters] = useState<FilterOptions>(filters);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  
+  // City search state
+  const [citySearchText, setCitySearchText] = useState('');
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [filteredCities, setFilteredCities] = useState<string[]>([]);
 
   // Update local state when filters prop changes
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
+
+  // Handle city search with debouncing for server-side search
+  useEffect(() => {
+    const searchTimer = setTimeout(() => {
+      if (onCitySearch && citySearchText.trim() !== '') {
+        // Use server-side search for better performance with large datasets
+        onCitySearch(citySearchText.trim());
+      }
+    }, 300); // 300ms debounce
+
+    // For immediate local filtering while waiting for server response
+    if (citySearchText.trim() === '') {
+      // Show all cities when no search (for organic discovery)
+      const sortedCities = [...availableCities].sort((a, b) => a.localeCompare(b));
+      setFilteredCities(sortedCities);
+    } else {
+      const searchLower = citySearchText.toLowerCase();
+      const filtered = availableCities
+        .filter(city => city.toLowerCase().includes(searchLower))
+        .sort((a, b) => {
+          // Prioritize exact matches and start-with matches
+          const aLower = a.toLowerCase();
+          const bLower = b.toLowerCase();
+          
+          // Exact matches first
+          if (aLower === searchLower) return -1;
+          if (bLower === searchLower) return 1;
+          
+          // Starts with search term
+          if (aLower.startsWith(searchLower) && !bLower.startsWith(searchLower)) return -1;
+          if (bLower.startsWith(searchLower) && !aLower.startsWith(searchLower)) return 1;
+          
+          // Then alphabetical
+          return a.localeCompare(b);
+        });
+      setFilteredCities(filtered);
+    }
+
+    return () => clearTimeout(searchTimer);
+  }, [citySearchText, availableCities, onCitySearch]);
 
   const updateFilters = (updates: Partial<FilterOptions>) => {
     const newFilters = { ...localFilters, ...updates };
@@ -75,6 +128,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         hasGPS: null,
         selectedCities: []
       },
+      user: {
+        enabled: false,
+        selectedUsers: []
+      },
       sort: {
         field: 'date_taken',
         direction: 'desc'
@@ -96,7 +153,31 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     let count = 0;
     if (localFilters.dateRange.enabled) count++;
     if (localFilters.location.enabled) count++;
+    if (localFilters.user.enabled) count++;
     return count;
+  };
+
+  const addCity = (city: string) => {
+    const selected = localFilters.location.selectedCities;
+    if (!selected.includes(city)) {
+      updateFilters({
+        location: {
+          ...localFilters.location,
+          selectedCities: [...selected, city]
+        }
+      });
+    }
+    setCitySearchText('');
+    setShowCityDropdown(false);
+  };
+
+  const removeCity = (city: string) => {
+    updateFilters({
+      location: {
+        ...localFilters.location,
+        selectedCities: localFilters.location.selectedCities.filter(c => c !== city)
+      }
+    });
   };
 
   return (
@@ -117,7 +198,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.content}>
+        <View style={styles.content}>
           {/* Date Range Filter */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -250,45 +331,174 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 </View>
 
                 <Text style={styles.subSectionTitle}>
-                  Cities ({availableCities.length} available)
+                  Cities ({localFilters.location.selectedCities.length} selected)
                 </Text>
-                {availableCities.length > 0 ? (
-                    <View style={styles.citiesContainer}>
-                      {availableCities.slice(0, 10).map((city) => (
-                        <TouchableOpacity
-                          key={city}
-                          style={[
-                            styles.cityChip,
-                            localFilters.location.selectedCities.includes(city) &&
-                              styles.cityChipActive
-                          ]}
-                          onPress={() => {
-                            const selected = localFilters.location.selectedCities;
-                            const newSelected = selected.includes(city)
-                              ? selected.filter(c => c !== city)
-                              : [...selected, city];
-                            updateFilters({
-                              location: {
-                                ...localFilters.location,
-                                selectedCities: newSelected
-                              }
-                            });
-                          }}
-                        >
-                          <Text
-                            style={[
-                              styles.cityChipText,
-                              localFilters.location.selectedCities.includes(city) &&
-                                styles.cityChipTextActive
-                            ]}
-                          >
-                            {city}
+                
+                {/* Selected Cities */}
+                {localFilters.location.selectedCities.length > 0 && (
+                  <View style={styles.selectedCitiesContainer}>
+                    {localFilters.location.selectedCities.map((city) => (
+                      <TouchableOpacity
+                        key={city}
+                        style={styles.selectedCityChip}
+                        onPress={() => removeCity(city)}
+                      >
+                        <Text style={styles.selectedCityText}>{city}</Text>
+                        <Ionicons name="close" size={16} color="#999" />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                
+                {/* City Search Input */}
+                <View style={styles.citySearchContainer}>
+                  <TextInput
+                    style={styles.citySearchInput}
+                    placeholder="Search cities..."
+                    placeholderTextColor="#666"
+                    value={citySearchText}
+                    onChangeText={setCitySearchText}
+                    onFocus={() => setShowCityDropdown(true)}
+                  />
+                  <TouchableOpacity
+                    style={styles.citySearchButton}
+                    onPress={() => setShowCityDropdown(!showCityDropdown)}
+                  >
+                    <Ionicons 
+                      name={showCityDropdown ? "chevron-up" : "chevron-down"} 
+                      size={20} 
+                      color="#666" 
+                    />
+                  </TouchableOpacity>
+                </View>
+                
+                {/* City Dropdown */}
+                {showCityDropdown && (
+                  <View style={styles.cityDropdownContainer}>
+                    {filteredCities.length > 0 ? (
+                      <>
+                        <View style={styles.dropdownHeader}>
+                          <Text style={styles.dropdownHeaderText}>
+                            {citySearchText ? 
+                              `${filteredCities.length} cities found` : 
+                              `${filteredCities.length} cities available`
+                            }
                           </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                ) : (
-                  <Text style={styles.noDataText}>Loading cities...</Text>
+                          <TouchableOpacity 
+                            onPress={() => setShowCityDropdown(false)}
+                            style={styles.dropdownCloseButton}
+                          >
+                            <Ionicons name="close" size={16} color="#666" />
+                          </TouchableOpacity>
+                        </View>
+                        <FlatList
+                          data={filteredCities}
+                          keyExtractor={(item) => item}
+                          style={styles.cityDropdown}
+                          keyboardShouldPersistTaps="handled"
+                          showsVerticalScrollIndicator={true}
+                          initialNumToRender={10}
+                          maxToRenderPerBatch={20}
+                          windowSize={10}
+                          getItemLayout={(data, index) => ({
+                            length: 44, // Height of each item
+                            offset: 44 * index,
+                            index,
+                          })}
+                          renderItem={({ item: city }) => (
+                            <TouchableOpacity
+                              style={[
+                                styles.cityDropdownItem,
+                                localFilters.location.selectedCities.includes(city) && 
+                                styles.cityDropdownItemSelected
+                              ]}
+                              onPress={() => addCity(city)}
+                            >
+                              <Text style={[
+                                styles.cityDropdownText,
+                                localFilters.location.selectedCities.includes(city) && 
+                                styles.cityDropdownTextSelected
+                              ]}>
+                                {city}
+                              </Text>
+                              {localFilters.location.selectedCities.includes(city) && (
+                                <Ionicons name="checkmark" size={16} color="#007AFF" />
+                              )}
+                            </TouchableOpacity>
+                          )}
+                        />
+                      </>
+                    ) : (
+                      <Text style={styles.noResultsText}>
+                        {citySearchText ? `No cities found for "${citySearchText}"` : 'Loading cities...'}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* User Filter */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>👤 User</Text>
+              <Switch
+                value={localFilters.user.enabled}
+                onValueChange={(enabled) =>
+                  updateFilters({
+                    user: { ...localFilters.user, enabled }
+                  })
+                }
+                trackColor={{ false: '#333', true: '#0066CC' }}
+                thumbColor="white"
+              />
+            </View>
+
+            {localFilters.user.enabled && (
+              <View style={styles.userSection}>
+                <Text style={styles.subSectionTitle}>Upload Source</Text>
+                <View style={styles.buttonGroup}>
+                  {['stephen', 'cayce', 'google'].map((user) => (
+                    <TouchableOpacity
+                      key={user}
+                      style={[
+                        styles.filterChip,
+                        localFilters.user.selectedUsers.includes(user) && styles.filterChipActive
+                      ]}
+                      onPress={() => {
+                        const selected = localFilters.user.selectedUsers;
+                        const newSelected = selected.includes(user)
+                          ? selected.filter(u => u !== user)
+                          : [...selected, user];
+                        
+                        console.log(`[FILTER] User filter: ${selected.includes(user) ? 'Removing' : 'Adding'} "${user}"`);
+                        console.log(`[FILTER] Selected users will be: [${newSelected.join(', ')}]`);
+                        
+                        updateFilters({
+                          user: {
+                            ...localFilters.user,
+                            selectedUsers: newSelected
+                          }
+                        });
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          localFilters.user.selectedUsers.includes(user) && styles.filterChipTextActive
+                        ]}
+                      >
+                        {user.charAt(0).toUpperCase() + user.slice(1)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                
+                {localFilters.user.selectedUsers.length > 0 && (
+                  <Text style={styles.filterHelpText}>
+                    Showing photos from: {localFilters.user.selectedUsers.join(', ')}
+                  </Text>
                 )}
               </View>
             )}
@@ -409,7 +619,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               </TouchableOpacity>
             </View>
           </View>
-        </ScrollView>
+        </View>
 
         {/* Apply Button */}
         <View style={styles.footer}>
@@ -546,6 +756,15 @@ const styles = StyleSheet.create({
   locationSection: {
     gap: 8,
   },
+  userSection: {
+    gap: 8,
+  },
+  filterHelpText: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
   buttonGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -600,6 +819,100 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     padding: 16,
+  },
+  selectedCitiesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  selectedCityChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0066CC',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 6,
+  },
+  selectedCityText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  citySearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#222',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+    marginBottom: 8,
+  },
+  citySearchInput: {
+    flex: 1,
+    color: 'white',
+    fontSize: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  citySearchButton: {
+    padding: 10,
+  },
+  cityDropdownContainer: {
+    backgroundColor: '#222',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+    maxHeight: 300, // Increased height for better browsing
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+    backgroundColor: '#1a1a1a',
+  },
+  dropdownHeaderText: {
+    color: '#999',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  dropdownCloseButton: {
+    padding: 4,
+  },
+  cityDropdown: {
+    maxHeight: 250, // Increased height minus header
+  },
+  cityDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  cityDropdownItemSelected: {
+    backgroundColor: '#1a237e',
+  },
+  cityDropdownText: {
+    color: 'white',
+    fontSize: 14,
+  },
+  cityDropdownTextSelected: {
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  noResultsText: {
+    color: '#888',
+    fontSize: 14,
+    textAlign: 'center',
+    padding: 16,
+    fontStyle: 'italic',
   },
   footer: {
     padding: 16,

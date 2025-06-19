@@ -14,6 +14,7 @@ import { ImageRepository, MetadataRepository, ObjectRepository, FaceRepository }
 import { SmartAlbumEngine } from './smart-album-engine';
 import { GeolocationService } from './geolocation';
 import { extractBestDate } from './exif-date-extractor';
+import { extractEnhancedMetadata, extractExifKeywords, estimateGPSAccuracy } from './enhanced-exif-extractor';
 
 const logger = Logger.getInstance();
 
@@ -319,10 +320,11 @@ export const storeImageDataHashed = async (
         dateTaken = stats.mtime;
     }
 
-    // Extract GPS coordinates for geolocation
-    const gpsLatitude = parseNumeric(exif.GPSLatitude);
-    const gpsLongitude = parseNumeric(exif.GPSLongitude);
-    const gpsAltitude = parseNumeric(exif.GPSAltitude);
+    // Extract GPS coordinates for geolocation using enhanced parsing
+    const enhancedGPS = extractEnhancedMetadata(exif);
+    const gpsLatitude = enhancedGPS.latitude;
+    const gpsLongitude = enhancedGPS.longitude;
+    const gpsAltitude = enhancedGPS.altitude;
     const gpsDirection = exif.GPSImgDirection?.toString();
     const gpsSpeed = parseNumeric(exif.GPSSpeed);
 
@@ -365,30 +367,83 @@ export const storeImageDataHashed = async (
 
     // Store detailed EXIF metadata in image_metadata table
     if (exif && Object.keys(exif).length > 0) {
+        // Extract enhanced metadata
+        const enhancedMetadata = extractEnhancedMetadata(exif);
+        
+        // Estimate GPS accuracy if coordinates exist
+        let gpsAccuracy = null;
+        if (enhancedMetadata.latitude && enhancedMetadata.longitude) {
+            gpsAccuracy = estimateGPSAccuracy(enhancedMetadata);
+            logger.info(`GPS accuracy for ${originalPath}: ${gpsAccuracy.accuracy} (${gpsAccuracy.confidenceScore * 100}%)`);
+        }
+        
         const metadataRecord = {
             image_id: imageId,
-            camera_make: exif.Make,
-            camera_model: exif.Model,
-            software: exif.Software,
-            lens_model: exif.LensModel,
-            focal_length: parseNumeric(exif.FocalLength),
-            aperture: exif.FNumber?.toString() || exif.ApertureValue?.toString(),
-            shutter_speed: exif.ExposureTime?.toString() || exif.ShutterSpeedValue?.toString(),
-            iso: parseNumeric(exif.ISO) || parseNumeric(exif.ISOSpeedRatings),
-            flash: exif.Flash?.toString(),
-            white_balance: exif.WhiteBalance?.toString(),
-            exposure_mode: exif.ExposureMode?.toString(),
-            latitude: parseNumeric(exif.GPSLatitude),
-            longitude: parseNumeric(exif.GPSLongitude),
-            altitude: parseNumeric(exif.GPSAltitude),
-            orientation: parseNumeric(exif.Orientation),
-            color_space: exif.ColorSpace?.toString(),
-            raw_exif: exif, // Store complete EXIF data as JSON
+            // Basic camera info
+            camera_make: enhancedMetadata.camera_make,
+            camera_model: enhancedMetadata.camera_model,
+            software: enhancedMetadata.software,
+            lens_model: enhancedMetadata.lens_model,
+            focal_length: enhancedMetadata.focal_length,
+            aperture: enhancedMetadata.aperture,
+            shutter_speed: enhancedMetadata.shutter_speed,
+            iso: enhancedMetadata.iso,
+            flash: enhancedMetadata.flash,
+            white_balance: enhancedMetadata.white_balance,
+            exposure_mode: enhancedMetadata.exposure_mode,
+            
+            // Enhanced fields (will be added after migration)
+            // exposure_compensation: enhancedMetadata.exposure_compensation,
+            // metering_mode: enhancedMetadata.metering_mode,
+            // exposure_program: enhancedMetadata.exposure_program,
+            // scene_type: enhancedMetadata.scene_type,
+            // subject_distance: enhancedMetadata.subject_distance,
+            // focal_length_35mm: enhancedMetadata.focal_length_35mm,
+            // max_aperture_value: enhancedMetadata.max_aperture_value,
+            // digital_zoom_ratio: enhancedMetadata.digital_zoom_ratio,
+            // gain_control: enhancedMetadata.gain_control,
+            // contrast: enhancedMetadata.contrast,
+            // saturation: enhancedMetadata.saturation,
+            // sharpness: enhancedMetadata.sharpness,
+            // brightness_value: enhancedMetadata.brightness_value,
+            
+            // GPS fields
+            latitude: enhancedMetadata.latitude,
+            longitude: enhancedMetadata.longitude,
+            altitude: enhancedMetadata.altitude,
+            // gps_h_positioning_error: enhancedMetadata.gps_h_positioning_error,
+            // gps_dop: enhancedMetadata.gps_dop,
+            // gps_satellites: enhancedMetadata.gps_satellites,
+            
+            // Creator/copyright (will be added after migration)
+            // artist: enhancedMetadata.artist,
+            // copyright: enhancedMetadata.copyright,
+            // image_description: enhancedMetadata.image_description,
+            // user_comment: enhancedMetadata.user_comment,
+            // rating: enhancedMetadata.rating,
+            
+            // Other
+            orientation: enhancedMetadata.orientation,
+            color_space: enhancedMetadata.color_space,
+            raw_exif: enhancedMetadata.raw_exif, // Store complete EXIF data as JSON
             created_at: new Date(),
             updated_at: new Date()
         };
 
         await MetadataRepository.createMetadata(metadataRecord);
+        
+        // Extract and store keywords (will be enabled after migration)
+        // const { keywords } = extractExifKeywords(exif);
+        // if (keywords.length > 0) {
+        //     for (const keyword of keywords) {
+        //         await KeywordRepository.createKeyword({
+        //             image_id: imageId,
+        //             keyword: keyword,
+        //             source: 'exif'
+        //         });
+        //     }
+        //     logger.info(`Stored ${keywords.length} keywords for image ${imageId}`);
+        // }
     }
 
     // Store detected objects in detected_objects table

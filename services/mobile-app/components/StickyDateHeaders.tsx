@@ -73,7 +73,8 @@ export const StickyDateHeaders: React.FC<StickyDateHeadersProps> = ({
     const grouped = photos.reduce((acc, photo) => {
       if (failedImages.has(photo.id)) return acc;
       
-      // Use date_taken if available, otherwise fall back to filename date or processed date
+      // Use date_taken if available, otherwise fall back to filename date
+      // This matches the API's COALESCE logic for consistent sorting
       let dateStr = photo.date_taken;
       if (!dateStr) {
         // Try to extract date from filename format: 2024-10-27_13-43-15_IMG_8715.JPG
@@ -81,7 +82,7 @@ export const StickyDateHeaders: React.FC<StickyDateHeadersProps> = ({
         if (filenameMatch) {
           dateStr = filenameMatch[1] + 'T00:00:00.000Z';
         } else {
-          // Skip photos without dates for now
+          // Skip photos without dates for now - they should be rare with EXIF extraction
           return acc;
         }
       }
@@ -104,8 +105,21 @@ export const StickyDateHeaders: React.FC<StickyDateHeadersProps> = ({
     const sectionsArray: PhotoSection[] = Object.entries(grouped)
       .sort((a, b) => {
         // Sort by date descending (newest first)
-        const dateA = new Date(a[1][0].dateTaken);
-        const dateB = new Date(b[1][0].dateTaken);
+        // Use the first photo's date_taken from each section
+        const getPhotoDate = (photo: MediaItem) => {
+          if (photo.date_taken) {
+            return new Date(photo.date_taken);
+          }
+          // Fall back to filename date extraction
+          const filenameMatch = photo.filename.match(/^(\d{4}-\d{2}-\d{2})/);
+          if (filenameMatch) {
+            return new Date(filenameMatch[1] + 'T00:00:00.000Z');
+          }
+          return new Date(0); // Very old date as fallback
+        };
+        
+        const dateA = getPhotoDate(a[1][0]);
+        const dateB = getPhotoDate(b[1][0]);
         return dateB.getTime() - dateA.getTime();
       })
       .map(([title, photos]) => {

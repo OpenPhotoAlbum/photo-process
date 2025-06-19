@@ -1,0 +1,18 @@
+tunnel: ea3e004c-7fe6-4e96-84b0-4c59109b312a
+credentials-file: /home/stephen/.cloudflared/ea3e004c-7fe6-4e96-84b0-4c59109b312a.json
+
+ingress:
+  # Main API endpoint
+  - hostname: api.theyoungs.photos
+    service: http://localhost:9000
+    
+  # Root domain
+  - hostname: theyoungs.photos
+    service: http://localhost:9000
+    
+  # Future web app
+  - hostname: app.theyoungs.photos
+    service: http://localhost:3000
+    
+  # Catch-all
+  - service: http_status:404

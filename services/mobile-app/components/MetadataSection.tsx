@@ -16,6 +16,18 @@ interface MetadataProps {
   imageId: number;
 }
 
+interface LocationData {
+  city: string;
+  state: string;
+  country: string;
+  confidence: number;
+  distance_miles: number;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
 interface ImageMetadata {
   id: number;
   filename: string;
@@ -27,6 +39,7 @@ interface ImageMetadata {
   date_processed: string;
   is_astrophotography: boolean;
   astro_confidence?: string;
+  location?: LocationData;
   metadata?: {
     camera_make?: string;
     camera_model?: string;
@@ -154,9 +167,30 @@ export const MetadataSection: React.FC<MetadataProps> = ({ imageId }) => {
     { label: 'Flash', value: metadata.metadata.flash },
   ].filter(item => item.value) : [];
 
-  const locationInfo = metadata.metadata && (metadata.metadata.latitude || metadata.metadata.longitude) ? [
+  // Format location display text
+  const formatLocationText = (location: LocationData): string => {
+    if (location.country === 'United States') {
+      // For US locations, show City, State
+      return `${location.city}, ${location.state}`;
+    } else {
+      // For international locations, show City, State, Country
+      return `${location.city}, ${location.state}, ${location.country}`;
+    }
+  };
+
+  const locationInfo = metadata.location ? [
     { 
       label: 'Location', 
+      value: formatLocationText(metadata.location),
+      isLocation: true,
+      lat: metadata.location.coordinates.latitude.toString(),
+      lon: metadata.location.coordinates.longitude.toString(),
+      confidence: metadata.location.confidence,
+      distance: metadata.location.distance_miles
+    },
+  ] : metadata.metadata && (metadata.metadata.latitude || metadata.metadata.longitude) ? [
+    { 
+      label: 'GPS Coordinates', 
       value: formatCoordinates(metadata.metadata.latitude, metadata.metadata.longitude),
       isLocation: true,
       lat: metadata.metadata.latitude,
@@ -172,7 +206,15 @@ export const MetadataSection: React.FC<MetadataProps> = ({ imageId }) => {
     ] : []),
   ].filter(item => item.value);
 
-  const renderSection = (title: string, items: Array<{label: string, value: string | undefined, isLocation?: boolean, lat?: string, lon?: string}>) => {
+  const renderSection = (title: string, items: Array<{
+    label: string, 
+    value: string | undefined, 
+    isLocation?: boolean, 
+    lat?: string, 
+    lon?: string,
+    confidence?: number,
+    distance?: number
+  }>) => {
     if (items.length === 0) return null;
     
     return (
@@ -187,7 +229,14 @@ export const MetadataSection: React.FC<MetadataProps> = ({ imageId }) => {
                 onPress={() => openInMaps(item.lat!, item.lon!)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.locationValue}>{item.value}</Text>
+                <View style={styles.locationTextContainer}>
+                  <Text style={styles.locationValue}>{item.value}</Text>
+                  {item.confidence && (
+                    <Text style={styles.confidenceText}>
+                      {Math.round(item.confidence * 100)}% match
+                    </Text>
+                  )}
+                </View>
                 <Text style={styles.mapIcon}>🗺️</Text>
               </TouchableOpacity>
             ) : (
@@ -342,11 +391,20 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: 'flex-end',
   },
+  locationTextContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
   locationValue: {
     color: '#4a9eff',
     fontSize: 14,
     fontWeight: '500',
     textDecorationLine: 'underline',
+  },
+  confidenceText: {
+    color: '#888',
+    fontSize: 11,
+    marginTop: 1,
   },
   mapIcon: {
     marginLeft: 8,

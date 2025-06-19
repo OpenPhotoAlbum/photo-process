@@ -60,6 +60,7 @@ const main = async () => {
     app.get('/api/gallery', routes.Gallery.GalleryListResolver);
     app.get('/api/gallery/:id/faces', routes.Gallery.GalleryRoutes.getImageFaces as any);
     app.get('/api/gallery/:id', routes.Gallery.GalleryRoutes.getImageDetails as any);
+    app.delete('/api/gallery/:id', routes.Gallery.GalleryRoutes.deleteImage as any);
     
     // Gallery filter API routes
     app.get('/api/filters/cities', routes.Gallery.GalleryRoutes.getAvailableCities as any);

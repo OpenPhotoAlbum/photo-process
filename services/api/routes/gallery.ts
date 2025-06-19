@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { ImageRepository, FaceRepository, MetadataRepository, DatabaseUtils, db } from '../models/database';
 import { cache, getCacheKey } from '../util/cache';
 import { configManager } from '../util/config-manager';
+import * as path from 'path';
+import * as fs from 'fs';
 
 // Helper function to convert path to media URL (supports both legacy and hash-based)
 function getMediaUrl(image: any): string {
@@ -41,12 +43,13 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
         const endDate = req.query.endDate as string;
         const hasGPS = req.query.hasGPS;
         const cities = req.query.cities as string;
-        const sortBy = req.query.sortBy as string || 'date_processed';
+        const users = req.query.users as string;
+        const sortBy = req.query.sortBy as string || 'date_taken';
         const sortOrder = req.query.sortOrder as string || 'desc';
         
         // Create cache key for this request
         const cacheKey = getCacheKey('gallery', { 
-            limit, cursor, page, astroOnly, startDate, endDate, hasGPS, cities, sortBy, sortOrder 
+            limit, cursor, page, astroOnly, startDate, endDate, hasGPS, cities, users, sortBy, sortOrder 
         });
         
         // Check cache first (60 second TTL for fast-changing data)
@@ -128,6 +131,25 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
                     const cityList = cities.split(',').map(c => c.trim());
                     queryBuilder.whereIn('gc.city', cityList);
                 }
+                
+                // Apply user filter based on upload path
+                if (users) {
+                    const userList = users.split(',').map(u => u.trim());
+                    console.log(`[GALLERY] Filtering by users: ${userList.join(', ')}`);
+                    
+                    queryBuilder.where(function() {
+                        // Build OR conditions for each user's upload path
+                        userList.forEach((user, index) => {
+                            const pathPattern = `/mnt/sg1/uploads/${user}/%`;
+                            console.log(`[GALLERY] Adding filter for user "${user}" with pattern: ${pathPattern}`);
+                            if (index === 0) {
+                                this.where('images.original_path', 'like', pathPattern);
+                            } else {
+                                this.orWhere('images.original_path', 'like', pathPattern);
+                            }
+                        });
+                    });
+                }
             })
             .groupBy([
                 'images.id', 
@@ -149,7 +171,12 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
                 'il.confidence_score',
                 'il.distance_miles'
             ])
-            .orderBy(`images.${sortBy}`, sortOrder)  // Primary sort by requested field
+            // Use proper orderBy syntax
+            .orderByRaw(
+                sortBy === 'date_taken' 
+                    ? `COALESCE(images.date_taken, images.date_processed) ${sortOrder}`
+                    : `images.${sortBy} ${sortOrder}`
+            )
             .orderBy('images.id', 'desc') // Secondary sort by ID for consistent pagination
             .limit(limit + 1); // +1 to check if there are more results
         
@@ -168,6 +195,11 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
         }
         
         const imagesWithFaces = await query;
+        
+        // Log filter results
+        if (users) {
+            console.log(`[GALLERY] User filter returned ${imagesWithFaces.length} images (before pagination limit)`);
+        }
         
         // Get total count for the header (without limit)
         const totalCountQuery = db('images')
@@ -492,21 +524,100 @@ export const GalleryRoutes = {
     // Get available cities for filtering
     async getAvailableCities(req: Request, res: Response) {
         try {
-            const cities = await db('geo_cities as gc')
+            const search = req.query.search as string;
+
+            let query = db('geo_cities as gc')
                 .join('image_geolocations as il', 'gc.id', 'il.city_id')
                 .join('images', 'il.image_id', 'images.id')
                 .select('gc.city')
                 .where('images.processing_status', 'completed')
                 .groupBy('gc.city')
-                .orderBy('gc.city')
-                .limit(50); // Limit to top 50 cities
+                .orderBy('gc.city');
 
+            // Add search filter if provided
+            if (search && search.trim()) {
+                query = query.where('gc.city', 'like', `%${search.trim()}%`);
+                console.log(`[CITIES] Searching for cities matching: "${search.trim()}"`);
+            } else {
+                console.log(`[CITIES] Loading all available cities`);
+            }
+
+            const cities = await query;
             const cityNames = cities.map(c => c.city);
+            
+            console.log(`[CITIES] Returning ${cityNames.length} cities`);
             res.json(cityNames);
             
         } catch (error) {
             console.error('Error fetching available cities:', error);
             res.status(500).json({ error: 'Failed to fetch available cities' });
+        }
+    },
+
+    // Delete an image and all related data
+    async deleteImage(req: Request, res: Response) {
+        try {
+            const imageId = parseInt(req.params.id);
+            
+            if (isNaN(imageId)) {
+                return res.status(400).json({ error: 'Invalid image ID' });
+            }
+            
+            // Get image details first for file cleanup
+            const image = await db('images').where({ id: imageId }).first();
+            
+            if (!image) {
+                return res.status(404).json({ error: 'Image not found' });
+            }
+            
+            // Start transaction for data cleanup
+            await db.transaction(async (trx) => {
+                // Delete related data in order (foreign key constraints)
+                await trx('detected_faces').where({ image_id: imageId }).delete();
+                await trx('detected_objects').where({ image_id: imageId }).delete();
+                await trx('image_metadata').where({ image_id: imageId }).delete();
+                await trx('image_geolocations').where({ image_id: imageId }).delete();
+                await trx('smart_album_images').where({ image_id: imageId }).delete();
+                
+                // Delete the image record
+                await trx('images').where({ id: imageId }).delete();
+            });
+            
+            // Clean up physical files (processed image and thumbnail)
+            const processedDir = configManager.getStorage().processedDir;
+            
+            if (image.relative_media_path) {
+                const processedPath = path.join(processedDir, image.relative_media_path);
+                try {
+                    await fs.promises.unlink(processedPath);
+                    console.log(`Deleted processed image: ${processedPath}`);
+                } catch (err) {
+                    console.warn(`Failed to delete processed image: ${processedPath}`, err);
+                }
+            }
+            
+            if (image.thumbnail_path) {
+                const thumbnailPath = path.join(processedDir, image.thumbnail_path);
+                try {
+                    await fs.promises.unlink(thumbnailPath);
+                    console.log(`Deleted thumbnail: ${thumbnailPath}`);
+                } catch (err) {
+                    console.warn(`Failed to delete thumbnail: ${thumbnailPath}`, err);
+                }
+            }
+            
+            // Log the deletion
+            console.log(`[GALLERY] Deleted image ${imageId}: ${image.filename}`);
+            
+            res.json({ 
+                success: true, 
+                message: `Image ${image.filename} deleted successfully`,
+                deletedId: imageId 
+            });
+            
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            res.status(500).json({ error: 'Failed to delete image' });
         }
     }
 };

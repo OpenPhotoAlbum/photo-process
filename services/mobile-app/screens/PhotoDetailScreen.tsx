@@ -26,6 +26,7 @@ interface PhotoDetailScreenProps {
   imageUrl: string;
   filename: string;
   onClose: () => void;
+  onDelete?: () => void;
 }
 
 const screenHeight = Dimensions.get('window').height;
@@ -35,7 +36,8 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   imageId,
   imageUrl,
   filename,
-  onClose
+  onClose,
+  onDelete
 }) => {
   const [faces, setFaces] = useState<FaceData[]>([]);
   const [selectedFace, setSelectedFace] = useState<FaceData | null>(null);
@@ -53,6 +55,43 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
       console.error('Error loading faces:', err);
       setFaces([]);
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Photo',
+      'Are you sure you want to delete this photo? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${API_BASE}/api/gallery/${imageId}`, {
+                method: 'DELETE',
+              });
+              
+              if (response.ok) {
+                // Call the parent's onDelete callback if provided
+                onDelete?.();
+                // Close the detail view
+                onClose();
+              } else {
+                const error = await response.json();
+                Alert.alert('Error', error.error || 'Failed to delete photo');
+              }
+            } catch (error) {
+              console.error('Failed to delete photo:', error);
+              Alert.alert('Error', 'Failed to delete photo');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleFacePress = (face: FaceData) => {
@@ -106,7 +145,7 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with close button */}
+      {/* Header with close and delete buttons */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
           <Text style={styles.closeButtonText}>✕</Text>
@@ -114,7 +153,9 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
         <Text style={styles.headerTitle} numberOfLines={1}>
           {filename}
         </Text>
-        <View style={styles.placeholder} />
+        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+          <Text style={styles.deleteButtonText}>🗑️</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -186,8 +227,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 16,
   },
-  placeholder: {
+  deleteButton: {
     width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    fontSize: 18,
   },
   content: {
     flex: 1,

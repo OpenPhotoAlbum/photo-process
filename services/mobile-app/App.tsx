@@ -64,6 +64,10 @@ export default function App() {
       hasGPS: null,
       selectedCities: []
     },
+    user: {
+      enabled: false,
+      selectedUsers: []
+    },
     sort: {
       field: 'date_taken',
       direction: 'desc'
@@ -96,11 +100,17 @@ export default function App() {
   );
   
   // Fetch available cities for filter
-  const fetchAvailableCities = useCallback(async () => {
+  const fetchAvailableCities = useCallback(async (search?: string) => {
     try {
-      console.log('Fetching available cities...');
-      const response = await fetch(`${API_BASE}/api/filters/cities`);
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      
+      const url = `${API_BASE}/api/filters/cities?${params.toString()}`;
+      console.log('Fetching available cities...', { search, url });
+      
+      const response = await fetch(url);
       console.log('Cities response status:', response.status);
+      
       if (response.ok) {
         const cities = await response.json();
         console.log('Available cities loaded:', cities.length, cities.slice(0, 5));
@@ -153,6 +163,11 @@ export default function App() {
         if (activeFilters.location.selectedCities.length > 0) {
           filterParams.set('cities', activeFilters.location.selectedCities.join(','));
         }
+      }
+      
+      // Add user filter
+      if (activeFilters.user.enabled && activeFilters.user.selectedUsers.length > 0) {
+        filterParams.set('users', activeFilters.user.selectedUsers.join(','));
       }
       
       // Add sort parameters
@@ -212,7 +227,7 @@ export default function App() {
       setRefreshing(false);
       isLoadingMore.current = false;
     }
-  }, []);
+  }, [filters]);
 
   // Initial load and auto-upload initialization
   useEffect(() => {
@@ -249,10 +264,10 @@ export default function App() {
   // Handle load more when approaching end of list
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore && !isLoadingMore.current) {
-      console.log('Loading more photos...');
-      fetchPhotos(false);
+      console.log('Loading more photos with filters...', filters);
+      fetchPhotos(false, filters);
     }
-  }, [loadingMore, hasMore]);
+  }, [loadingMore, hasMore, fetchPhotos, filters]);
 
   // Pull to refresh
   const handleRefresh = useCallback(() => {
@@ -548,6 +563,13 @@ export default function App() {
           imageUrl={selectedPhoto.media_url}
           filename={selectedPhoto.filename}
           onClose={() => setSelectedPhoto(null)}
+          onDelete={() => {
+            // Remove the deleted photo from the list
+            setPhotos(prev => prev.filter(p => p.id !== selectedPhoto.id));
+            // Update total count
+            setTotalCount(prev => Math.max(0, (prev || 0) - 1));
+            console.log(`Photo ${selectedPhoto.filename} deleted from gallery`);
+          }}
         />
       )}
     </Modal>
@@ -579,6 +601,7 @@ export default function App() {
       filters={filters}
       onFiltersChange={handleFiltersChange}
       availableCities={availableCities}
+      onCitySearch={fetchAvailableCities}
     />
   </>
   );

@@ -35,12 +35,55 @@ export const AutoUploadSettingsScreen: React.FC<AutoUploadSettingsScreenProps> =
   
   const [loading, setLoading] = useState(true);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadSettings();
     loadStats();
     setIsStandalone(autoUploadService.isRunningStandalone());
+    
+    // Auto-refresh stats when auto-upload is enabled
+    if (settings.enabled) {
+      startAutoRefresh();
+    }
+    
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
   }, []);
+
+  // Auto-refresh stats when enabled state changes
+  useEffect(() => {
+    if (settings.enabled) {
+      startAutoRefresh();
+    } else {
+      stopAutoRefresh();
+    }
+  }, [settings.enabled]);
+
+  const startAutoRefresh = () => {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+    
+    // Refresh stats every 3 seconds when auto-upload is active
+    const interval = setInterval(() => {
+      loadStats();
+    }, 3000);
+    
+    setRefreshInterval(interval);
+    console.log('Started auto-refresh for upload stats');
+  };
+
+  const stopAutoRefresh = () => {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      setRefreshInterval(null);
+      console.log('Stopped auto-refresh for upload stats');
+    }
+  };
 
   const loadSettings = async () => {
     try {
@@ -287,11 +330,23 @@ export const AutoUploadSettingsScreen: React.FC<AutoUploadSettingsScreenProps> =
 
             {/* Upload Statistics */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Upload Statistics</Text>
+              <View style={styles.sectionTitleRow}>
+                <Text style={styles.sectionTitle}>Upload Statistics</Text>
+                <View style={styles.refreshIndicator}>
+                  {refreshInterval && (
+                    <>
+                      <View style={styles.activityDot} />
+                      <Text style={styles.refreshText}>Live</Text>
+                    </>
+                  )}
+                </View>
+              </View>
               
               <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{stats.totalQueued}</Text>
+                  <Text style={[styles.statValue, stats.totalQueued > 0 && styles.statValueActive]}>
+                    {stats.totalQueued}
+                  </Text>
                   <Text style={styles.statLabel}>Queued</Text>
                 </View>
                 <View style={styles.statItem}>
@@ -299,7 +354,9 @@ export const AutoUploadSettingsScreen: React.FC<AutoUploadSettingsScreenProps> =
                   <Text style={styles.statLabel}>Completed</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{stats.totalFailed}</Text>
+                  <Text style={[styles.statValue, stats.totalFailed > 0 && styles.statValueError]}>
+                    {stats.totalFailed}
+                  </Text>
                   <Text style={styles.statLabel}>Failed</Text>
                 </View>
               </View>
@@ -401,6 +458,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  refreshIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  activityDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#34C759',
+    marginRight: 6,
+  },
+  refreshText: {
+    color: '#34C759',
+    fontSize: 12,
+    fontWeight: '500',
+  },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -492,6 +571,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  statValueActive: {
+    color: '#007AFF',
+  },
+  statValueError: {
+    color: '#FF3B30',
   },
   statLabel: {
     color: '#999',
