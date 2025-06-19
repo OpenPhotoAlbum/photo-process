@@ -62,6 +62,11 @@ const main = async () => {
     app.get('/api/gallery/:id', routes.Gallery.GalleryRoutes.getImageDetails as any);
     app.delete('/api/gallery/:id', routes.Gallery.GalleryRoutes.deleteImage as any);
     
+    // Trash management endpoints
+    app.get('/api/trash', routes.Gallery.GalleryRoutes.getTrash as any);
+    app.post('/api/trash/:id/restore', routes.Gallery.GalleryRoutes.restoreImage as any);
+    app.delete('/api/trash/:id', routes.Gallery.GalleryRoutes.permanentlyDeleteImage as any);
+    
     // Gallery filter API routes
     app.get('/api/filters/cities', routes.Gallery.GalleryRoutes.getAvailableCities as any);
     

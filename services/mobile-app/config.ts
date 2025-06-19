@@ -16,4 +16,4 @@ export const API_ENDPOINTS = {
 // Helper to switch between environments
 export const getApiEndpoint = (env: 'production' | 'local' = 'local') => {
   return API_ENDPOINTS[env];
-};f
+};

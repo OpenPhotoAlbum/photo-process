@@ -288,6 +288,9 @@ class AutoUploadService {
         createdAfter: since,
         sortBy: [MediaLibrary.SortBy.creationTime],
         first: 50,
+      }).catch(error => {
+        console.error('AutoUploadService: MediaLibrary.getAssetsAsync failed:', error);
+        throw new Error(`Photo library access failed: ${error.message}`);
       });
 
       console.log(`AutoUploadService: Found ${assets.assets.length} new photos`);

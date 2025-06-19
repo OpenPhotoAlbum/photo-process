@@ -20,6 +20,7 @@ import { MetadataSection } from '../components/MetadataSection';
 import { PersonSelectionModal } from '../components/PersonSelectionModal';
 import { FaceAPI } from '../services/FaceAPI';
 import { FaceData } from '../types/FaceTypes';
+import { API_BASE } from '../config';
 
 interface PhotoDetailScreenProps {
   imageId: number;
@@ -30,7 +31,6 @@ interface PhotoDetailScreenProps {
 }
 
 const screenHeight = Dimensions.get('window').height;
-const API_BASE = 'http://192.168.40.103:9000';
 
 export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   imageId,
@@ -59,34 +59,43 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
 
   const handleDelete = () => {
     Alert.alert(
-      'Delete Photo',
-      'Are you sure you want to delete this photo? This action cannot be undone.',
+      'Move to Trash',
+      'This photo will be moved to trash. You can restore it later from the trash folder.',
       [
         {
           text: 'Cancel',
           style: 'cancel'
         },
         {
-          text: 'Delete',
+          text: 'Move to Trash',
           style: 'destructive',
           onPress: async () => {
             try {
               const response = await fetch(`${API_BASE}/api/gallery/${imageId}`, {
                 method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  reason: 'Moved to trash via mobile app',
+                  deletedBy: 'mobile-user'
+                })
               });
               
               if (response.ok) {
+                const result = await response.json();
+                Alert.alert('Success', result.message || 'Photo moved to trash');
                 // Call the parent's onDelete callback if provided
                 onDelete?.();
                 // Close the detail view
                 onClose();
               } else {
                 const error = await response.json();
-                Alert.alert('Error', error.error || 'Failed to delete photo');
+                Alert.alert('Error', error.error || 'Failed to move photo to trash');
               }
             } catch (error) {
-              console.error('Failed to delete photo:', error);
-              Alert.alert('Error', 'Failed to delete photo');
+              console.error('Failed to move photo to trash:', error);
+              Alert.alert('Error', 'Failed to move photo to trash');
             }
           }
         }

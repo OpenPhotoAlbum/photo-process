@@ -1,0 +1,17 @@
+cluster.name: photo-platform-cluster
+node.name: photo-platform-es
+
+network.host: 0.0.0.0
+http.port: 9200
+
+discovery.type: single-node
+
+# Disable security for development
+xpack.security.enabled: false
+xpack.security.enrollment.enabled: false
+
+# Memory settings
+bootstrap.memory_lock: true
+
+# Index settings
+action.auto_create_index: .monitoring*,.watches,.triggered_watches,.watcher-history*,.ml*,photo-platform-logs-*

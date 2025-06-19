@@ -91,6 +91,7 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
             ])
             .count('detected_faces.id as face_count')
             .where('images.processing_status', 'completed')
+            .whereNull('images.deleted_at') // Exclude soft-deleted images
             // TODO: Enable after migrations
             // .where(function() {
             //     this.where('images.is_screenshot', false)
@@ -554,8 +555,102 @@ export const GalleryRoutes = {
         }
     },
 
-    // Delete an image and all related data
+    // Soft delete an image (move to trash)
     async deleteImage(req: Request, res: Response) {
+        try {
+            const imageId = parseInt(req.params.id);
+            const reason = req.body.reason || 'User deleted via mobile app';
+            const deletedBy = req.body.deletedBy || 'mobile-user';
+            
+            if (isNaN(imageId)) {
+                return res.status(400).json({ error: 'Invalid image ID' });
+            }
+            
+            // Get image details first
+            const image = await db('images')
+                .where('id', imageId)
+                .whereNull('deleted_at') // Make sure it's not already deleted
+                .first();
+                
+            if (!image) {
+                return res.status(404).json({ error: 'Image not found or already deleted' });
+            }
+            
+            // Soft delete the image
+            await db('images')
+                .where('id', imageId)
+                .update({
+                    deleted_at: new Date(),
+                    deleted_by: deletedBy,
+                    deletion_reason: reason,
+                    updated_at: new Date()
+                });
+            
+            console.log(`[GALLERY] Soft deleted image ${imageId}: ${image.filename} (reason: ${reason})`);
+            
+            res.json({ 
+                success: true, 
+                message: `Image ${image.filename} moved to trash`,
+                deletedId: imageId,
+                canRestore: true
+            });
+            
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            res.status(500).json({ error: 'Failed to delete image' });
+        }
+    },
+    
+    // Get trash (soft-deleted images)
+    async getTrash(req: Request, res: Response) {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 50;
+            const offset = (page - 1) * limit;
+            
+            const trashedImages = await db('images')
+                .leftJoin('detected_faces', 'images.id', 'detected_faces.image_id')
+                .select([
+                    'images.id',
+                    'images.filename',
+                    'images.date_taken',
+                    'images.date_processed',
+                    'images.deleted_at',
+                    'images.deleted_by',
+                    'images.deletion_reason',
+                    'images.thumbnail_path',
+                    'images.dominant_color'
+                ])
+                .count('detected_faces.id as face_count')
+                .whereNotNull('images.deleted_at')
+                .groupBy('images.id')
+                .orderBy('images.deleted_at', 'desc')
+                .limit(limit)
+                .offset(offset);
+            
+            const totalCount = await db('images')
+                .whereNotNull('deleted_at')
+                .count('id as count')
+                .first();
+            
+            res.json({
+                images: trashedImages,
+                pagination: {
+                    page,
+                    limit,
+                    total: totalCount?.count || 0,
+                    hasNext: (page * limit) < (totalCount?.count || 0)
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error fetching trash:', error);
+            res.status(500).json({ error: 'Failed to fetch trash' });
+        }
+    },
+    
+    // Restore image from trash
+    async restoreImage(req: Request, res: Response) {
         try {
             const imageId = parseInt(req.params.id);
             
@@ -563,11 +658,57 @@ export const GalleryRoutes = {
                 return res.status(400).json({ error: 'Invalid image ID' });
             }
             
-            // Get image details first for file cleanup
-            const image = await db('images').where({ id: imageId }).first();
-            
+            // Get deleted image
+            const image = await db('images')
+                .where('id', imageId)
+                .whereNotNull('deleted_at')
+                .first();
+                
             if (!image) {
-                return res.status(404).json({ error: 'Image not found' });
+                return res.status(404).json({ error: 'Deleted image not found' });
+            }
+            
+            // Restore the image
+            await db('images')
+                .where('id', imageId)
+                .update({
+                    deleted_at: null,
+                    deleted_by: null,
+                    deletion_reason: null,
+                    updated_at: new Date()
+                });
+            
+            console.log(`[GALLERY] Restored image ${imageId}: ${image.filename}`);
+            
+            res.json({ 
+                success: true, 
+                message: `Image ${image.filename} restored from trash`,
+                restoredId: imageId
+            });
+            
+        } catch (error) {
+            console.error('Error restoring image:', error);
+            res.status(500).json({ error: 'Failed to restore image' });
+        }
+    },
+    
+    // Permanently delete image from trash (hard delete)
+    async permanentlyDeleteImage(req: Request, res: Response) {
+        try {
+            const imageId = parseInt(req.params.id);
+            
+            if (isNaN(imageId)) {
+                return res.status(400).json({ error: 'Invalid image ID' });
+            }
+            
+            // Get deleted image
+            const image = await db('images')
+                .where('id', imageId)
+                .whereNotNull('deleted_at')
+                .first();
+                
+            if (!image) {
+                return res.status(404).json({ error: 'Deleted image not found in trash' });
             }
             
             // Start transaction for data cleanup
@@ -606,18 +747,17 @@ export const GalleryRoutes = {
                 }
             }
             
-            // Log the deletion
-            console.log(`[GALLERY] Deleted image ${imageId}: ${image.filename}`);
+            console.log(`[GALLERY] Permanently deleted image ${imageId}: ${image.filename}`);
             
             res.json({ 
                 success: true, 
-                message: `Image ${image.filename} deleted successfully`,
-                deletedId: imageId 
+                message: `Image ${image.filename} permanently deleted`,
+                deletedId: imageId
             });
             
         } catch (error) {
-            console.error('Error deleting image:', error);
-            res.status(500).json({ error: 'Failed to delete image' });
+            console.error('Error permanently deleting image:', error);
+            res.status(500).json({ error: 'Failed to permanently delete image' });
         }
     }
 };

@@ -1,0 +1,45 @@
+filebeat.inputs:
+# Photo Platform Application Logs
+- type: log
+  enabled: true
+  paths:
+    - /logs/*/*.log
+  fields:
+    service: photo-platform
+    environment: development
+  fields_under_root: true
+  multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+  multiline.negate: true
+  multiline.match: after
+  json.keys_under_root: true
+  json.add_error_key: true
+
+# Docker Container Logs
+- type: docker
+  containers.ids:
+    - "*"
+  processors:
+    - add_docker_metadata:
+        host: "unix:///var/run/docker.sock"
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  index: "photo-platform-logs-%{+yyyy.MM.dd}"
+
+setup.template:
+  name: "photo-platform-logs"
+  pattern: "photo-platform-logs-*"
+  settings:
+    index.number_of_shards: 1
+    index.number_of_replicas: 0
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644

@@ -546,6 +546,11 @@ export default function App() {
           console.log('Auto-upload press received in App');
           setShowAutoUploadSettings(true);
         }}
+        onTrashPress={() => {
+          console.log('Trash press received in App');
+          // TODO: Navigate to trash view
+          alert('Trash functionality coming soon! For now, you can delete photos and they\'ll be safely stored in the trash.');
+        }}
       />
       
       <StatusBar style="light" />

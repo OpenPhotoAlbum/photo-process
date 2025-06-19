@@ -22,12 +22,14 @@ interface SlideOutMenuProps {
   onUploadComplete?: (response: UploadResponse) => void;
   onUploadError?: (error: string) => void;
   onAutoUploadPress?: () => void;
+  onTrashPress?: () => void;
 }
 
 export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
   onUploadComplete,
   onUploadError,
   onAutoUploadPress,
+  onTrashPress,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
@@ -146,6 +148,22 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
 
                 <View style={styles.menuSection}>
                   <Text style={styles.sectionTitle}>Organization</Text>
+                  
+                  <TouchableOpacity 
+                    style={styles.menuItemActive} 
+                    onPress={() => {
+                      console.log('Trash clicked!');
+                      closeMenu();
+                      setTimeout(() => {
+                        onTrashPress?.();
+                      }, 100);
+                    }}
+                  >
+                    <Ionicons name="trash-bin" size={20} color="#007AFF" />
+                    <Text style={styles.menuItemTextActive}>Trash</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#007AFF" />
+                  </TouchableOpacity>
+                  
                   <TouchableOpacity style={styles.menuItem} disabled>
                     <Ionicons name="albums" size={20} color="#999" />
                     <Text style={styles.menuItemTextDisabled}>Smart Albums</Text>
