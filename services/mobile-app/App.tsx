@@ -108,7 +108,8 @@ export default function App() {
     }
   }, []);
 
-  const fetchPhotos = useCallback(async (reset: boolean = false) => {
+  const fetchPhotos = useCallback(async (reset: boolean = false, customFilters?: FilterOptions) => {
+    const activeFilters = customFilters || filters;
     if (isLoadingMore.current && !reset) {
       console.log('Already loading, skipping...');
       return;
@@ -130,33 +131,34 @@ export default function App() {
       if (currentCursor) filterParams.set('cursor', currentCursor);
       
       // Add date range filter
-      if (filters.dateRange.enabled) {
-        if (filters.dateRange.startDate) {
-          filterParams.set('startDate', filters.dateRange.startDate.toISOString().split('T')[0]);
+      if (activeFilters.dateRange.enabled) {
+        if (activeFilters.dateRange.startDate) {
+          filterParams.set('startDate', activeFilters.dateRange.startDate.toISOString().split('T')[0]);
         }
-        if (filters.dateRange.endDate) {
-          filterParams.set('endDate', filters.dateRange.endDate.toISOString().split('T')[0]);
+        if (activeFilters.dateRange.endDate) {
+          filterParams.set('endDate', activeFilters.dateRange.endDate.toISOString().split('T')[0]);
         }
       }
       
       // Add location filter
-      if (filters.location.enabled) {
-        if (filters.location.hasGPS !== null) {
-          filterParams.set('hasGPS', filters.location.hasGPS.toString());
+      if (activeFilters.location.enabled) {
+        if (activeFilters.location.hasGPS !== null) {
+          filterParams.set('hasGPS', activeFilters.location.hasGPS.toString());
         }
-        if (filters.location.selectedCities.length > 0) {
-          filterParams.set('cities', filters.location.selectedCities.join(','));
+        if (activeFilters.location.selectedCities.length > 0) {
+          filterParams.set('cities', activeFilters.location.selectedCities.join(','));
         }
       }
       
       // Add sort parameters
-      filterParams.set('sortBy', filters.sort.field);
-      filterParams.set('sortOrder', filters.sort.direction);
+      filterParams.set('sortBy', activeFilters.sort.field);
+      filterParams.set('sortOrder', activeFilters.sort.direction);
       
       const url = `${API_BASE}/api/gallery?${filterParams.toString()}`;
       
-      console.log('Fetching photos:', { reset, cursor: currentCursor, url });
+      console.log('Fetching photos:', { reset, cursor: currentCursor, url, activeFilters });
       const response = await fetch(url);
+      console.log('Response status:', response.status);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -226,7 +228,7 @@ export default function App() {
         console.log('Auto-upload service initialization failed');
       }
     });
-  }, [fetchPhotos, fetchAvailableCities]);
+  }, []);
 
   // Reload photos when filters change
   useEffect(() => {
@@ -236,8 +238,8 @@ export default function App() {
     setHasMore(true);
     setLoadingMore(true);
     isLoadingMore.current = false;
-    fetchPhotos(true);
-  }, [filters, fetchPhotos]);
+    fetchPhotos(true, filters);
+  }, [filters]);
 
   // Handle load more when approaching end of list
   const handleLoadMore = useCallback(() => {
@@ -245,7 +247,7 @@ export default function App() {
       console.log('Loading more photos...');
       fetchPhotos(false);
     }
-  }, [loadingMore, hasMore, fetchPhotos]);
+  }, [loadingMore, hasMore]);
 
   // Pull to refresh
   const handleRefresh = useCallback(() => {
