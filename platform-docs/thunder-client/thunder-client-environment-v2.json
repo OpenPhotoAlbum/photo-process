@@ -1,0 +1,44 @@
+{
+  "client": "Thunder Client",
+  "environmentName": "Photo Platform v2 - Development",
+  "dateExported": "2025-06-19T04:30:00.000Z",
+  "version": "2.0",
+  "variables": [
+    {
+      "name": "baseUrl",
+      "value": "http://localhost:9000"
+    },
+    {
+      "name": "imageId",
+      "value": "1"
+    },
+    {
+      "name": "personId", 
+      "value": "1"
+    },
+    {
+      "name": "faceId",
+      "value": "1"
+    },
+    {
+      "name": "faceId1",
+      "value": "1"
+    },
+    {
+      "name": "faceId2",
+      "value": "2"
+    },
+    {
+      "name": "nextCursor",
+      "value": ""
+    },
+    {
+      "name": "relativeMediaPath",
+      "value": "2023/06/example_image_hash.jpg"
+    },
+    {
+      "name": "processId",
+      "value": "1"
+    }
+  ]
+}

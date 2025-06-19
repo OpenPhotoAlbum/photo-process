@@ -1,0 +1,672 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "Photo Platform API v2",
+  "dateExported": "2025-06-19T04:30:00.000Z",
+  "version": "2.0",
+  "folders": [
+    {
+      "_id": "core-system",
+      "name": "🏠 Core System",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 10000
+    },
+    {
+      "_id": "scanning-jobs",
+      "name": "📊 Scanning & Jobs",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 20000
+    },
+    {
+      "_id": "gallery-media",
+      "name": "🖼️ Gallery & Media",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 30000
+    },
+    {
+      "_id": "filtering-search",
+      "name": "🔍 Filtering & Search",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 40000
+    },
+    {
+      "_id": "person-management",
+      "name": "👥 Person Management",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 50000
+    },
+    {
+      "_id": "face-recognition",
+      "name": "👤 Face Recognition",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 60000
+    },
+    {
+      "_id": "geolocation",
+      "name": "🌍 Geolocation",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 70000
+    },
+    {
+      "_id": "upload-processing",
+      "name": "📤 Upload & Processing",
+      "containerId": "",
+      "created": "2025-06-19T04:30:00.000Z",
+      "sortNum": 80000
+    }
+  ],
+  "requests": [
+    {
+      "_id": "api-health",
+      "colId": "photo-platform-v2",
+      "containerId": "core-system",
+      "name": "Health Check",
+      "url": "{{baseUrl}}/api/health",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "api-config",
+      "colId": "photo-platform-v2",
+      "containerId": "core-system",
+      "name": "System Configuration",
+      "url": "{{baseUrl}}/api/config",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "scan-status",
+      "colId": "photo-platform-v2",
+      "containerId": "scanning-jobs",
+      "name": "Scan Status",
+      "url": "{{baseUrl}}/scan/status",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "scan-start",
+      "colId": "photo-platform-v2",
+      "containerId": "scanning-jobs",
+      "name": "Start Scan",
+      "url": "{{baseUrl}}/scan?limit=10",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-list",
+      "colId": "photo-platform-v2",
+      "containerId": "gallery-media",
+      "name": "Gallery List",
+      "url": "{{baseUrl}}/api/gallery?limit=20",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-list-paginated",
+      "colId": "photo-platform-v2",
+      "containerId": "gallery-media",
+      "name": "Gallery List (Paginated)",
+      "url": "{{baseUrl}}/api/gallery?limit=20&cursor={{nextCursor}}",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-image-details",
+      "colId": "photo-platform-v2",
+      "containerId": "gallery-media",
+      "name": "Image Details",
+      "url": "{{baseUrl}}/api/gallery/{{imageId}}",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-image-faces",
+      "colId": "photo-platform-v2",
+      "containerId": "gallery-media",
+      "name": "Image Faces",
+      "url": "{{baseUrl}}/api/gallery/{{imageId}}/faces",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "media-serve",
+      "colId": "photo-platform-v2",
+      "containerId": "gallery-media",
+      "name": "Serve Media File",
+      "url": "{{baseUrl}}/media/{{relativeMediaPath}}",
+      "method": "GET",
+      "sortNum": 50000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "media-thumbnail",
+      "colId": "photo-platform-v2",
+      "containerId": "gallery-media",
+      "name": "Serve Thumbnail",
+      "url": "{{baseUrl}}/media/{{relativeMediaPath}}?thumb=1",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "filter-cities",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Available Cities for Filtering",
+      "url": "{{baseUrl}}/api/filters/cities",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-filter-gps",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Filter by GPS Presence",
+      "url": "{{baseUrl}}/api/gallery?hasGPS=true&limit=10",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-filter-cities",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Filter by Cities",
+      "url": "{{baseUrl}}/api/gallery?cities=Austin,Seattle&limit=10",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-filter-date-range",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Filter by Date Range",
+      "url": "{{baseUrl}}/api/gallery?startDate=2024-01-01&endDate=2024-12-31&limit=10",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-sort-filename",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Sort by Filename",
+      "url": "{{baseUrl}}/api/gallery?sortBy=filename&sortOrder=asc&limit=10",
+      "method": "GET",
+      "sortNum": 50000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "gallery-sort-date",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Sort by Date Taken",
+      "url": "{{baseUrl}}/api/gallery?sortBy=date_taken&sortOrder=desc&limit=10",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "search-objects",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Search by Objects",
+      "url": "{{baseUrl}}/api/search/objects?objects=person,car&limit=10",
+      "method": "GET",
+      "sortNum": 70000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "search-advanced",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Advanced Search",
+      "url": "{{baseUrl}}/api/search/advanced?dateFrom=2024-01-01&hasFaces=true&limit=10",
+      "method": "GET",
+      "sortNum": 80000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "objects-stats",
+      "colId": "photo-platform-v2",
+      "containerId": "filtering-search",
+      "name": "Object Detection Stats",
+      "url": "{{baseUrl}}/api/objects/stats",
+      "method": "GET",
+      "sortNum": 90000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "persons-list",
+      "colId": "photo-platform-v2",
+      "containerId": "person-management",
+      "name": "List All Persons",
+      "url": "{{baseUrl}}/api/persons",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "person-details",
+      "colId": "photo-platform-v2",
+      "containerId": "person-management",
+      "name": "Person Details",
+      "url": "{{baseUrl}}/api/persons/{{personId}}",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "person-create",
+      "colId": "photo-platform-v2",
+      "containerId": "person-management",
+      "name": "Create Person",
+      "url": "{{baseUrl}}/api/persons",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"John Doe\",\n  \"notes\": \"Family member\"\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "person-update",
+      "colId": "photo-platform-v2",
+      "containerId": "person-management",
+      "name": "Update Person",
+      "url": "{{baseUrl}}/api/persons/{{personId}}",
+      "method": "PUT",
+      "sortNum": 40000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"name\": \"Jane Doe\",\n  \"notes\": \"Updated notes\"\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "person-delete",
+      "colId": "photo-platform-v2",
+      "containerId": "person-management",
+      "name": "Delete Person",
+      "url": "{{baseUrl}}/api/persons/{{personId}}",
+      "method": "DELETE",
+      "sortNum": 50000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "faces-unidentified",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Unidentified Faces",
+      "url": "{{baseUrl}}/api/faces/unidentified?limit=20",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "face-assign",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Assign Face to Person",
+      "url": "{{baseUrl}}/api/faces/assign",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"face_id\": {{faceId}},\n  \"person_id\": {{personId}},\n  \"confidence\": 0.95\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "face-batch-assign",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Batch Assign Faces",
+      "url": "{{baseUrl}}/api/faces/batch-assign",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"face_ids\": [{{faceId1}}, {{faceId2}}],\n  \"person_id\": {{personId}}\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "face-auto-recognize",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Auto Recognize Faces",
+      "url": "{{baseUrl}}/api/faces/auto-recognize",
+      "method": "POST",
+      "sortNum": 40000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"confidence_threshold\": 0.8,\n  \"limit\": 100\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "face-filter-options",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Face Filter Options",
+      "url": "{{baseUrl}}/api/faces/filter-options",
+      "method": "GET",
+      "sortNum": 50000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "face-clustering-start",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Start Face Clustering",
+      "url": "{{baseUrl}}/api/clustering/start",
+      "method": "POST",
+      "sortNum": 60000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"distance_threshold\": 0.6,\n  \"min_faces_per_cluster\": 3\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "face-clustering-stats",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Clustering Stats",
+      "url": "{{baseUrl}}/api/clustering/stats",
+      "method": "GET",
+      "sortNum": 70000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "face-clusters-list",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "List Face Clusters",
+      "url": "{{baseUrl}}/api/clusters?limit=20",
+      "method": "GET",
+      "sortNum": 80000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "training-queue",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Training Queue",
+      "url": "{{baseUrl}}/api/training/queue",
+      "method": "GET",
+      "sortNum": 90000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "training-stats",
+      "colId": "photo-platform-v2",
+      "containerId": "face-recognition",
+      "name": "Training Stats",
+      "url": "{{baseUrl}}/api/training/stats",
+      "method": "GET",
+      "sortNum": 100000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "locations-search",
+      "colId": "photo-platform-v2",
+      "containerId": "geolocation",
+      "name": "Search by Location",
+      "url": "{{baseUrl}}/api/locations/search?lat=37.7749&lng=-122.4194&radius=50",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "locations-stats",
+      "colId": "photo-platform-v2",
+      "containerId": "geolocation",
+      "name": "Location Stats",
+      "url": "{{baseUrl}}/api/locations/stats",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "locations-closest",
+      "colId": "photo-platform-v2",
+      "containerId": "geolocation",
+      "name": "Find Closest City",
+      "url": "{{baseUrl}}/api/locations/closest?lat=37.7749&lng=-122.4194",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "image-location",
+      "colId": "photo-platform-v2",
+      "containerId": "geolocation",
+      "name": "Get Image Location",
+      "url": "{{baseUrl}}/api/locations/images/{{imageId}}/location",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "locations-retroactive",
+      "colId": "photo-platform-v2",
+      "containerId": "geolocation",
+      "name": "Process Retroactive Geolocation",
+      "url": "{{baseUrl}}/api/locations/retroactive",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 100,\n  \"force_reprocess\": false\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "process-image",
+      "colId": "photo-platform-v2",
+      "containerId": "upload-processing",
+      "name": "Process Single Image",
+      "url": "{{baseUrl}}/api/process/image",
+      "method": "POST",
+      "sortNum": 10000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"image_path\": \"/path/to/image.jpg\",\n  \"force_reprocess\": false\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "upload-photo",
+      "colId": "photo-platform-v2",
+      "containerId": "upload-processing",
+      "name": "Upload Photo",
+      "url": "{{baseUrl}}/api/process/upload",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [],
+      "body": {
+        "type": "formdata",
+        "form": [
+          {
+            "name": "photo",
+            "value": "",
+            "type": "file"
+          }
+        ]
+      },
+      "tests": []
+    },
+    {
+      "_id": "processing-status",
+      "colId": "photo-platform-v2",
+      "containerId": "upload-processing",
+      "name": "Processing Status",
+      "url": "{{baseUrl}}/api/process/{{processId}}/status",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "jobs-scan",
+      "colId": "photo-platform-v2",
+      "containerId": "upload-processing",
+      "name": "Start Scan Job",
+      "url": "{{baseUrl}}/api/jobs/scan",
+      "method": "POST",
+      "sortNum": 40000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 100,\n  \"force_rescan\": false\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "jobs-face-recognition",
+      "colId": "photo-platform-v2",
+      "containerId": "upload-processing",
+      "name": "Start Face Recognition Job",
+      "url": "{{baseUrl}}/api/jobs/face-recognition",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 50,\n  \"min_confidence\": 0.8\n}"
+      },
+      "tests": []
+    },
+    {
+      "_id": "jobs-list",
+      "colId": "photo-platform-v2",
+      "containerId": "upload-processing",
+      "name": "List All Jobs",
+      "url": "{{baseUrl}}/api/jobs",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "tests": []
+    },
+    {
+      "_id": "jobs-stats",
+      "colId": "photo-platform-v2",
+      "containerId": "upload-processing",
+      "name": "Jobs Queue Stats",
+      "url": "{{baseUrl}}/api/jobs-stats",
+      "method": "GET",
+      "sortNum": 70000,
+      "headers": [],
+      "tests": []
+    }
+  ]
+}
