@@ -10,14 +10,10 @@ import {
   Alert,
   Dimensions
 } from 'react-native';
-import { PinchGestureHandler, State } from 'react-native-gesture-handler';
-import Animated, {
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  runOnJS,
-} from 'react-native-reanimated';
+import {
+  PanResponder,
+  PanResponderInstance,
+} from 'react-native';
 import { ImageWithFaces } from '../components/ImageWithFaces';
 import { FaceRow } from '../components/FaceRow';
 import { MetadataSection } from '../components/MetadataSection';
@@ -45,51 +41,8 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   const [selectedFace, setSelectedFace] = useState<FaceData | null>(null);
   const [showPersonModal, setShowPersonModal] = useState(false);
   
-  // Zoom animation values
-  const scale = useSharedValue(1);
-  const focalX = useSharedValue(0);
-  const focalY = useSharedValue(0);
-
   useEffect(() => {
     loadFaces();
-  }, [imageId]);
-  
-  // Pinch gesture handler for zoom
-  const pinchHandler = useAnimatedGestureHandler({
-    onStart: (_, context: any) => {
-      context.startScale = scale.value;
-    },
-    onActive: (event, context: any) => {
-      scale.value = Math.max(1, Math.min(context.startScale * event.scale, 3)); // Limit zoom between 1x and 3x
-      focalX.value = event.focalX;
-      focalY.value = event.focalY;
-    },
-    onEnd: () => {
-      if (scale.value < 1.2) {
-        // Reset to normal size if zoom is too small
-        scale.value = withSpring(1);
-        focalX.value = withSpring(0);
-        focalY.value = withSpring(0);
-      }
-    },
-  });
-  
-  // Animated style for zoom
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: scale.value },
-        { translateX: focalX.value * (1 - scale.value) },
-        { translateY: focalY.value * (1 - scale.value) },
-      ],
-    };
-  });
-  
-  // Reset zoom when switching images
-  useEffect(() => {
-    scale.value = withSpring(1);
-    focalX.value = withSpring(0);
-    focalY.value = withSpring(0);
   }, [imageId]);
 
   const loadFaces = async () => {
@@ -139,10 +92,16 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   };
 
   const getOptimizedImageUrl = () => {
-    // For mobile detail view, use a medium-sized version instead of full resolution
-    // This will load much faster than the full 3-6MB images
+    // Try using thumbnail URL format that works in gallery
+    const thumbnailUrl = `${API_BASE}${imageUrl}?thumb=1`;
+    const originalUrl = `${API_BASE}${imageUrl}`;
     const optimizedUrl = `${API_BASE}${imageUrl}?width=${Math.round(Dimensions.get('window').width * 2)}`;
-    return optimizedUrl;
+    console.log('PhotoDetailScreen: Thumbnail URL:', thumbnailUrl);
+    console.log('PhotoDetailScreen: Original image URL:', originalUrl);
+    console.log('PhotoDetailScreen: Optimized image URL:', optimizedUrl);
+    
+    // Now that we know thumbnails work, try the full-size image
+    return originalUrl;
   };
 
   return (
@@ -159,19 +118,15 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Main image with face overlays and pinch-to-zoom */}
+        {/* Main image with face overlays */}
         <View style={styles.imageSection}>
-          <PinchGestureHandler onGestureEvent={pinchHandler}>
-            <Animated.View style={[styles.zoomContainer, animatedStyle]}>
-              <ImageWithFaces
-                imageUrl={getOptimizedImageUrl()}
-                faces={faces}
-                imageId={imageId}
-                style={styles.mainImage}
-                onFacePress={handleFacePress}
-              />
-            </Animated.View>
-          </PinchGestureHandler>
+          <ImageWithFaces
+            imageUrl={getOptimizedImageUrl()}
+            faces={faces}
+            imageId={imageId}
+            style={styles.mainImage}
+            onFacePress={handleFacePress}
+          />
         </View>
 
         {/* Face thumbnails row */}

@@ -40,9 +40,11 @@ curl http://localhost:8001  # CompreFace UI
 ```
 
 ### **Platform Status**
-- ✅ **Backend API** - Full TypeScript API with face recognition and object detection
-- ✅ **Mobile App** - Complete React Native app with auto-upload, face recognition, and photo management
-- ✅ **Auto-Upload System** - Real-time camera roll sync with AI-powered processing
+- ✅ **Backend API** - Full TypeScript API with face recognition, object detection, and advanced filtering
+- ✅ **Mobile App** - Complete React Native app with auto-upload, face recognition, photo filtering, and sticky date headers
+- ✅ **Auto-Upload System** - Real-time camera roll sync with AI-powered processing (standalone app ready)
+- ✅ **Advanced Filtering** - Date range, location, GPS presence, city-based photo filtering with sort options
+- ✅ **Debug System** - On-screen debug logging for mobile app development and troubleshooting
 - ✅ **Geolocation System** - GPS-based photo location matching with 59 cities across 45,000+ worldwide
 - ✅ **Database** - MySQL with complete schema (20+ migrations including geolocation tables)
 - ✅ **AI Services** - CompreFace face recognition + YOLO object detection fully integrated
@@ -83,7 +85,13 @@ curl http://localhost:9000/scan/status          # Check status
 cd services/mobile-app
 bash sync-to-mac.sh            # Sync to Mac for building
 # On Mac: npx expo start       # Run in Expo Go for development
-# On Mac: eas build --platform ios --profile preview # Build standalone app
+# On Mac: eas build --platform ios --profile preview # Build standalone app with auto-upload
+
+# API Filtering & Search
+curl "http://localhost:9000/api/gallery?hasGPS=true&limit=5"                      # GPS filter
+curl "http://localhost:9000/api/gallery?cities=Austin,Seattle&limit=5"           # City filter  
+curl "http://localhost:9000/api/gallery?sortBy=filename&sortOrder=asc&limit=3"   # Sort options
+curl "http://localhost:9000/api/filters/cities"                                  # Available cities
 
 # Maintenance
 npm run maintenance:retroactive  # Add features to existing photos
@@ -120,10 +128,13 @@ Core principles:
 
 ### ✅ **Mobile Application**
 - **Photo Grid**: Infinite scroll gallery with thumbnail optimization and dominant color backgrounds
+- **Sticky Date Headers**: Organize photos by month/year with smooth scrolling headers
+- **Advanced Filtering**: Date range, location, GPS presence, and city-based filtering with sort options
 - **Photo Details**: Full-screen view with pinch-to-zoom, face detection visualization, and metadata display
 - **Face Recognition**: Tap faces to assign to persons with real-time training integration
 - **Photo Upload**: Camera and gallery selection with progress tracking and duplicate detection
 - **Auto-Upload**: Real-time camera roll sync with background processing and network-aware uploading
+- **Debug System**: On-screen debug logging for troubleshooting standalone app issues
 - **Person Management**: Complete person assignment and training workflow
 - **Map Integration**: GPS location display with OpenStreetMap tile compositing
 
@@ -137,8 +148,8 @@ Core principles:
 
 ### 🔄 **In Progress**
 - **React Frontend**: Building user interface in `services/web-app/`
-- **Advanced Search**: Enhanced search with filters and faceting
 - **Smart Album Enhancement**: Auto-generation based on advanced content analysis
+- **Auto-Upload Testing**: Finalizing standalone app testing and environment detection
 
 ## 📱 **Mobile App**
 
@@ -147,9 +158,12 @@ The mobile app provides a complete photo management experience with native iOS f
 
 **Key Features:**
 - **Auto-Upload**: Automatic camera roll sync with AI processing
+- **Advanced Filtering**: Date range, location, and city-based photo filtering
+- **Sticky Date Headers**: Organize photos by month/year with smooth scrolling
 - **Face Recognition**: Tap faces to assign to persons
 - **Photo Grid**: Infinite scroll with thumbnail optimization
 - **Photo Details**: Full-screen view with metadata and GPS maps
+- **Debug Logging**: On-screen debug panel for troubleshooting
 - **Upload Management**: Camera/gallery selection with progress tracking
 
 **Development Workflow:**

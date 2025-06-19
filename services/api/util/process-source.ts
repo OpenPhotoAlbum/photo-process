@@ -13,6 +13,7 @@ import { HashManager, HashFileInfo } from './hash-manager';
 import { ImageRepository, MetadataRepository, ObjectRepository, FaceRepository } from '../models/database';
 import { SmartAlbumEngine } from './smart-album-engine';
 import { GeolocationService } from './geolocation';
+import { extractBestDate } from './exif-date-extractor';
 
 const logger = Logger.getInstance();
 
@@ -299,27 +300,21 @@ export const storeImageDataHashed = async (
 ): Promise<number> => {
     const { exif, dominantColor, people, objects, screenshotDetection, astroResult } = processingResults;
     logger.info(`[DB] Storing image data for ${originalPath} with hash ${fileInfo.hash}`);
-    // Parse date taken from EXIF
-    let dateTaken: Date | undefined;
+    // Parse date taken from EXIF using robust extraction
+    let dateTaken: Date;
     try {
-        if (exif.DateTimeOriginal) {
-            const dateStr = typeof exif.DateTimeOriginal === 'string' ?
-                exif.DateTimeOriginal :
-                exif.DateTimeOriginal?.toString();
-            if (dateStr) {
-                dateTaken = new Date(dateStr.replace(/:(\d{2}):(\d{2})/, '-$1-$2'));
-            }
-        } else if (exif.DateTime) {
-            const dateStr = typeof exif.DateTime === 'string' ?
-                exif.DateTime :
-                exif.DateTime?.toString();
-            if (dateStr) {
-                dateTaken = new Date(dateStr.replace(/:(\d{2}):(\d{2})/, '-$1-$2'));
-            }
+        const extractedDate = extractBestDate(exif);
+        if (extractedDate) {
+            dateTaken = extractedDate;
+        } else {
+            // Fall back to file modification time if no valid EXIF date found
+            const stats = fs.statSync(originalPath);
+            dateTaken = stats.mtime;
+            logger.debug(`Using file modification time as fallback for ${originalPath}: ${dateTaken.toISOString()}`);
         }
     } catch (error) {
         logger.error(`Failed to parse date taken from EXIF for ${originalPath}:`, error);
-        // Fall back to file modification time or current time
+        // Fall back to file modification time
         const stats = fs.statSync(originalPath);
         dateTaken = stats.mtime;
     }

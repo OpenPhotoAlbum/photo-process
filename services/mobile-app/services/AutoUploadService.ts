@@ -2,6 +2,7 @@
 import { Platform } from 'react-native';
 import { UploadAPI, UploadResponse, UploadProgress } from './UploadAPI';
 import Constants from 'expo-constants';
+import { debugLogger } from '../components/DebugPanel';
 
 // Import native modules with proper error handling
 import * as MediaLibrary from 'expo-media-library';
@@ -67,8 +68,22 @@ class AutoUploadService {
 
   // Check if running in standalone app vs Expo Go
   private checkEnvironment(): void {
-    this.isStandalone = Constants.executionEnvironment === 'standalone';
-    console.log('AutoUploadService: Running in', this.isStandalone ? 'standalone app' : 'Expo Go');
+    // In newer Expo SDK versions, standalone apps report as 'bare' instead of 'standalone'
+    this.isStandalone = Constants.executionEnvironment === 'standalone' || 
+                       Constants.executionEnvironment === 'bare';
+    
+    debugLogger.log('info', '=== AutoUploadService Environment Debug ===');
+    debugLogger.log('info', 'executionEnvironment', Constants.executionEnvironment);
+    debugLogger.log('info', 'isStandalone', this.isStandalone);
+    debugLogger.log('info', 'appOwnership', Constants.appOwnership);
+    debugLogger.log('info', 'platform', Constants.platform);
+    debugLogger.log('info', 'deviceId', Constants.deviceId);
+    debugLogger.log('info', 'sessionId', Constants.sessionId);
+    debugLogger.log('info', 'installationId', Constants.installationId);
+    debugLogger.log('info', 'MediaLibrary available', !!MediaLibrary);
+    debugLogger.log('info', 'AsyncStorage available', !!AsyncStorage);
+    debugLogger.log('info', 'Running in', this.isStandalone ? 'standalone app (bare/standalone)' : 'Expo Go (storeClient)');
+    debugLogger.log('info', '===========================================');
   }
 
   // Initialize native modules
@@ -101,15 +116,18 @@ class AutoUploadService {
       try {
         console.log('AutoUploadService: Requesting media library permissions...');
         const { status } = await MediaLibrary.requestPermissionsAsync();
+        console.log('AutoUploadService: Permission status:', status);
         if (status === 'granted') {
           this.hasPermissions = true;
-          console.log('AutoUploadService: Media library permissions granted');
+          console.log('AutoUploadService: ✅ Media library permissions granted');
         } else {
-          console.log('AutoUploadService: Media library permission denied');
+          console.log('AutoUploadService: ❌ Media library permission denied - status:', status);
         }
       } catch (permError) {
-        console.warn('AutoUploadService: Permission request failed:', permError);
+        console.warn('AutoUploadService: ❌ Permission request failed:', permError);
       }
+      
+      console.log('AutoUploadService: Final state - hasPermissions:', this.hasPermissions, 'isStandalone:', this.isStandalone);
 
       // Load existing queue
       await this.loadQueue();
@@ -127,6 +145,9 @@ class AutoUploadService {
   async getSettings(): Promise<AutoUploadSettings> {
     try {
       if (!this.isStandalone || !AsyncStorage) {
+        console.log('AutoUploadService: getSettings - DEMO MODE ACTIVE');
+        console.log('  - isStandalone:', this.isStandalone);
+        console.log('  - AsyncStorage available:', !!AsyncStorage);
         return this.getDefaultSettings();
       }
       
@@ -164,7 +185,9 @@ class AutoUploadService {
   async updateSettings(settings: Partial<AutoUploadSettings>): Promise<void> {
     try {
       if (!this.isStandalone || !AsyncStorage) {
-        console.log('AutoUploadService: Settings update - running in demo mode');
+        console.log('AutoUploadService: Settings update - DEMO MODE ACTIVE');
+        console.log('  - isStandalone:', this.isStandalone);
+        console.log('  - AsyncStorage available:', !!AsyncStorage);
         return;
       }
 

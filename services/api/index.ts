@@ -56,10 +56,13 @@ const main = async () => {
     app.get('/scan/status', routes.Scan.ScanStatusResolver);
     app.get('/scan', routes.Scan.ScanStartResolver);
 
-    // Gallery API routes (database-based)
+    // Gallery API routes (database-based)  
     app.get('/api/gallery', routes.Gallery.GalleryListResolver);
-    app.get('/api/gallery/:id', routes.Gallery.GalleryRoutes.getImageDetails as any);
     app.get('/api/gallery/:id/faces', routes.Gallery.GalleryRoutes.getImageFaces as any);
+    app.get('/api/gallery/:id', routes.Gallery.GalleryRoutes.getImageDetails as any);
+    
+    // Gallery filter API routes
+    app.get('/api/filters/cities', routes.Gallery.GalleryRoutes.getAvailableCities as any);
     
     // Search API routes
     app.get('/api/search/objects', searchByObjects as any);

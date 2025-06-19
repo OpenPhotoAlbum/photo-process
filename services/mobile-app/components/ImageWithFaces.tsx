@@ -24,9 +24,13 @@ export const ImageWithFaces: React.FC<ImageWithFacesProps> = ({
   onImageLoad,
   onImageError
 }) => {
+  console.log('ImageWithFaces - Component props:', { imageUrl, imageId, facesCount: faces.length });
+  
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [originalImageSize, setOriginalImageSize] = useState({ width: 0, height: 0 });
   const [scaledFaces, setScaledFaces] = useState<ScaledFaceData[]>([]);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   // Fetch original image dimensions from API
   useEffect(() => {
@@ -131,14 +135,30 @@ export const ImageWithFaces: React.FC<ImageWithFacesProps> = ({
           source={{ uri: imageUrl }}
           style={styles.image}
           contentFit="contain"
-          transition={200}
+          transition={100}
           cachePolicy="memory-disk"
-          onLoad={handleImageLoad}
+          priority="normal"
+          allowDownscaling={true}
+          onLoad={(event) => {
+            console.log('ImageWithFaces - Image loaded successfully:', imageUrl);
+            console.log('ImageWithFaces - Image load event:', event);
+            setImageLoaded(true);
+            setImageError(null);
+            handleImageLoad();
+          }}
+          onLoadStart={() => {
+            console.log('ImageWithFaces - Image loading started:', imageUrl);
+            setImageLoaded(false);
+            setImageError(null);
+          }}
           onError={(error) => {
             console.error('ImageWithFaces - Failed to load image:', imageUrl, error);
+            setImageError(JSON.stringify(error));
+            setImageLoaded(false);
             onImageError?.(`Failed to load image: ${JSON.stringify(error)}`);
           }}
         />
+        
         
         {/* Face bounding boxes overlay - Using simple Views instead of SVG */}
         {scaledFaces.length > 0 && imageSize.width > 0 && (
@@ -194,5 +214,20 @@ const styles = StyleSheet.create({
     borderColor: '#FF0080', // Bright pink for visibility
     backgroundColor: 'rgba(255, 0, 128, 0.1)', // Slight pink tint
     borderRadius: 4,
+  },
+  debugOverlay: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    padding: 10,
+    borderRadius: 5,
+    zIndex: 1000,
+  },
+  debugText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });

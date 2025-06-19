@@ -66,9 +66,12 @@ eas build --platform ios --profile preview
 
 ### ✅ **Core Application**
 - **Photo Gallery**: Infinite scroll grid with thumbnail optimization and dominant color backgrounds
+- **Sticky Date Headers**: Organize photos by month/year with smooth scrolling headers
+- **Advanced Filtering**: Date range, location, GPS presence, and city-based filtering with sort options
 - **Photo Details**: Full-screen view with pinch-to-zoom, metadata display, and face visualization
 - **Face Recognition**: Tap faces to assign to persons with real-time CompreFace training
 - **Photo Upload**: Camera and gallery selection with progress tracking and duplicate detection
+- **Debug System**: On-screen debug logging for troubleshooting standalone app issues
 - **Map Integration**: GPS location display with OpenStreetMap tile compositing
 
 ### ✅ **Auto-Upload System**
@@ -101,7 +104,9 @@ The app automatically detects whether it's running in Expo Go (development) or a
 ```typescript
 // AutoUploadService.ts
 private checkEnvironment(): void {
-  this.isStandalone = Constants.executionEnvironment === 'standalone';
+  // In newer Expo SDK versions, standalone apps report as 'bare' instead of 'standalone'
+  this.isStandalone = Constants.executionEnvironment === 'standalone' || 
+                     Constants.executionEnvironment === 'bare';
   console.log('Running in', this.isStandalone ? 'standalone app' : 'Expo Go');
 }
 ```

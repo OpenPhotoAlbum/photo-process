@@ -36,8 +36,18 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
         const page = parseInt(req.query.page as string); // Optional fallback to offset pagination
         const astroOnly = req.query.astro === 'true'; // Filter for astrophotography
         
+        // New filter parameters for mobile app
+        const startDate = req.query.startDate as string;
+        const endDate = req.query.endDate as string;
+        const hasGPS = req.query.hasGPS;
+        const cities = req.query.cities as string;
+        const sortBy = req.query.sortBy as string || 'date_processed';
+        const sortOrder = req.query.sortOrder as string || 'desc';
+        
         // Create cache key for this request
-        const cacheKey = getCacheKey('gallery', { limit, cursor, page, astroOnly });
+        const cacheKey = getCacheKey('gallery', { 
+            limit, cursor, page, astroOnly, startDate, endDate, hasGPS, cities, sortBy, sortOrder 
+        });
         
         // Check cache first (60 second TTL for fast-changing data)
         const cachedResult = cache.get(cacheKey);
@@ -93,6 +103,31 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
                 // if (astroOnly) {
                 //     queryBuilder.where('images.is_astrophotography', true);
                 // }
+                
+                // Apply date range filters
+                if (startDate) {
+                    queryBuilder.where('images.date_taken', '>=', startDate);
+                }
+                if (endDate) {
+                    queryBuilder.where('images.date_taken', '<=', endDate);
+                }
+                
+                // Apply GPS filter
+                if (hasGPS === 'true') {
+                    queryBuilder.whereNotNull('images.gps_latitude')
+                               .whereNotNull('images.gps_longitude');
+                } else if (hasGPS === 'false') {
+                    queryBuilder.where(function() {
+                        this.whereNull('images.gps_latitude')
+                            .orWhereNull('images.gps_longitude');
+                    });
+                }
+                
+                // Apply city filter
+                if (cities) {
+                    const cityList = cities.split(',').map(c => c.trim());
+                    queryBuilder.whereIn('gc.city', cityList);
+                }
             })
             .groupBy([
                 'images.id', 
@@ -114,7 +149,7 @@ export const GalleryListResolver = async (req: Request, res: Response) => {
                 'il.confidence_score',
                 'il.distance_miles'
             ])
-            .orderBy('images.date_processed', 'desc')  // Most recently processed first
+            .orderBy(`images.${sortBy}`, sortOrder)  // Primary sort by requested field
             .orderBy('images.id', 'desc') // Secondary sort by ID for consistent pagination
             .limit(limit + 1); // +1 to check if there are more results
         
@@ -451,6 +486,27 @@ export const GalleryRoutes = {
         } catch (error) {
             console.error('Error fetching image faces:', error);
             res.status(500).json({ error: 'Failed to fetch image faces' });
+        }
+    },
+
+    // Get available cities for filtering
+    async getAvailableCities(req: Request, res: Response) {
+        try {
+            const cities = await db('geo_cities as gc')
+                .join('image_geolocations as il', 'gc.id', 'il.city_id')
+                .join('images', 'il.image_id', 'images.id')
+                .select('gc.city')
+                .where('images.processing_status', 'completed')
+                .groupBy('gc.city')
+                .orderBy('gc.city')
+                .limit(50); // Limit to top 50 cities
+
+            const cityNames = cities.map(c => c.city);
+            res.json(cityNames);
+            
+        } catch (error) {
+            console.error('Error fetching available cities:', error);
+            res.status(500).json({ error: 'Failed to fetch available cities' });
         }
     }
 };

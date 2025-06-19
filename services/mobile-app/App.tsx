@@ -7,6 +7,9 @@ import { SimplePhotoDetailScreen } from './screens/SimplePhotoDetailScreen';
 import { BasicImageTest } from './screens/BasicImageTest';
 import { NativeImageTest } from './screens/NativeImageTest';
 import { SlideOutMenu } from './components/SlideOutMenu';
+import { StickyDateHeaders } from './components/StickyDateHeaders';
+import { DebugPanel, debugLogger } from './components/DebugPanel';
+import { FilterPanel, FilterOptions } from './components/FilterPanel';
 import { UploadResponse } from './services/UploadAPI';
 import { autoUploadService } from './services/AutoUploadService';
 import { AutoUploadSettingsScreen } from './screens/AutoUploadSettingsScreen';
@@ -20,7 +23,7 @@ const photoSize = (screenWidth - (numColumns + 1) * 2) / numColumns; // 2px marg
 interface MediaItem {
   id: number;
   filename: string;
-  dateTaken: string;
+  date_taken: string | null;
   media_url: string;
   thumbnail_url?: string;
   dominant_color?: string;
@@ -47,6 +50,25 @@ export default function App() {
   const [selectedPhoto, setSelectedPhoto] = useState<MediaItem | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [showAutoUploadSettings, setShowAutoUploadSettings] = useState(false);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [filters, setFilters] = useState<FilterOptions>({
+    dateRange: {
+      enabled: false,
+      startDate: null,
+      endDate: null
+    },
+    location: {
+      enabled: false,
+      hasGPS: null,
+      selectedCities: []
+    },
+    sort: {
+      field: 'date_taken',
+      direction: 'desc'
+    }
+  });
   
   // Debug auto-upload state changes
   useEffect(() => {
@@ -73,6 +95,19 @@ export default function App() {
     [photos, failedImages]
   );
   
+  // Fetch available cities for filter
+  const fetchAvailableCities = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/filters/cities`);
+      if (response.ok) {
+        const cities = await response.json();
+        setAvailableCities(cities);
+      }
+    } catch (error) {
+      console.error('Failed to fetch cities:', error);
+    }
+  }, []);
+
   const fetchPhotos = useCallback(async (reset: boolean = false) => {
     if (isLoadingMore.current && !reset) {
       console.log('Already loading, skipping...');
@@ -88,7 +123,37 @@ export default function App() {
       const limit = 24; // Increased since we're using thumbnails now
       const currentCursor = reset ? null : cursorRef.current;
       const cursorParam = currentCursor ? `&cursor=${currentCursor}` : '';
-      const url = `${API_BASE}/api/gallery?limit=${limit}${cursorParam}`;
+      
+      // Build filter parameters
+      const filterParams = new URLSearchParams();
+      filterParams.set('limit', limit.toString());
+      if (currentCursor) filterParams.set('cursor', currentCursor);
+      
+      // Add date range filter
+      if (filters.dateRange.enabled) {
+        if (filters.dateRange.startDate) {
+          filterParams.set('startDate', filters.dateRange.startDate.toISOString().split('T')[0]);
+        }
+        if (filters.dateRange.endDate) {
+          filterParams.set('endDate', filters.dateRange.endDate.toISOString().split('T')[0]);
+        }
+      }
+      
+      // Add location filter
+      if (filters.location.enabled) {
+        if (filters.location.hasGPS !== null) {
+          filterParams.set('hasGPS', filters.location.hasGPS.toString());
+        }
+        if (filters.location.selectedCities.length > 0) {
+          filterParams.set('cities', filters.location.selectedCities.join(','));
+        }
+      }
+      
+      // Add sort parameters
+      filterParams.set('sortBy', filters.sort.field);
+      filterParams.set('sortOrder', filters.sort.direction);
+      
+      const url = `${API_BASE}/api/gallery?${filterParams.toString()}`;
       
       console.log('Fetching photos:', { reset, cursor: currentCursor, url });
       const response = await fetch(url);
@@ -157,6 +222,7 @@ export default function App() {
   // Initial load and auto-upload initialization
   useEffect(() => {
     fetchPhotos(true);
+    fetchAvailableCities();
     
     // Initialize auto-upload service
     autoUploadService.initialize().then((initialized) => {
@@ -172,7 +238,15 @@ export default function App() {
         console.log('Auto-upload service initialization failed');
       }
     });
-  }, []);
+  }, [fetchPhotos, fetchAvailableCities]);
+
+  // Reload photos when filters change
+  useEffect(() => {
+    console.log('Filters changed, reloading photos...');
+    setCursor(null);
+    cursorRef.current = null;
+    fetchPhotos(true);
+  }, [filters, fetchPhotos]);
 
   // Handle load more when approaching end of list
   const handleLoadMore = useCallback(() => {
@@ -238,6 +312,11 @@ export default function App() {
   const handleUploadError = useCallback((error: string) => {
     console.error('Photo upload failed:', error);
     // Error is already shown in PhotoUpload component
+  }, []);
+
+  // Handle filter changes
+  const handleFiltersChange = useCallback((newFilters: FilterOptions) => {
+    setFilters(newFilters);
   }, []);
 
   // Render individual photo item
@@ -374,53 +453,70 @@ export default function App() {
     <>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Photos</Text>
-        <Text style={styles.headerSubtitle}>
-          {totalCount > 0 ? `${totalCount} photos` : `${visiblePhotos.length} photos`}
-        </Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerTitle}>Photos</Text>
+          <Text style={styles.headerSubtitle}>
+            {totalCount > 0 ? `${totalCount} photos` : `${visiblePhotos.length} photos`}
+          </Text>
+        </View>
+        <View style={styles.headerRight}>
+          <TouchableOpacity 
+            style={styles.filterButton}
+            onPress={() => setShowFilterPanel(true)}
+          >
+            <Text style={styles.filterButtonText}>⚙️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.debugButton}
+            onPress={() => setShowDebugPanel(true)}
+          >
+            <Text style={styles.debugButtonText}>Debug</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       
-      <FlatList
-        data={visiblePhotos}
-        renderItem={renderPhoto}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={numColumns}
-        contentContainerStyle={styles.gridContainer}
-        removeClippedSubviews={true}
-        maxToRenderPerBatch={10}
-        windowSize={10}
-        
-        // Infinite scroll
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5} // Load more when 50% from bottom
-        
-        // Pull to refresh
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#0066CC"
-          />
-        }
-        
-        // Performance optimizations - keep more items mounted to prevent reloading
-        removeClippedSubviews={false} // Keep images loaded when off-screen
-        maxToRenderPerBatch={6} // Reasonable batch size
-        initialNumToRender={12} // Load more initially
-        windowSize={10} // Much larger window to keep images mounted
-        updateCellsBatchingPeriod={100} // Increased for smoother updates
-        maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
+      <StickyDateHeaders
+        photos={visiblePhotos}
+        failedImages={failedImages}
+        loadingMore={loadingMore}
+        refreshing={refreshing}
+        hasMore={hasMore}
+        onLoadMore={handleLoadMore}
+        onRefresh={handleRefresh}
+        onPhotoPress={setSelectedPhoto}
+        renderFooter={renderFooter}
+        API_BASE={API_BASE}
+        loadingImagesRef={loadingImagesRef}
+        onImageLoadStart={(id) => {
+          if (!loadingImagesRef.current.has(id)) {
+            loadingImagesRef.current.add(id);
+          }
         }}
-        // Disable scroll indicators for performance
-        showsVerticalScrollIndicator={false}
-        // Use native driver for better performance
-        scrollEventThrottle={16}
-        
-        // Footer loading indicator
-        ListFooterComponent={renderFooter}
-        
-        // Empty state
+        onImageLoad={(id) => {
+          loadingImagesRef.current.delete(id);
+        }}
+        onImageError={(photo, url) => {
+          const timestamp = new Date().toISOString();
+          const logEntry = {
+            filename: photo.filename,
+            url: url,
+            timestamp
+          };
+          
+          // Log to console with all failed images
+          failedImagesLog.current.push(logEntry);
+          console.log('Failed image:', logEntry);
+          console.log('All failed images:', failedImagesLog.current);
+          
+          // Remove from loading and mark as failed
+          loadingImagesRef.current.delete(photo.id);
+          
+          setFailedImages(prev => {
+            const newSet = new Set(prev);
+            newSet.add(photo.id);
+            return newSet;
+          });
+        }}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No photos found</Text>
@@ -471,6 +567,21 @@ export default function App() {
         <AutoUploadSettingsScreen onClose={() => setShowAutoUploadSettings(false)} />
       </View>
     )}
+
+    {/* Debug Panel Modal */}
+    <DebugPanel
+      visible={showDebugPanel}
+      onClose={() => setShowDebugPanel(false)}
+    />
+
+    {/* Filter Panel Modal */}
+    <FilterPanel
+      visible={showFilterPanel}
+      onClose={() => setShowFilterPanel(false)}
+      filters={filters}
+      onFiltersChange={handleFiltersChange}
+      availableCities={availableCities}
+    />
   </>
   );
 }
@@ -486,10 +597,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     paddingTop: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#222',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  filterButton: {
+    backgroundColor: '#333',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  filterButtonText: {
+    fontSize: 14,
+  },
+  debugButton: {
+    backgroundColor: '#333',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  debugButtonText: {
+    color: '#0066CC',
+    fontSize: 12,
+    fontWeight: '500',
   },
   headerTitle: {
     color: 'white',

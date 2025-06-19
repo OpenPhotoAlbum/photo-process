@@ -28,54 +28,74 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const [showModal, setShowModal] = useState(false);
 
   const requestPermissions = async () => {
-    // Request camera permission
-    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
-    if (cameraPermission.status !== 'granted') {
+    try {
+      // Request camera permission
+      const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+      if (cameraPermission.status !== 'granted') {
+        Alert.alert(
+          'Camera Permission Required',
+          'Please allow camera access to take photos.',
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
+
+      // Request media library permission
+      const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (libraryPermission.status !== 'granted') {
+        Alert.alert(
+          'Photo Library Permission Required',
+          'Please allow photo library access to select photos.',
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('PhotoUpload: Permission request failed:', error);
       Alert.alert(
-        'Camera Permission Required',
-        'Please allow camera access to take photos.',
+        'Permission Error',
+        'Failed to request permissions. Please try again.',
         [{ text: 'OK' }]
       );
       return false;
     }
-
-    // Request media library permission
-    const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (libraryPermission.status !== 'granted') {
-      Alert.alert(
-        'Photo Library Permission Required',
-        'Please allow photo library access to select photos.',
-        [{ text: 'OK' }]
-      );
-      return false;
-    }
-
-    return true;
   };
 
   const pickImage = async (useCamera: boolean = false) => {
-    const hasPermissions = await requestPermissions();
-    if (!hasPermissions) return;
+    try {
+      const hasPermissions = await requestPermissions();
+      if (!hasPermissions) return;
 
-    setShowModal(false);
+      setShowModal(false);
 
-    const options: ImagePicker.ImagePickerOptions = {
-      mediaTypes: ImagePicker.MediaType.Images,
-      allowsEditing: false,
-      quality: 0.8, // Slightly compress to reduce upload time
-      exif: true, // Include EXIF data
-    };
+      const options: ImagePicker.ImagePickerOptions = {
+        mediaTypes: 'images',
+        allowsEditing: false,
+        quality: 0.8, // Slightly compress to reduce upload time
+        exif: true, // Include EXIF data
+      };
 
-    let result;
-    if (useCamera) {
-      result = await ImagePicker.launchCameraAsync(options);
-    } else {
-      result = await ImagePicker.launchImageLibraryAsync(options);
-    }
+      let result;
+      if (useCamera) {
+        result = await ImagePicker.launchCameraAsync(options);
+      } else {
+        result = await ImagePicker.launchImageLibraryAsync(options);
+      }
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const asset = result.assets[0];
-      await uploadPhoto(asset.uri, asset.fileName || 'photo.jpg');
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        await uploadPhoto(asset.uri, asset.fileName || 'photo.jpg');
+      }
+    } catch (error) {
+      console.error('PhotoUpload: Image picker failed:', error);
+      setShowModal(false);
+      Alert.alert(
+        'Image Selection Error',
+        'Failed to select image. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
