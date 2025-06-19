@@ -177,21 +177,9 @@ export default function App() {
       }
       
       if (reset) {
-        // When resetting, deduplicate to avoid React key collisions
-        setPhotos(prevPhotos => {
-          const existingIds = new Set(prevPhotos.map(p => p.id));
-          const deduplicatedImages = data.images.filter(img => !existingIds.has(img.id));
-          
-          // Keep existing photos that aren't in the new data (like immediate uploads)
-          // and add new photos from API
-          const finalPhotos = [
-            ...prevPhotos.filter(p => !data.images.some(img => img.id === p.id)),
-            ...data.images
-          ].sort((a, b) => b.id - a.id); // Sort by ID descending (newest first)
-          
-          console.log(`Photos after reset: ${finalPhotos.length} (was: ${prevPhotos.length}, from API: ${data.images.length})`);
-          return finalPhotos;
-        });
+        // When resetting (filters changed or pull-to-refresh), completely replace photos
+        console.log(`Photos reset: ${data.images.length} new photos loaded`);
+        setPhotos(data.images);
       } else {
         setPhotos(prev => {
           // For pagination, avoid duplicates when adding more photos
@@ -245,6 +233,9 @@ export default function App() {
     console.log('Filters changed, reloading photos...');
     setCursor(null);
     cursorRef.current = null;
+    setHasMore(true);
+    setLoadingMore(true);
+    isLoadingMore.current = false;
     fetchPhotos(true);
   }, [filters, fetchPhotos]);
 
