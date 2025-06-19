@@ -48,6 +48,7 @@ export const MetadataSection: React.FC<MetadataProps> = ({ imageId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true); // Expanded by default
+  const [showMapImage, setShowMapImage] = useState(true); // Show map by default
 
   useEffect(() => {
     loadMetadata();
@@ -219,29 +220,39 @@ export const MetadataSection: React.FC<MetadataProps> = ({ imageId }) => {
           {metadata.metadata?.latitude && metadata.metadata?.longitude && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Map Preview</Text>
-              <TouchableOpacity 
-                onPress={() => openInMaps(metadata.metadata!.latitude!, metadata.metadata!.longitude!)}
-                activeOpacity={0.8}
-                style={styles.mapContainer}
-              >
-                <Image
-                  source={{
-                    uri: getMapImageUrl(metadata.metadata.latitude, metadata.metadata.longitude)
-                  }}
-                  style={styles.mapPreview}
-                  resizeMode="cover"
-                  onLoad={() => console.log('Map image loaded successfully via OSM tiles')}
-                  onError={(error) => {
-                    console.log('Map image failed to load:', error.nativeEvent.error);
-                    if (metadata.metadata?.latitude && metadata.metadata?.longitude) {
-                      console.log('Map URL was:', getMapImageUrl(metadata.metadata.latitude, metadata.metadata.longitude));
-                    }
-                  }}
-                />
-                <View style={styles.mapOverlay}>
-                  <Text style={styles.mapOverlayText}>📍 Tap to open in Maps</Text>
-                </View>
-              </TouchableOpacity>
+              {showMapImage ? (
+                <TouchableOpacity 
+                  onPress={() => openInMaps(metadata.metadata!.latitude!, metadata.metadata!.longitude!)}
+                  activeOpacity={0.8}
+                  style={styles.mapContainer}
+                >
+                  <Image
+                    source={{
+                      uri: getMapImageUrl(metadata.metadata.latitude, metadata.metadata.longitude)
+                    }}
+                    style={styles.mapPreview}
+                    resizeMode="cover"
+                    onLoad={() => console.log('Map image loaded successfully via OSM tiles')}
+                    onError={(error) => {
+                      console.log('Map image failed to load:', error.nativeEvent.error);
+                      if (metadata.metadata?.latitude && metadata.metadata?.longitude) {
+                        console.log('Map URL was:', getMapImageUrl(metadata.metadata.latitude, metadata.metadata.longitude));
+                      }
+                    }}
+                  />
+                  <View style={styles.mapOverlay}>
+                    <Text style={styles.mapOverlayText}>📍 Tap to open in Maps</Text>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity 
+                  onPress={() => setShowMapImage(true)}
+                  activeOpacity={0.8}
+                  style={[styles.mapContainer, styles.mapPlaceholder]}
+                >
+                  <Text style={styles.mapPlaceholderText}>🗺️ Tap to load map preview</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
           
@@ -366,5 +377,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     textAlign: 'center',
+  },
+  mapPlaceholder: {
+    backgroundColor: '#f5f5f5',
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
+  },
+  mapPlaceholderText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

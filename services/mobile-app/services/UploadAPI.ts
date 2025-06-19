@@ -38,7 +38,7 @@ export interface UploadProgress {
   percentage: number;
 }
 
-class UploadAPI {
+export class UploadAPI {
   private baseUrl: string;
 
   constructor() {

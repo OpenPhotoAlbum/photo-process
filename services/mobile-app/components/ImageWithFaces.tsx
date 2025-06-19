@@ -6,6 +6,7 @@ import { FaceData, FaceBoundingBox, ScaledFaceData } from '../types/FaceTypes';
 interface ImageWithFacesProps {
   imageUrl: string;
   faces: FaceData[];
+  imageId: number; // Add imageId to fetch original dimensions
   style?: any;
   onFacePress?: (face: FaceData) => void;
   onImageLoad?: () => void;
@@ -17,6 +18,7 @@ const API_BASE = 'http://192.168.40.103:9000';
 export const ImageWithFaces: React.FC<ImageWithFacesProps> = ({
   imageUrl,
   faces,
+  imageId,
   style,
   onFacePress,
   onImageLoad,
@@ -26,30 +28,94 @@ export const ImageWithFaces: React.FC<ImageWithFacesProps> = ({
   const [originalImageSize, setOriginalImageSize] = useState({ width: 0, height: 0 });
   const [scaledFaces, setScaledFaces] = useState<ScaledFaceData[]>([]);
 
+  // Fetch original image dimensions from API
+  useEffect(() => {
+    const fetchImageDimensions = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/gallery/${imageId}`);
+        const data = await response.json();
+        if (data.width && data.height) {
+          // Check for EXIF orientation to determine if dimensions need swapping
+          const orientation = data.metadata?.orientation || 1;
+          const needsRotation = orientation >= 5 && orientation <= 8;
+          
+          const width = needsRotation ? data.height : data.width;
+          const height = needsRotation ? data.width : data.height;
+          
+          console.log('ImageWithFaces - Original dimensions from API:', data.width, 'x', data.height);
+          console.log('ImageWithFaces - EXIF orientation:', orientation, 'needs rotation:', needsRotation);
+          console.log('ImageWithFaces - Adjusted dimensions:', width, 'x', height);
+          
+          setOriginalImageSize({ width, height });
+        }
+      } catch (error) {
+        console.error('ImageWithFaces - Failed to fetch image dimensions:', error);
+      }
+    };
+
+    if (imageId) {
+      fetchImageDimensions();
+    }
+  }, [imageId]);
+
   // Calculate scaled face coordinates
   useEffect(() => {
     if (imageSize.width > 0 && originalImageSize.width > 0 && faces.length > 0) {
-      const scaleX = imageSize.width / originalImageSize.width;
-      const scaleY = imageSize.height / originalImageSize.height;
+      // Calculate the actual visible image area within the container (contentFit="contain")
+      const containerAspectRatio = imageSize.width / imageSize.height;
+      const imageAspectRatio = originalImageSize.width / originalImageSize.height;
+      
+      let visibleImageWidth, visibleImageHeight, offsetX, offsetY;
+      
+      if (imageAspectRatio > containerAspectRatio) {
+        // Image is wider - will have black bars on top/bottom
+        visibleImageWidth = imageSize.width;
+        visibleImageHeight = imageSize.width / imageAspectRatio;
+        offsetX = 0;
+        offsetY = (imageSize.height - visibleImageHeight) / 2;
+      } else {
+        // Image is taller - will have black bars on left/right
+        visibleImageWidth = imageSize.height * imageAspectRatio;
+        visibleImageHeight = imageSize.height;
+        offsetX = (imageSize.width - visibleImageWidth) / 2;
+        offsetY = 0;
+      }
 
-      const scaled = faces.map(face => ({
-        ...face,
-        scaledBounds: {
-          x: face.x_min * scaleX,
-          y: face.y_min * scaleY,
+      const scaleX = visibleImageWidth / originalImageSize.width;
+      const scaleY = visibleImageHeight / originalImageSize.height;
+
+      console.log('=== FACE COORDINATE DEBUGGING ===');
+      console.log('Container size:', imageSize);
+      console.log('Original image size:', originalImageSize);
+      console.log('Visible image size:', { width: visibleImageWidth, height: visibleImageHeight });
+      console.log('Offset:', { x: offsetX, y: offsetY });
+      console.log('Scale factors - X:', scaleX, 'Y:', scaleY);
+      console.log('First face raw coordinates:', faces[0]);
+
+      const scaled = faces.map((face, index) => {
+        const scaledBounds = {
+          x: (face.x_min * scaleX) + offsetX,
+          y: (face.y_min * scaleY) + offsetY,
           width: (face.x_max - face.x_min) * scaleX,
           height: (face.y_max - face.y_min) * scaleY,
+        };
+        
+        if (index === 0) {
+          console.log('First face scaled bounds:', scaledBounds);
         }
-      }));
+        
+        return {
+          ...face,
+          scaledBounds
+        };
+      });
 
       setScaledFaces(scaled);
     }
   }, [imageSize, originalImageSize, faces]);
 
   const handleImageLoad = (event: any) => {
-    const { width, height } = event.source;
-    console.log('Image loaded with dimensions:', width, 'x', height);
-    setOriginalImageSize({ width, height });
+    console.log('Image loaded successfully');
     onImageLoad?.();
   };
 
@@ -124,8 +190,9 @@ const styles = StyleSheet.create({
   },
   faceBox: {
     position: 'absolute',
-    borderWidth: 2,
-    borderColor: '#00FF00',
-    backgroundColor: 'transparent',
+    borderWidth: 3,
+    borderColor: '#FF0080', // Bright pink for visibility
+    backgroundColor: 'rgba(255, 0, 128, 0.1)', // Slight pink tint
+    borderRadius: 4,
   },
 });

@@ -10,6 +10,14 @@ import {
   Alert,
   Dimensions
 } from 'react-native';
+import { PinchGestureHandler, State } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  runOnJS,
+} from 'react-native-reanimated';
 import { ImageWithFaces } from '../components/ImageWithFaces';
 import { FaceRow } from '../components/FaceRow';
 import { MetadataSection } from '../components/MetadataSection';
@@ -36,9 +44,52 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   const [faces, setFaces] = useState<FaceData[]>([]);
   const [selectedFace, setSelectedFace] = useState<FaceData | null>(null);
   const [showPersonModal, setShowPersonModal] = useState(false);
+  
+  // Zoom animation values
+  const scale = useSharedValue(1);
+  const focalX = useSharedValue(0);
+  const focalY = useSharedValue(0);
 
   useEffect(() => {
     loadFaces();
+  }, [imageId]);
+  
+  // Pinch gesture handler for zoom
+  const pinchHandler = useAnimatedGestureHandler({
+    onStart: (_, context: any) => {
+      context.startScale = scale.value;
+    },
+    onActive: (event, context: any) => {
+      scale.value = Math.max(1, Math.min(context.startScale * event.scale, 3)); // Limit zoom between 1x and 3x
+      focalX.value = event.focalX;
+      focalY.value = event.focalY;
+    },
+    onEnd: () => {
+      if (scale.value < 1.2) {
+        // Reset to normal size if zoom is too small
+        scale.value = withSpring(1);
+        focalX.value = withSpring(0);
+        focalY.value = withSpring(0);
+      }
+    },
+  });
+  
+  // Animated style for zoom
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: scale.value },
+        { translateX: focalX.value * (1 - scale.value) },
+        { translateY: focalY.value * (1 - scale.value) },
+      ],
+    };
+  });
+  
+  // Reset zoom when switching images
+  useEffect(() => {
+    scale.value = withSpring(1);
+    focalX.value = withSpring(0);
+    focalY.value = withSpring(0);
   }, [imageId]);
 
   const loadFaces = async () => {
@@ -108,14 +159,19 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Main image with face overlays */}
+        {/* Main image with face overlays and pinch-to-zoom */}
         <View style={styles.imageSection}>
-          <ImageWithFaces
-            imageUrl={getOptimizedImageUrl()}
-            faces={faces}
-            style={styles.mainImage}
-            onFacePress={handleFacePress}
-          />
+          <PinchGestureHandler onGestureEvent={pinchHandler}>
+            <Animated.View style={[styles.zoomContainer, animatedStyle]}>
+              <ImageWithFaces
+                imageUrl={getOptimizedImageUrl()}
+                faces={faces}
+                imageId={imageId}
+                style={styles.mainImage}
+                onFacePress={handleFacePress}
+              />
+            </Animated.View>
+          </PinchGestureHandler>
         </View>
 
         {/* Face thumbnails row */}
@@ -184,6 +240,12 @@ const styles = StyleSheet.create({
   imageSection: {
     height: screenHeight * 0.6, // 60% of screen height for the main image
     backgroundColor: '#000',
+    overflow: 'hidden', // Prevent zoom from going outside bounds
+  },
+  zoomContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   mainImage: {
     flex: 1,

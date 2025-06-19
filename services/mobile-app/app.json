@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
-    "reactNativeVersion": "0.79.3",
+    "jsEngine": "jsc",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -20,6 +20,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.photoplatform.mobile",
       "appleTeamId": "3QK8WU4MS5",
+      "requireFullScreen": false,
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to automatically upload and organize your photos with AI-powered analysis.",
         "NSPhotoLibraryAddUsageDescription": "This app needs access to save processed photos back to your photo library.",

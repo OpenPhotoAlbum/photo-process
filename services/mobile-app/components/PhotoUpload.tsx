@@ -60,7 +60,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
     setShowModal(false);
 
     const options: ImagePicker.ImagePickerOptions = {
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaType.Images,
       allowsEditing: false,
       quality: 0.8, // Slightly compress to reduce upload time
       exif: true, // Include EXIF data

@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Dimensions, RefreshControl, TouchableOpacity, Modal } from 'react-native';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Image } from 'expo-image';
 import { PhotoDetailScreen } from './screens/PhotoDetailScreen';
 import { SimplePhotoDetailScreen } from './screens/SimplePhotoDetailScreen';
@@ -63,11 +63,15 @@ export default function App() {
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
   const failedImagesLog = useRef<Array<{filename: string, url: string, timestamp: string}>>([]);
   
-  // Track loading images
-  const [loadingImages, setLoadingImages] = useState<Set<number>>(new Set());
+  // Track loading images with ref to avoid stale state issues
+  const loadingImagesRef = useRef<Set<number>>(new Set());
+  const [, forceUpdate] = useState({});
   
   // Filter out failed images from the photos array
-  const visiblePhotos = photos.filter(photo => !failedImages.has(photo.id));
+  const visiblePhotos = useMemo(() => 
+    photos.filter(photo => !failedImages.has(photo.id)), 
+    [photos, failedImages]
+  );
   
   const fetchPhotos = useCallback(async (reset: boolean = false) => {
     if (isLoadingMore.current && !reset) {
@@ -237,12 +241,12 @@ export default function App() {
   }, []);
 
   // Render individual photo item
-  const renderPhoto = ({ item }: { item: MediaItem }) => {
+  const renderPhoto = useCallback(({ item }: { item: MediaItem }) => {
     try {
       // Use thumbnail URL for better performance in grid view
       const imageUrl = `${API_BASE}${item.thumbnail_url || item.media_url}`;
       const hasFailed = failedImages.has(item.id);
-      const isLoading = loadingImages.has(item.id);
+      const isLoading = loadingImagesRef.current.has(item.id);
       
       // Use dominant color as background, fallback to dark gray
       const backgroundColor = item.dominant_color || '#222';
@@ -286,14 +290,13 @@ export default function App() {
             priority="normal" // Let React Native optimize loading order
             allowDownscaling={true} // Allow expo-image to optimize size
             onLoad={() => {
-              setLoadingImages(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(item.id);
-                return newSet;
-              });
+              loadingImagesRef.current.delete(item.id);
             }}
             onLoadStart={() => {
-              setLoadingImages(prev => new Set(prev).add(item.id));
+              // Only add to loading if not already loading to prevent cascade
+              if (!loadingImagesRef.current.has(item.id)) {
+                loadingImagesRef.current.add(item.id);
+              }
             }}
             onError={(error) => {
               const timestamp = new Date().toISOString();
@@ -309,11 +312,7 @@ export default function App() {
               console.log('All failed images:', failedImagesLog.current);
               
               // Remove from loading and mark as failed
-              setLoadingImages(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(item.id);
-                return newSet;
-              });
+              loadingImagesRef.current.delete(item.id);
               
               setFailedImages(prev => {
                 const newSet = new Set(prev);
@@ -332,7 +331,7 @@ export default function App() {
         </View>
       );
     }
-  };
+  }, [failedImages, API_BASE]);
 
   // Footer component for loading indicator
   const renderFooter = () => {
@@ -387,6 +386,9 @@ export default function App() {
         keyExtractor={(item) => item.id.toString()}
         numColumns={numColumns}
         contentContainerStyle={styles.gridContainer}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
         
         // Infinite scroll
         onEndReached={handleLoadMore}

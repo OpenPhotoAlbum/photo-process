@@ -3,12 +3,12 @@ import { Platform } from 'react-native';
 import { UploadAPI, UploadResponse, UploadProgress } from './UploadAPI';
 import Constants from 'expo-constants';
 
-// Conditionally import native modules
-let MediaLibrary: any = null;
-let Network: any = null;
-let TaskManager: any = null;
-let BackgroundFetch: any = null;
-let AsyncStorage: any = null;
+// Import native modules with proper error handling
+import * as MediaLibrary from 'expo-media-library';
+import * as Network from 'expo-network';
+import * as TaskManager from 'expo-task-manager';
+import * as BackgroundFetch from 'expo-background-fetch';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -71,26 +71,14 @@ class AutoUploadService {
     console.log('AutoUploadService: Running in', this.isStandalone ? 'standalone app' : 'Expo Go');
   }
 
-  // Safely initialize native modules
+  // Initialize native modules
   private async initializeModules(): Promise<void> {
     if (!this.isStandalone) {
       console.log('AutoUploadService: Expo Go detected - native modules disabled');
       return;
     }
 
-    try {
-      console.log('AutoUploadService: Loading native modules for standalone app...');
-      
-      MediaLibrary = await import('expo-media-library');
-      Network = await import('expo-network');
-      TaskManager = await import('expo-task-manager');
-      BackgroundFetch = await import('expo-background-fetch');
-      AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
-
-      console.log('AutoUploadService: Native modules loaded successfully');
-    } catch (error) {
-      console.warn('AutoUploadService: Failed to load native modules:', error);
-    }
+    console.log('AutoUploadService: Native modules ready for standalone app');
   }
 
   // Initialize permissions and monitoring
