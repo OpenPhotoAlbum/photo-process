@@ -64,6 +64,13 @@ const sidebars: SidebarsConfig = {
         'mobile-app/roadmap',
       ],
     },
+    {
+      type: 'category',
+      label: '📊 Monitoring & Logs',
+      items: [
+        'monitoring/kibana-queries',
+      ],
+    },
   ],
 
   // API Reference sidebar

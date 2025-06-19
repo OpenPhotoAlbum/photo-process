@@ -7,10 +7,15 @@ echo "=========================================="
 echo "📡 Creating Docker network..."
 docker network create photo-platform 2>/dev/null || echo "Network already exists"
 
-# Set proper permissions for Elasticsearch
+# Set proper permissions for Elasticsearch and Filebeat
 echo "🔒 Setting up permissions..."
 sudo mkdir -p elasticsearch_data
 sudo chown -R 1000:1000 elasticsearch_data
+
+# Fix Filebeat config ownership (must be owned by root)
+echo "🔧 Fixing Filebeat config permissions..."
+sudo chown root:root config/filebeat.yml
+sudo chmod 600 config/filebeat.yml
 
 # Start the logging stack
 echo "🚀 Starting Elasticsearch, Kibana, and Filebeat..."

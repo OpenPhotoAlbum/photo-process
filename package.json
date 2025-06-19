@@ -56,7 +56,14 @@
     "docs:dev": "cd docs-site && npm start",
     "docs:build": "cd docs-site && npm run build",
     "docs:serve": "cd docs-site && npm run serve",
-    "docs:deploy": "cd docs-site && npm run deploy:github"
+    "docs:deploy": "cd docs-site && npm run deploy:github",
+    "logs:setup": "./infrastructure/logging/setup-logging.sh",
+    "logs:start": "cd infrastructure/logging && docker-compose -f docker-compose.logging.yml up -d elasticsearch kibana",
+    "logs:stop": "cd infrastructure/logging && docker-compose -f docker-compose.logging.yml down",
+    "logs:restart": "npm run logs:stop && npm run logs:start",
+    "logs:status": "cd infrastructure/logging && docker-compose -f docker-compose.logging.yml ps",
+    "logs:ship": "./infrastructure/logging/ship-logs.sh",
+    "logs:kibana": "echo 'Opening Kibana at http://localhost:5601' && (command -v open >/dev/null 2>&1 && open http://localhost:5601) || (command -v xdg-open >/dev/null 2>&1 && xdg-open http://localhost:5601) || echo 'Manually open: http://localhost:5601'"
   },
   "dependencies": {
     "chalk": "^5.4.1",
