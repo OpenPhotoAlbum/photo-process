@@ -559,8 +559,8 @@ export const GalleryRoutes = {
     async deleteImage(req: Request, res: Response) {
         try {
             const imageId = parseInt(req.params.id);
-            const reason = req.body.reason || 'User deleted via mobile app';
-            const deletedBy = req.body.deletedBy || 'mobile-user';
+            const reason = (req.body && req.body.reason) || 'User deleted via mobile app';
+            const deletedBy = (req.body && req.body.deletedBy) || 'mobile-user';
             
             if (isNaN(imageId)) {
                 return res.status(400).json({ error: 'Invalid image ID' });
@@ -595,9 +595,14 @@ export const GalleryRoutes = {
                 canRestore: true
             });
             
-        } catch (error) {
-            console.error('Error deleting image:', error);
-            res.status(500).json({ error: 'Failed to delete image' });
+        } catch (error: any) {
+            console.error('Error deleting image:', {
+                error: error?.message,
+                stack: error?.stack,
+                code: error?.code,
+                imageId: req.params.id
+            });
+            res.status(500).json({ error: 'Failed to delete image', details: error?.message });
         }
     },
     
@@ -638,8 +643,8 @@ export const GalleryRoutes = {
                 pagination: {
                     page,
                     limit,
-                    total: totalCount?.count || 0,
-                    hasNext: (page * limit) < (totalCount?.count || 0)
+                    total: parseInt(totalCount?.count as string) || 0,
+                    hasNext: (page * limit) < (parseInt(totalCount?.count as string) || 0)
                 }
             });
             

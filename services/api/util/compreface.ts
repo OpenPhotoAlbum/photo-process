@@ -349,36 +349,21 @@ export const extractFaces = async (imagepath: string, dest: string): Promise<Rec
     const imageMetadata = await sharp(imagepath).metadata();
     const { width: rawWidth, height: rawHeight, orientation = 1 } = imageMetadata;
     
-    // Determine if image needs rotation based on EXIF orientation
-    const needsRotation = orientation >= 5 && orientation <= 8;
-    const displayWidth = needsRotation ? rawHeight : rawWidth;
-    const displayHeight = needsRotation ? rawWidth : rawHeight;
-    
-    logger.info(`[EXTRACT FACES] Image ${imagepath}: raw(${rawWidth}x${rawHeight}) display(${displayWidth}x${displayHeight}) orientation(${orientation})`);
+    logger.info(`[EXTRACT FACES] Image ${imagepath}: raw(${rawWidth}x${rawHeight}) orientation(${orientation})`);
     
     let i = 0;
     const faceData: Record<string, object> = {};
     for (const res in result) {
         const { box } = result[res];
         
-        // CompreFace returns coordinates based on display orientation
-        // Convert them to raw file coordinates for Sharp extraction
-        let extractCoords;
-        if (needsRotation) {
-            // Transform display coordinates to raw file coordinates based on orientation
-            extractCoords = transformCoordinatesForOrientation(
-                box.x_min, box.y_min, box.x_max, box.y_max,
-                displayWidth, displayHeight, orientation
-            );
-        } else {
-            // No rotation needed, use coordinates as-is
-            extractCoords = {
-                left: box.x_min,
-                top: box.y_min,
-                width: box.x_max - box.x_min,
-                height: box.y_max - box.y_min,
-            };
-        }
+        // CompreFace returns coordinates based on RAW image orientation (ignores EXIF)
+        // Use coordinates directly without transformation
+        const extractCoords = {
+            left: box.x_min,
+            top: box.y_min,
+            width: box.x_max - box.x_min,
+            height: box.y_max - box.y_min,
+        };
         
         logger.info(`[EXTRACT FACES] Face ${i}: original box(${box.x_min},${box.y_min},${box.x_max},${box.y_max}) -> extract(${extractCoords.left},${extractCoords.top},${extractCoords.width},${extractCoords.height})`);
         
