@@ -162,7 +162,7 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
                       closeMenu();
                       setTimeout(() => {
                         onFilterPress?.();
-                      }, 100);
+                      }, 350); // Increased delay to ensure menu is fully closed
                     }}
                   >
                     <Ionicons name="funnel" size={20} color="#007AFF" />
