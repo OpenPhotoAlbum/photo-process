@@ -17,7 +17,56 @@ The Training Management system handles the process of training CompreFace's face
 - **Continuous Learning** - Retrain as new faces are identified
 - **Performance Monitoring** - Track training success and recognition confidence
 
-## Training Queue Operations
+## Quick Training (Mobile Compatible)
+
+### `POST /compreface/train`
+**Description**: Train a person's face recognition model instantly (mobile app compatible)
+
+**Request Body**:
+```json
+{
+  "personId": 123
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Training completed for John Doe",
+  "person": {
+    "id": 123,
+    "name": "John Doe",
+    "recognition_status": "trained",
+    "training_face_count": 8,
+    "last_trained_at": "2025-06-20T19:32:37.000Z"
+  }
+}
+```
+
+**Requirements**:
+- Person must have at least 2 assigned faces
+- CompreFace service must be accessible
+- Faces must be synced to CompreFace
+
+**Error Examples**:
+```json
+{
+  "success": false,
+  "error": "Person not found with ID: 999"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Person needs at least 2 faces for training. Currently has: 1"
+}
+```
+
+---
+
+## Advanced Training Queue Operations
 
 ### `POST /api/persons/:id/queue-training`
 **Description**: Queue a person for CompreFace training

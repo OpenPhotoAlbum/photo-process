@@ -488,6 +488,7 @@ The README.md is the first thing users see and must always reflect the current s
 - Include impact, performance metrics, and technical details in achievements
 - Use ACHIEVEMENTS.md to demonstrate platform progress and capabilities
 - Update achievement statistics regularly (files processed, performance improvements, etc.)
+- Make frequent commits as you complete tasks
 
 **Pattern**: TODO.md → ACHIEVEMENTS.md workflow keeps documentation clean and showcases progress
 

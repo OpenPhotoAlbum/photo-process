@@ -189,13 +189,60 @@ export const deleteFaceFromSubject = async (faceImagePath: string): Promise<any>
         const result = await response.json();
         logger.info(`Found ${result.faces?.length || 0} faces in CompreFace to search through`);
 
-        // For now, we'll implement a workaround since CompreFace doesn't store image paths
-        // We'll need to delete faces by subject and re-upload the remaining ones
-        // This is not ideal but ensures consistency
-        logger.warn(`CompreFace face deletion not fully implemented for: ${faceImagePath}`);
-        logger.warn('Consider using cleanup-orphaned function to maintain consistency');
+        // Since CompreFace doesn't store original image paths, we need to find faces by image_id
+        // which is embedded in the face filename
+        const faceBasename = path.basename(faceImagePath, path.extname(faceImagePath));
         
-        return { success: true, note: 'Face deletion tracked, use cleanup for full sync' };
+        // Extract image identifier from face filename (format: imagename__face_N)
+        const imageIdentifierMatch = faceBasename.match(/(.+)__face_\d+$/);
+        if (!imageIdentifierMatch) {
+            logger.warn(`Cannot extract image identifier from face filename: ${faceImagePath}`);
+            return { success: false, error: 'Invalid face filename format' };
+        }
+        
+        const imageIdentifier = imageIdentifierMatch[1];
+        logger.info(`Looking for faces from image: ${imageIdentifier}`);
+        
+        // Find faces that belong to the same image (have the same image identifier)
+        const facesToDelete = result.faces?.filter((face: any) => 
+            face.image_id && face.image_id.includes(imageIdentifier)
+        ) || [];
+        
+        if (facesToDelete.length === 0) {
+            logger.warn(`No matching faces found in CompreFace for: ${faceImagePath}`);
+            return { success: true, note: 'No matching faces found in CompreFace' };
+        }
+        
+        // Delete each matching face by its UUID
+        let deletedCount = 0;
+        for (const face of facesToDelete) {
+            try {
+                const deleteUrl = `${COMPREFACE_API_URL}/recognition/faces/${face.image_id}`;
+                const deleteResponse = await fetch(deleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'x-api-key': ComprefaceKeys.Recognize,
+                    }
+                });
+                
+                if (deleteResponse.ok) {
+                    deletedCount++;
+                    logger.info(`Deleted face ${face.image_id} from CompreFace`);
+                } else {
+                    logger.warn(`Failed to delete face ${face.image_id}: ${deleteResponse.status}`);
+                }
+            } catch (faceError) {
+                logger.warn(`Error deleting individual face ${face.image_id}: ${faceError}`);
+            }
+        }
+        
+        logger.info(`Deleted ${deletedCount} out of ${facesToDelete.length} matching faces from CompreFace`);
+        return { 
+            success: deletedCount > 0, 
+            deletedCount, 
+            totalMatching: facesToDelete.length 
+        };
+        
     } catch (error) {
         logger.error(`Error deleting face from subject: ${error}`);
         throw error;

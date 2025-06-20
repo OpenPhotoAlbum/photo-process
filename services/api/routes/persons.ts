@@ -67,30 +67,9 @@ export const getAllPersons = async (req: Request, res: Response) => {
     }
 };
 
-// Get person by ID with face count
-export const getPersonById = asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const personId = validatePersonId(id);
-    
-    const person = await PersonRepository.getPersonWithFaceCount(personId);
-    
-    if (!person) {
-        throw new AppError('Person not found', 404);
-    }
-
-    // Get faces for this person
-    const faces = await FaceRepository.getFacesByPerson(personId);
-    
-    res.json({ 
-        person: {
-            ...person,
-            faces
-        }
-    });
-});
-
 // Get all images for a person (combining face detection and Google tags)
 export const getPersonImages = asyncHandler(async (req: Request, res: Response) => {
+    console.log('BANG');
     const { id } = req.params;
     const { limit = 50, offset = 0, source = 'all', includeMetadata = true } = req.query;
     
@@ -295,6 +274,28 @@ export const getPersonImages = asyncHandler(async (req: Request, res: Response) 
     });
 });
 
+// Get person by ID with face count
+export const getPersonById = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const personId = validatePersonId(id);
+    
+    const person = await PersonRepository.getPersonWithFaceCount(personId);
+    
+    if (!person) {
+        throw new AppError('Person not found', 404);
+    }
+
+    // Get faces for this person
+    const faces = await FaceRepository.getFacesByPerson(personId);
+    
+    res.json({ 
+        person: {
+            ...person,
+            faces
+        }
+    });
+});
+
 // Create new person
 export const createPerson = asyncHandler(async (req: Request, res: Response) => {
     const { name, notes } = req.body;
@@ -406,18 +407,50 @@ export const assignFaceToPerson = asyncHandler(async (req: Request, res: Respons
     // Update person face count
     await PersonRepository.updateFaceCount(personId);
 
-    // Add face to CompreFace for training (async, non-blocking)
-    if (person.compreface_subject_id && face.face_image_path) {
-        // Don't await this - run in background
-        const fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
-        console.log(`Adding face to CompreFace: ${person.compreface_subject_id}, path: ${fullFacePath}`);
-        addFaceToSubject(person.compreface_subject_id, fullFacePath)
-            .then(() => {
-                console.log('Successfully added face to CompreFace');
-            })
-            .catch((comprefaceError) => {
-                console.warn('CompreFace integration failed:', comprefaceError);
-            });
+    // Ensure person has CompreFace subject and add face for training (async, non-blocking)
+    if (face.face_image_path) {
+        // Run CompreFace operations in background
+        (async () => {
+            try {
+                let comprefaceSubjectId = person.compreface_subject_id;
+                
+                // Create CompreFace subject if missing
+                if (!comprefaceSubjectId) {
+                    req.logger.info(`Creating missing CompreFace subject for person: ${person.name}`);
+                    comprefaceSubjectId = await createComprefaceSubject(person.name);
+                    
+                    // Update person in database with new subject ID
+                    await PersonRepository.updatePerson(personId, {
+                        compreface_subject_id: comprefaceSubjectId
+                    });
+                    req.logger.info(`Updated person ${person.name} with CompreFace subject ID: ${comprefaceSubjectId}`);
+                }
+                
+                // Add face to CompreFace for training
+                if (!face.face_image_path) {
+                    req.logger.warn('Face has no image path, skipping CompreFace sync');
+                    return;
+                }
+                
+                // Handle both absolute and relative paths
+                let fullFacePath = face.face_image_path;
+                if (!fullFacePath.startsWith('/')) {
+                    fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
+                }
+                req.logger.info(`Adding face to CompreFace: ${comprefaceSubjectId}, path: ${fullFacePath}`);
+                await addFaceToSubject(comprefaceSubjectId, fullFacePath);
+                
+                // Mark face as synced to CompreFace
+                await db('detected_faces')
+                    .where('id', faceId)
+                    .update({ compreface_synced: true });
+                
+                req.logger.info('Successfully added face to CompreFace and marked as synced');
+                
+            } catch (comprefaceError) {
+                req.logger.warn('CompreFace integration failed:', comprefaceError);
+            }
+        })();
     }
 
     const updatedPerson = await PersonRepository.getPersonWithFaceCount(personId);
@@ -442,13 +475,22 @@ export const removeFaceFromPerson = async (req: Request, res: Response) => {
         }
 
         const personId = face.person_id;
+        let person = null;
         
+        if (personId) {
+            person = await PersonRepository.getPersonWithFaceCount(personId);
+        }
+        
+        req.logger.info(`Removing face ${faceId} from person ${person?.name || 'unknown'}`);
+
         // Remove from CompreFace if applicable
-        if (face.face_image_path) {
+        if (face.face_image_path && person?.compreface_subject_id) {
             try {
-                await deleteFaceFromSubject(face.face_image_path);
+                const deletionResult = await deleteFaceFromSubject(face.face_image_path);
+                req.logger.info(`CompreFace face deletion result:`, deletionResult);
             } catch (comprefaceError) {
-                console.warn('CompreFace removal failed:', comprefaceError);
+                req.logger.warn('CompreFace removal failed:', comprefaceError);
+                // Continue with database removal even if CompreFace fails
             }
         }
 
@@ -460,9 +502,52 @@ export const removeFaceFromPerson = async (req: Request, res: Response) => {
             await PersonRepository.updateFaceCount(personId);
         }
 
-        res.json({ message: 'Face removed from person successfully' });
+        // If person still has faces, retrain their model in the background
+        if (person && person.compreface_subject_id) {
+            (async () => {
+                try {
+                    const updatedPerson = await PersonRepository.getPersonWithFaceCount(personId);
+                    if (updatedPerson && updatedPerson.face_count > 0) {
+                        req.logger.info(`Retraining ${person.name} after face removal (${updatedPerson.face_count} faces remaining)`);
+                        
+                        // Get remaining faces for this person
+                        const remainingFaces = await FaceRepository.getFacesByPerson(personId);
+                        const facePaths = remainingFaces
+                            .filter(f => f.face_image_path)
+                            .map(f => `${configManager.getStorage().processedDir}/${f.face_image_path}`);
+                        
+                        if (facePaths.length > 0) {
+                            // Re-upload remaining faces to CompreFace for training
+                            await addFacesToSubjectBatch(person.compreface_subject_id, facePaths, 2);
+                            req.logger.info(`Retraining completed for ${person.name} with ${facePaths.length} faces`);
+                            
+                            // Update person status
+                            await PersonRepository.updatePerson(personId, {
+                                recognition_status: 'trained',
+                                last_trained_at: new Date()
+                            });
+                        } else {
+                            // No faces left, mark as untrained
+                            await PersonRepository.updatePerson(personId, {
+                                recognition_status: 'untrained'
+                            });
+                        }
+                    }
+                } catch (retrainError) {
+                    req.logger.error(`Failed to retrain person ${person.name} after face removal:`, retrainError);
+                }
+            })();
+        }
+
+        const result = {
+            message: 'Face removed from person successfully',
+            personName: person?.name,
+            remainingFaceCount: person ? await db('detected_faces').where('person_id', personId).count('* as count').first().then(r => r?.count || 0) : 0
+        };
+
+        res.json(result);
     } catch (error) {
-        console.error('Error removing face from person:', error);
+        req.logger.error('Error removing face from person:', error);
         res.status(500).json({ error: 'Failed to remove face from person' });
     }
 };
@@ -2173,5 +2258,211 @@ export const rebuildClusters = asyncHandler(async (req: Request, res: Response) 
         message: 'Clusters rebuilt successfully',
         result
     });
+});
+
+// Sync all persons to CompreFace subjects
+export const syncPersonsToCompreFace = asyncHandler(async (req: Request, res: Response) => {
+    req.logger.info('Starting person-to-CompreFace synchronization');
+    
+    const result = await ConsistencyManager.syncPersonsToCompreFace();
+    
+    res.json({
+        success: true,
+        message: 'Person synchronization completed',
+        ...result
+    });
+});
+
+// Sync all existing face assignments to CompreFace
+export const syncExistingFacesToCompreFace = asyncHandler(async (req: Request, res: Response) => {
+    req.logger.info('Starting sync of existing face assignments to CompreFace');
+    
+    const result = await ConsistencyManager.syncExistingFacesToCompreFace();
+    
+    res.json({
+        success: true,
+        message: 'Existing faces synchronization completed',
+        ...result
+    });
+});
+
+// Simple CompreFace training for a person
+export const trainPersonModel = asyncHandler(async (req: Request, res: Response) => {
+    // Support both URL param (for API) and body param (for mobile app)
+    const id = req.params.id || req.body.personId;
+    const personId = validatePersonId(id);
+    
+    const person = await PersonRepository.getPersonWithFaceCount(personId);
+    if (!person) {
+        throw new AppError('Person not found', 404);
+    }
+    
+    if (!person.compreface_subject_id) {
+        throw new AppError('Person has no CompreFace subject ID', 400);
+    }
+    
+    if (person.face_count < 2) {
+        throw new AppError(`Person needs at least 2 faces to train. Currently has ${person.face_count} faces.`, 400);
+    }
+    
+    req.logger.info(`Starting training for person: ${person.name} (${person.face_count} faces)`);
+    
+    try {
+        // Update person status to training
+        await PersonRepository.updatePerson(personId, {
+            recognition_status: 'training',
+            last_trained_at: new Date()
+        });
+        
+        // CompreFace trains automatically when faces are added to subjects
+        // The model is ready immediately after adding faces
+        // We just need to mark the person as trained
+        await PersonRepository.updatePerson(personId, {
+            recognition_status: 'trained',
+            training_face_count: person.face_count
+        });
+        
+        req.logger.info(`Training completed for person: ${person.name}`);
+        
+        const updatedPerson = await PersonRepository.getPersonWithFaceCount(personId);
+        
+        res.json({
+            success: true,
+            message: `Training completed for ${person.name}`,
+            person: updatedPerson
+        });
+        
+    } catch (error) {
+        req.logger.error(`Training failed for person ${person.name}:`, error);
+        
+        await PersonRepository.updatePerson(personId, {
+            recognition_status: 'failed'
+        });
+        
+        throw new AppError('Training failed', 500);
+    }
+});
+
+// Auto-recognize faces in new images using trained models
+export const autoRecognizeFaces = asyncHandler(async (req: Request, res: Response) => {
+    const { imageId } = req.body;
+    
+    if (!imageId) {
+        throw new AppError('Image ID is required', 400);
+    }
+    
+    req.logger.info(`Starting auto-recognition for image: ${imageId}`);
+    
+    try {
+        // Get image details
+        const image = await db('images').where('id', imageId).first();
+        if (!image) {
+            throw new AppError('Image not found', 404);
+        }
+        
+        // Get unassigned faces for this image
+        const unassignedFaces = await db('detected_faces')
+            .where('image_id', imageId)
+            .whereNull('person_id')
+            .where('detection_confidence', '>=', 0.8); // Only high-confidence faces
+            
+        if (unassignedFaces.length === 0) {
+            req.logger.info(`No unassigned faces found for image ${imageId}`);
+            return res.json({
+                success: true,
+                message: 'No unassigned faces to recognize',
+                assignedFaces: 0
+            });
+        }
+        
+        req.logger.info(`Found ${unassignedFaces.length} unassigned faces for recognition`);
+        
+        // Use CompreFace recognition on the full image
+        let imagePath = image.original_path;
+        if (image.relative_media_path) {
+            // Use processed image path if available
+            imagePath = `${configManager.getStorage().processedDir}/media/${image.relative_media_path}`;
+        }
+        
+        const recognitionResult = await recognizeFacesFromImage(imagePath);
+        
+        let assignedCount = 0;
+        
+        if (recognitionResult && recognitionResult.result) {
+            for (const [index, result] of recognitionResult.result.entries()) {
+                if (result.subjects && result.subjects.length > 0) {
+                    const bestMatch = result.subjects[0];
+                    const confidence = bestMatch.similarity;
+                    
+                    if (confidence >= 0.7) { // 70% confidence threshold
+                        // Find the corresponding face in our database by matching coordinates
+                        const box = result.box;
+                        const matchingFace = unassignedFaces.find(face => {
+                            const tolerance = 50; // pixel tolerance
+                            return Math.abs(face.x_min - box.x_min) < tolerance &&
+                                   Math.abs(face.y_min - box.y_min) < tolerance &&
+                                   Math.abs(face.x_max - box.x_max) < tolerance &&
+                                   Math.abs(face.y_max - box.y_max) < tolerance;
+                        });
+                        
+                        if (matchingFace) {
+                            // Find the person by CompreFace subject ID
+                            const person = await db('persons')
+                                .where('compreface_subject_id', bestMatch.subject)
+                                .first();
+                                
+                            if (person) {
+                                // Assign face to person
+                                await FaceRepository.assignFaceToPerson(
+                                    matchingFace.id, 
+                                    person.id, 
+                                    confidence, 
+                                    'auto_recognition'
+                                );
+                                
+                                // Mark face as synced since it came from CompreFace
+                                await db('detected_faces')
+                                    .where('id', matchingFace.id)
+                                    .update({ 
+                                        compreface_synced: true,
+                                        assigned_at: new Date(),
+                                        assigned_by: 'auto_recognition'
+                                    });
+                                
+                                assignedCount++;
+                                req.logger.info(`Auto-assigned face ${matchingFace.id} to ${person.name} (${(confidence * 100).toFixed(1)}% confidence)`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Update face counts for affected persons
+        if (assignedCount > 0) {
+            const affectedPersonIds = await db('detected_faces')
+                .distinct('person_id')
+                .where('image_id', imageId)
+                .whereNotNull('person_id')
+                .pluck('person_id');
+                
+            for (const personId of affectedPersonIds) {
+                await PersonRepository.updateFaceCount(personId);
+            }
+        }
+        
+        req.logger.info(`Auto-recognition completed: ${assignedCount} faces assigned`);
+        
+        res.json({
+            success: true,
+            message: `Auto-recognition completed: ${assignedCount} faces assigned`,
+            assignedFaces: assignedCount,
+            totalFaces: unassignedFaces.length
+        });
+        
+    } catch (error) {
+        req.logger.error(`Auto-recognition failed for image ${imageId}:`, error);
+        throw new AppError('Auto-recognition failed', 500);
+    }
 });
 

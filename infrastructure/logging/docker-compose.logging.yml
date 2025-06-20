@@ -64,3 +64,4 @@ volumes:
 networks:
   photo-platform:
     external: true
+    name: photo-process_photo-platform

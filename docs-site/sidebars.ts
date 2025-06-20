@@ -29,6 +29,7 @@ const sidebars: SidebarsConfig = {
       label: '📖 User Guide',
       items: [
         'user-guide/photo-management',
+        'user-guide/face-recognition',
       ],
     },
     {

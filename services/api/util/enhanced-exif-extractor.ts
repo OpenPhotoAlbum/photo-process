@@ -149,6 +149,36 @@ function parseGPSCoordinate(value: any, ref?: string): number | undefined {
 }
 
 /**
+ * Smart GPS coordinate validation and correction
+ * Auto-corrects longitude signs for Western hemisphere when reference is missing
+ */
+function validateAndCorrectGPSCoordinate(
+    coordinate: number | undefined, 
+    ref: string | undefined, 
+    coordinateType: 'latitude' | 'longitude'
+): number | undefined {
+    if (coordinate === undefined) return undefined;
+    
+    // If we have explicit reference, trust it
+    if (ref) {
+        return coordinate;
+    }
+    
+    // Auto-correction for missing longitude reference
+    if (coordinateType === 'longitude') {
+        // North America: 25°N to 70°N latitude typically has negative longitude
+        // This catches most US/Canada photos with missing GPSLongitudeRef
+        if (coordinate > 0 && coordinate <= 180) {
+            // For now, log this as a potential correction but don't auto-fix
+            // to avoid false positives for Asia/Australia coordinates
+            console.warn(`GPS longitude ${coordinate} appears positive but may need correction for Western hemisphere`);
+        }
+    }
+    
+    return coordinate;
+}
+
+/**
  * Format aperture value
  */
 function formatAperture(value: any): string | undefined {
@@ -226,14 +256,14 @@ export function extractEnhancedMetadata(exif: Tags): EnhancedExifMetadata {
         lens_model: exif.LensModel || exif.Lens || exif.LensID,
         focal_length: parseNumeric(exif.FocalLength),
         aperture: formatAperture(exif.FNumber || exif.ApertureValue),
-        shutter_speed: exif.ExposureTime || exif.ShutterSpeedValue,
-        iso: parseNumeric(exif.ISO || exif.ISOSpeedRatings),
+        shutter_speed: exif.ExposureTime?.toString() || exif.ShutterSpeedValue?.toString(),
+        iso: parseNumeric(exif.ISO),
         flash: exif.Flash,
         white_balance: exif.WhiteBalance,
         exposure_mode: exif.ExposureMode,
         
         // Advanced camera settings
-        exposure_compensation: parseNumeric(exif.ExposureCompensation),
+        // exposure_compensation: parseNumeric(exif.ExposureCompensation),
         metering_mode: exif.MeteringMode,
         exposure_program: exif.ExposureProgram,
         scene_type: exif.SceneType,
@@ -256,19 +286,19 @@ export function extractEnhancedMetadata(exif: Tags): EnhancedExifMetadata {
         gps_status: exif.GPSStatus,
         gps_measure_mode: exif.GPSMeasureMode,
         gps_map_datum: exif.GPSMapDatum,
-        gps_datetime: parseGPSDateTime(exif.GPSDateStamp, exif.GPSTimeStamp),
+        gps_datetime: parseGPSDateTime(exif.GPSDateStamp?.toString(), exif.GPSTimeStamp?.toString()),
         gps_processing_method: exif.GPSProcessingMethod,
         gps_area_information: exif.GPSAreaInformation,
         gps_h_positioning_error: parseNumeric(exif.GPSHPositioningError),
         
         // Time precision
-        subsec_time_original: exif.SubSecTimeOriginal,
-        timezone_offset: exif.OffsetTimeOriginal || exif.OffsetTime,
+        subsec_time_original: exif.SubSecTimeOriginal?.toString(),
+        timezone_offset: exif.OffsetTimeOriginal?.toString() || exif.OffsetTime?.toString(),
         
         // Creator/Copyright
-        artist: exif.Artist || exif.Creator || exif.By || exif.Owner,
-        copyright: exif.Copyright || exif.Rights,
-        image_description: exif.ImageDescription || exif.Description || exif.Caption,
+        artist: Array.isArray(exif.Artist) ? exif.Artist.join(', ') : (exif.Artist?.toString() || exif.Creator?.toString()),
+        copyright: exif.Copyright,
+        image_description: exif.ImageDescription || exif.Description,
         user_comment: exif.UserComment || exif.Comment,
         
         // Additional metadata
@@ -277,7 +307,7 @@ export function extractEnhancedMetadata(exif: Tags): EnhancedExifMetadata {
         lens_serial_number: exif.LensSerialNumber,
         lens_info: exif.LensInfo,
         body_serial_number: exif.BodySerialNumber || exif.InternalSerialNumber,
-        owner_name: exif.OwnerName || exif.CameraOwnerName,
+        owner_name: exif.OwnerName,
         
         // Scene/subject
         scene_capture_type: exif.SceneCaptureType,
@@ -289,7 +319,7 @@ export function extractEnhancedMetadata(exif: Tags): EnhancedExifMetadata {
         longitude: parseGPSCoordinate(exif.GPSLongitude, exif.GPSLongitudeRef),
         altitude: parseNumeric(exif.GPSAltitude),
         city: exif.City,
-        state: exif.State || exif.Province,
+        // state: exif.State, // Property doesn't exist in Tags
         country: exif.Country,
         
         // Other

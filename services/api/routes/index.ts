@@ -8,3 +8,4 @@ export * as Persons from './persons';
 export * as Junk from './junk';
 export * as Process from './process';
 export * as SmartAlbums from './smart-albums';
+export { default as Albums } from './albums';

@@ -10,7 +10,7 @@ import { detectAstrophotography } from './astrophotography-detector';
 import { Logger } from '../logger';
 import { configManager } from './config-manager';
 import { HashManager, HashFileInfo } from './hash-manager';
-import { ImageRepository, MetadataRepository, ObjectRepository, FaceRepository } from '../models/database';
+import { ImageRepository, MetadataRepository, ObjectRepository, FaceRepository, db } from '../models/database';
 import { SmartAlbumEngine } from './smart-album-engine';
 import { GeolocationService } from './geolocation';
 import { extractBestDate } from './exif-date-extractor';
@@ -501,6 +501,85 @@ export const storeImageDataHashed = async (
                 logger.error(`[DB - FACE] Failed to store face data for image ID ${imageId}:`, error);
                 // Continue processing other faces even if one fails
             }
+        }
+        
+        // Auto-recognize faces using trained models
+        try {
+            logger.info(`Running auto-recognition for image ${imageId}`);
+            const { recognizeFacesFromImage } = await import('./compreface');
+            
+            // Get the processed image path for recognition
+            const imagePath = `${configManager.getStorage().processedDir}/media/${fileInfo.relativePath}`;
+            
+            // Get unassigned faces for this image
+            const unassignedFaces = await db('detected_faces')
+                .where('image_id', imageId)
+                .whereNull('person_id')
+                .where('detection_confidence', '>=', 0.8);
+                
+            if (unassignedFaces.length > 0) {
+                logger.info(`Found ${unassignedFaces.length} unassigned faces for auto-recognition`);
+                
+                const recognitionResult = await recognizeFacesFromImage(imagePath);
+                let assignedCount = 0;
+                
+                if (recognitionResult && recognitionResult.result) {
+                    for (const result of recognitionResult.result) {
+                        if (result.subjects && result.subjects.length > 0) {
+                            const bestMatch = result.subjects[0];
+                            const confidence = bestMatch.similarity;
+                            
+                            if (confidence >= 0.7) {
+                                // Find matching face by coordinates
+                                const box = result.box;
+                                const matchingFace = unassignedFaces.find(face => {
+                                    const tolerance = 50;
+                                    return Math.abs(face.x_min - box.x_min) < tolerance &&
+                                           Math.abs(face.y_min - box.y_min) < tolerance &&
+                                           Math.abs(face.x_max - box.x_max) < tolerance &&
+                                           Math.abs(face.y_max - box.y_max) < tolerance;
+                                });
+                                
+                                if (matchingFace) {
+                                    // Find person by CompreFace subject ID
+                                    const person = await db('persons')
+                                        .where('compreface_subject_id', bestMatch.subject)
+                                        .first();
+                                        
+                                    if (person) {
+                                        await FaceRepository.assignFaceToPerson(
+                                            matchingFace.id, 
+                                            person.id, 
+                                            confidence, 
+                                            'auto_recognition'
+                                        );
+                                        
+                                        await db('detected_faces')
+                                            .where('id', matchingFace.id)
+                                            .update({ 
+                                                compreface_synced: true,
+                                                assigned_at: new Date(),
+                                                assigned_by: 'auto_recognition'
+                                            });
+                                        
+                                        assignedCount++;
+                                        logger.info(`Auto-assigned face ${matchingFace.id} to ${person.name} (${(confidence * 100).toFixed(1)}% confidence)`);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (assignedCount > 0) {
+                    logger.info(`Auto-recognition completed: ${assignedCount}/${unassignedFaces.length} faces assigned`);
+                } else {
+                    logger.info(`Auto-recognition completed: no faces could be matched with sufficient confidence`);
+                }
+            }
+        } catch (autoRecognitionError) {
+            logger.warn(`Auto-recognition failed for image ${imageId}:`, autoRecognitionError);
+            // Don't fail the entire processing pipeline if auto-recognition fails
         }
     }
 

@@ -126,6 +126,10 @@ export class StructuredLogger {
             }
         };
         
+        // Skip Elasticsearch setup for now - will be added after server starts
+        let sharedEsClient: any = null;
+        let elasticsearchAvailable = false;
+
         // Create logger instances
         Object.entries(logConfigs).forEach(([name, config]) => {
             const transports: winston.transport[] = [];
@@ -143,6 +147,8 @@ export class StructuredLogger {
                     winston.format.json()
                 )
             }));
+            
+            // Skip Elasticsearch transport during initialization
             
             // Add console transport in development
             if (this.isDevelopment) {
@@ -363,6 +369,55 @@ export class StructuredLogger {
         this.info(`Batch processing completed: ${summary.successful}/${summary.totalImages} successful`, summary);
     }
     
+    // Set up Elasticsearch logging after server starts
+    async setupElasticsearchLogging() {
+        if (process.env.ENABLE_ELASTICSEARCH_LOGGING !== 'true') {
+            return;
+        }
+        
+        try {
+            const { Client } = require('@elastic/elasticsearch');
+            const { ElasticsearchTransport } = require('winston-elasticsearch');
+            
+            const esClient = new Client({
+                node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
+                auth: process.env.ELASTICSEARCH_AUTH ? {
+                    username: process.env.ELASTICSEARCH_USER || '',
+                    password: process.env.ELASTICSEARCH_PASS || ''
+                } : undefined,
+                maxRetries: 3,
+                requestTimeout: 5000,
+                pingTimeout: 3000
+            });
+            
+            // Test connection
+            await esClient.ping();
+            
+            // Add Elasticsearch transport to all loggers
+            this.loggers.forEach((logger, name) => {
+                const esTransport = new ElasticsearchTransport({
+                    level: 'info',
+                    client: esClient,
+                    index: `photo-platform-${name}`,
+                    transformer: (logData: any) => ({
+                        '@timestamp': new Date().toISOString(),
+                        category: name,
+                        level: logData.level,
+                        message: logData.message,
+                        ...logData.meta
+                    })
+                });
+                
+                logger.add(esTransport);
+            });
+            
+            console.log('✅ Elasticsearch logging enabled for all loggers');
+            
+        } catch (error: any) {
+            console.warn('❌ Failed to setup Elasticsearch logging:', error.message);
+        }
+    }
+    
     // Helper for operation timing
     startOperation(name: string): { end: (meta?: any) => void } {
         const start = Date.now();
@@ -379,7 +434,7 @@ export class StructuredLogger {
 export const logger = new StructuredLogger();
 
 // Also export a console-compatible interface for gradual migration
-export const console = {
+export const consoleLogger = {
     log: (...args: any[]) => logger.get('console').info(args.join(' ')),
     error: (...args: any[]) => logger.error(args.join(' ')),
     warn: (...args: any[]) => logger.warn(args.join(' ')),

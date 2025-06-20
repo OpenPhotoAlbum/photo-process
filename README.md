@@ -50,6 +50,7 @@ curl http://localhost:8001  # CompreFace UI
 - ✅ **AI Services** - CompreFace face recognition + YOLO object detection fully integrated
 - ✅ **Worker Threads** - Non-blocking background processing for image analysis
 - ✅ **FileTracker System** - Database-driven file discovery (8,358+ files tracked)
+- ✅ **Auto-Scanner** - Continuous background processing of pending photos
 - ✅ **Docker Setup** - Complete container orchestration with development workflow
 - ✅ **Tools & Testing** - Comprehensive development toolkit with 93 passing tests
 - 🔄 **Frontend** - React app ready to be built in `services/web-app/`
@@ -77,9 +78,10 @@ npm run db:migrate             # Run migrations
 npm run db:seed               # Seed database
 npm run db:create-migration   # Create new migration
 
-# Photo Processing  
-curl http://localhost:9000/scan?limit=10        # Start scan
-curl http://localhost:9000/scan/status          # Check status
+# Photo Processing (Auto-Scanner runs automatically)
+curl http://localhost:9000/scan/status          # Check progress
+curl http://localhost:9000/scan?limit=10        # Manual scan (optional)
+docker logs photo-auto-scanner -f               # View auto-scanner logs
 
 # Mobile App Development (Linux → Mac → iPhone workflow)
 cd services/mobile-app

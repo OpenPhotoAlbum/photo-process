@@ -15,6 +15,7 @@ import * as Geolocation from './routes/geolocation';
 import { StartupValidator } from './util/startup-validator';
 import { configManager } from './util/config-manager';
 import { fileTracker } from './util/file-tracker';
+import { logger as structuredLogger } from './util/structured-logger';
 
 const logger = Logger.getInstance();
 
@@ -40,6 +41,9 @@ const main = async () => {
     logger.info('Adding request logger middleware...');
     app.use(requestLogger);
 
+    // Parse JSON bodies (must be early)
+    app.use(express.json());
+
     // Root endpoint for API status
     logger.info('Adding root endpoint...');
     app.get('/', routes.Root)
@@ -55,6 +59,7 @@ const main = async () => {
 
     app.get('/scan/status', routes.Scan.ScanStatusResolver);
     app.get('/scan', routes.Scan.ScanStartResolver);
+    app.post('/scan', routes.Scan.ScanStartResolver);  // Support POST for auto-scanner
 
     // Gallery API routes (database-based)  
     app.get('/api/gallery', routes.Gallery.GalleryListResolver);
@@ -76,9 +81,9 @@ const main = async () => {
     app.get('/api/objects/stats', getObjectStats as any);
     
     // Person management API routes
-    app.use(express.json()); // Parse JSON bodies
     app.get('/api/persons', routes.Persons.getAllPersons as any);
     app.get('/api/persons/:id', routes.Persons.getPersonById as any);
+    app.get('/api/persons/:id/images', routes.Persons.getPersonImages as any);
     app.post('/api/persons', routes.Persons.createPerson as any);
     app.put('/api/persons/:id', routes.Persons.updatePerson as any);
     app.delete('/api/persons/:id', routes.Persons.deletePerson as any);
@@ -127,6 +132,14 @@ const main = async () => {
     app.post('/api/training/cleanup', routes.Persons.cleanupTrainingHistory as any);
     
     app.get('/api/system/consistency', routes.Persons.checkConsistency as any);
+    app.post('/api/system/sync-persons-compreface', routes.Persons.syncPersonsToCompreFace as any);
+    app.post('/api/system/sync-existing-faces-compreface', routes.Persons.syncExistingFacesToCompreFace as any);
+    
+    // CompreFace training endpoint (mobile app compatible)
+    app.post('/compreface/train', routes.Persons.trainPersonModel as any);
+    
+    // Auto-recognition endpoint
+    app.post('/api/faces/auto-recognize-image', routes.Persons.autoRecognizeFaces as any);
     
     // Image processing API routes
     app.post('/api/process/image', Process.processImage as any);
@@ -174,16 +187,19 @@ const main = async () => {
     app.get('/api/jobs-stats', Jobs.getQueueStats as any);
     app.post('/api/jobs/cleanup', Jobs.cleanupJobs as any);
     
+    // Albums API routes (Google Takeout + Manual Albums)
+    app.use('/api/albums', routes.Albums);
+    
     // Smart Albums API routes - temporarily disabled for debugging
-    // app.get('/api/albums', routes.SmartAlbums.listAlbums as any);
-    // app.post('/api/albums', routes.SmartAlbums.createAlbum as any);
-    // app.post('/api/albums/initialize', routes.SmartAlbums.initializeDefaults as any);
-    // app.post('/api/albums/process', routes.SmartAlbums.processImages as any);
-    // app.get('/api/albums/:identifier', routes.SmartAlbums.getAlbum as any);
-    // app.put('/api/albums/:identifier', routes.SmartAlbums.updateAlbum as any);
-    // app.delete('/api/albums/:identifier', routes.SmartAlbums.deleteAlbum as any);
-    // app.get('/api/albums/:identifier/images', routes.SmartAlbums.getAlbumImages as any);
-    // app.get('/api/albums/:identifier/stats', routes.SmartAlbums.getAlbumStats as any);
+    // app.get('/api/smart-albums', routes.SmartAlbums.listAlbums as any);
+    // app.post('/api/smart-albums', routes.SmartAlbums.createAlbum as any);
+    // app.post('/api/smart-albums/initialize', routes.SmartAlbums.initializeDefaults as any);
+    // app.post('/api/smart-albums/process', routes.SmartAlbums.processImages as any);
+    // app.get('/api/smart-albums/:identifier', routes.SmartAlbums.getAlbum as any);
+    // app.put('/api/smart-albums/:identifier', routes.SmartAlbums.updateAlbum as any);
+    // app.delete('/api/smart-albums/:identifier', routes.SmartAlbums.deleteAlbum as any);
+    // app.get('/api/smart-albums/:identifier/images', routes.SmartAlbums.getAlbumImages as any);
+    // app.get('/api/smart-albums/:identifier/stats', routes.SmartAlbums.getAlbumStats as any);
     
     // Serve processed images statically (will add thumbnail support later)
     const processedDir = configManager.getStorage().processedDir;
@@ -199,7 +215,23 @@ const main = async () => {
     app.use(errorLogger);  // Log errors before handling
     app.use(errorHandler);
 
-    app.listen(port, () => logger.info(`Server started`, { port, environment: process.env.NODE_ENV || 'development' }))
+    app.listen(port, async () => {
+        logger.info(`Server started`, { port, environment: process.env.NODE_ENV || 'development' });
+        
+        // logRoutes(app);
+        
+        // Set up Elasticsearch logging after server starts
+        setTimeout(async () => {
+            await structuredLogger.setupElasticsearchLogging();
+        }, 3000); // Wait 3 seconds for Elasticsearch to be ready
+        
+        // Start auto scanner if enabled
+        if (process.env.AUTO_SCAN_ENABLED === 'true') {
+            const { autoScanner } = await import('./util/auto-scanner');
+            await autoScanner.start();
+            logger.info('Auto scanner service started');
+        }
+    })
     } catch (error) {
         logger.error('Error in main:', error);
         throw error;
@@ -213,5 +245,22 @@ main().catch(error => {
     logger.error('Stack trace:', error?.stack);
     process.exit(1);
 });
+
+const logRoutes = (app: any) => {
+    var route, routes: any[] = [];
+    app.router.stack.forEach(function(middleware: any){
+        if(middleware.route){
+            routes.push(middleware.route.path);
+        } else if(middleware.name === 'router'){ 
+            middleware.handle.stack.forEach(function(handler: any){
+                route = handler.route.path;
+                route && routes.push(route.path);
+            });
+        }
+    });
+
+    // eslint-disable-next-line
+    console.log(routes);
+}
 
 export default main;

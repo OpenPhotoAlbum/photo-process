@@ -33,6 +33,10 @@
     "maintenance:migrate-features": "node platform-tools/maintenance/migrate-features.js",
     "maintenance:check-missing": "node platform-tools/maintenance/check-missing.js",
     "maintenance:reprocess-rotated-faces": "node platform-tools/maintenance/reprocess-rotated-faces.js",
+    "maintenance:fix-gps-longitude": "node platform-tools/maintenance/fix-gps-longitude-signs.js",
+    "maintenance:fix-gps-google-json": "node platform-tools/maintenance/fix-gps-with-google-json.js",
+    "maintenance:scan-google-takeout": "node platform-tools/maintenance/scan-google-takeout-metadata.js",
+    "maintenance:import-google-takeout": "node platform-tools/maintenance/import-google-takeout-metadata.js",
     "cleanup:menu": "node platform-tools/cleanup/cleanup-menu.js",
     "cleanup:compreface": "node platform-tools/cleanup/cleanup-compreface.js",
     "cleanup:low-confidence": "node platform-tools/cleanup/cleanup-low-confidence.js",
@@ -63,7 +67,11 @@
     "logs:restart": "npm run logs:stop && npm run logs:start",
     "logs:status": "cd infrastructure/logging && docker-compose -f docker-compose.logging.yml ps",
     "logs:ship": "./infrastructure/logging/ship-logs.sh",
-    "logs:kibana": "echo 'Opening Kibana at http://localhost:5601' && (command -v open >/dev/null 2>&1 && open http://localhost:5601) || (command -v xdg-open >/dev/null 2>&1 && xdg-open http://localhost:5601) || echo 'Manually open: http://localhost:5601'"
+    "logs:kibana": "echo 'Opening Kibana at http://localhost:5601' && (command -v open >/dev/null 2>&1 && open http://localhost:5601) || (command -v xdg-open >/dev/null 2>&1 && xdg-open http://localhost:5601) || echo 'Manually open: http://localhost:5601'",
+    "logs:check-indices": "curl -s http://localhost:9200/_cat/indices/photo-platform-* | sort",
+    "logs:ship-today": "./infrastructure/logging/ship-logs.sh",
+    "logs:ship-date": "./infrastructure/logging/ship-logs.sh",
+    "logs:setup-auto": "./infrastructure/logging/setup-auto-logging.sh"
   },
   "dependencies": {
     "chalk": "^5.4.1",

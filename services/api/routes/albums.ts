@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { db } from '../models/database';
 
 const router = express.Router();
@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
  * GET /api/albums/google-people
  * Get all people from Google tags with counts
  */
-router.get('/google-people', async (req: express.Request, res: express.Response) => {
+router.get('/google-people', async (req: Request, res: Response) => {
     try {
         const people = await db('google_people_tags')
             .select([
@@ -85,7 +85,7 @@ router.get('/google-people', async (req: express.Request, res: express.Response)
  * GET /api/albums/google-people/:personName/images
  * Get all images tagged with a specific Google person
  */
-router.get('/google-people/:personName/images', async (req: express.Request, res: express.Response) => {
+router.get('/google-people/:personName/images', async (req: Request, res: Response) => {
     try {
         const { personName } = req.params;
         const { limit = 50, offset = 0, includeMetadata = true } = req.query;
@@ -164,7 +164,7 @@ router.get('/google-people/:personName/images', async (req: express.Request, res
  * GET /api/albums/persons/:personId/google-images
  * Get all images tagged with a specific person ID (linked Google person)
  */
-router.get('/persons/:personId/google-images', async (req: express.Request, res: express.Response) => {
+router.get('/persons/:personId/google-images', async (req: any, res: any) => {
     try {
         const { personId } = req.params;
         const { limit = 50, offset = 0, includeMetadata = true } = req.query;
@@ -258,7 +258,7 @@ router.get('/persons/:personId/google-images', async (req: express.Request, res:
  * GET /api/albums/stats
  * Get album system statistics
  */
-router.get('/stats', async (req: express.Request, res: express.Response) => {
+router.get('/stats', async (req: Request, res: Response) => {
     try {
         const [
             totalAlbums,

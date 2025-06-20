@@ -87,19 +87,33 @@ export const ScanStatusResolver = async (request: Request, response: Response) =
     
     // Add worker scanner progress if available
     const workerProgress = workerScanner.getProgress();
-    if (workerProgress.total > 0) {
-        response.send({
-            ...scanStatus,
-            worker: {
-                processed: workerProgress.processed,
-                total: workerProgress.total,
-                successful: workerProgress.successful,
-                failed: workerProgress.failed,
-                percentage: Math.round((workerProgress.processed / workerProgress.total) * 100),
-                currentFile: workerProgress.currentFile
-            }
-        });
-    } else {
-        response.send(scanStatus);
+    
+    // Get auto scanner status if available
+    let autoScannerStatus = null;
+    if (process.env.AUTO_SCAN_ENABLED === 'true') {
+        try {
+            const { autoScanner } = await import('../util/auto-scanner');
+            autoScannerStatus = autoScanner.getStatus();
+        } catch (error) {
+            // Auto scanner not available
+        }
     }
+    
+    const fullStatus: any = {
+        ...scanStatus,
+        auto_scanner: autoScannerStatus
+    };
+    
+    if (workerProgress.total > 0) {
+        fullStatus.worker = {
+            processed: workerProgress.processed,
+            total: workerProgress.total,
+            successful: workerProgress.successful,
+            failed: workerProgress.failed,
+            percentage: Math.round((workerProgress.processed / workerProgress.total) * 100),
+            currentFile: workerProgress.currentFile
+        };
+    }
+    
+    response.send(fullStatus);
 };

@@ -14,6 +14,7 @@ services:
       - MYSQL_HOST=database              # Container name vs localhost in .env
       - MYSQL_PORT=3306                  # Internal port vs external 3307
       - COMPREFACE_BASE_URL=http://compreface-ui:80  # Internal URL vs external in .env
+      - TZ=America/New_York              # Match host timezone
     depends_on:
       - database
       - compreface-api
@@ -57,6 +58,7 @@ services:
       - MYSQL_USER=photo
       - MYSQL_PASSWORD=Dalekini21
       - MYSQL_AUTH_PLUGIN=caching_sha2_password
+      - TZ=America/New_York
     volumes:
       - mysql_data:/var/lib/mysql
     command: >
@@ -151,6 +153,26 @@ services:
       - compreface-admin
     networks:
       - photo-platform
+
+  # Auto Scanner Service - Continuously processes pending photos
+  auto-scanner:
+    container_name: photo-auto-scanner
+    build: ./services/auto-scanner
+    restart: unless-stopped
+    environment:
+      - API_URL=http://api:9000
+      - BATCH_SIZE=${AUTO_SCAN_BATCH_SIZE:-50}
+      - SCAN_INTERVAL=${AUTO_SCAN_INTERVAL:-60}
+      - MAX_CONCURRENT_BATCHES=${AUTO_SCAN_MAX_CONCURRENT:-1}
+    depends_on:
+      - api
+    networks:
+      - photo-platform
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Additional Services (placeholder)
   # search:

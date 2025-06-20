@@ -2,6 +2,20 @@
 
 This guide helps you search and analyze your photo platform logs using Kibana's powerful query language.
 
+## Direct Elasticsearch Logging
+
+The platform now supports direct logging to Elasticsearch, ensuring no logs are lost during daily rotation. Logs are automatically sent to Elasticsearch indices organized by category:
+
+- `photo-platform-system-*` - System and configuration logs
+- `photo-platform-api-*` - HTTP request/response logs
+- `photo-platform-processing-*` - Photo processing details
+- `photo-platform-errors-*` - All platform errors
+- `photo-platform-faces-*` - Face detection/recognition
+- `photo-platform-performance-*` - Performance metrics
+- `photo-platform-audit-*` - User actions and changes
+
+Enable by setting `ENABLE_ELASTICSEARCH_LOGGING=true` in your `.env` file.
+
 ## Basic Query Syntax
 
 ### Simple Text Search
