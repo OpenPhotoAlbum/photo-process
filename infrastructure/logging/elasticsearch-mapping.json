@@ -1,0 +1,101 @@
+{
+  "index_patterns": ["photo-platform-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "category": {
+          "type": "keyword"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "error": {
+          "properties": {
+            "message": {
+              "type": "text"
+            },
+            "stack": {
+              "type": "text"
+            },
+            "code": {
+              "type": "keyword"
+            }
+          }
+        },
+        "requestId": {
+          "type": "keyword"
+        },
+        "method": {
+          "type": "keyword"
+        },
+        "path": {
+          "type": "keyword"
+        },
+        "statusCode": {
+          "type": "long"
+        },
+        "duration": {
+          "type": "long"
+        },
+        "ip": {
+          "type": "ip"
+        },
+        "correlationId": {
+          "type": "keyword"
+        },
+        "filename": {
+          "type": "keyword"
+        },
+        "status": {
+          "type": "keyword"
+        },
+        "faces": {
+          "type": "long"
+        },
+        "objects": {
+          "type": "long"
+        },
+        "imagePath": {
+          "type": "keyword"
+        },
+        "processingTime": {
+          "type": "long"
+        },
+        "confidence": {
+          "type": "float"
+        },
+        "imageId": {
+          "type": "long"
+        },
+        "faceId": {
+          "type": "long"
+        },
+        "personId": {
+          "type": "long"
+        },
+        "personName": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}
