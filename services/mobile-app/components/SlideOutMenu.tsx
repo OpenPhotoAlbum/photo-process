@@ -19,20 +19,39 @@ const { width: screenWidth } = Dimensions.get('window');
 const MENU_WIDTH = screenWidth * 0.8;
 
 interface SlideOutMenuProps {
+  isVisible?: boolean;
+  onClose?: () => void;
   onUploadComplete?: (response: UploadResponse) => void;
   onUploadError?: (error: string) => void;
   onAutoUploadPress?: () => void;
   onTrashPress?: () => void;
+  onDebugPress?: () => void;
+  onFilterPress?: () => void;
 }
 
 export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
+  isVisible: controlledVisible,
+  onClose,
   onUploadComplete,
   onUploadError,
   onAutoUploadPress,
   onTrashPress,
+  onDebugPress,
+  onFilterPress,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
+
+  // Handle controlled visibility
+  useEffect(() => {
+    if (controlledVisible !== undefined) {
+      if (controlledVisible && !isVisible) {
+        openMenu();
+      } else if (!controlledVisible && isVisible) {
+        closeMenu();
+      }
+    }
+  }, [controlledVisible]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -69,6 +88,7 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
       useNativeDriver: true,
     }).start(() => {
       setIsVisible(false);
+      onClose?.();
     });
   };
 
@@ -86,11 +106,6 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
     <>
       {/* Invisible touch area for swipe gesture */}
       <View style={styles.swipeArea} {...panResponder.panHandlers} />
-      
-      {/* Hamburger menu button */}
-      <TouchableOpacity style={styles.menuButton} onPress={openMenu}>
-        <Ionicons name="menu" size={24} color="white" />
-      </TouchableOpacity>
 
       {/* Slide-out menu modal */}
       <Modal
@@ -139,6 +154,22 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
                 {/* Future functionality sections */}
                 <View style={styles.menuSection}>
                   <Text style={styles.sectionTitle}>Search</Text>
+                  
+                  <TouchableOpacity 
+                    style={styles.menuItemActive} 
+                    onPress={() => {
+                      console.log('Filter clicked!');
+                      closeMenu();
+                      setTimeout(() => {
+                        onFilterPress?.();
+                      }, 100);
+                    }}
+                  >
+                    <Ionicons name="funnel" size={20} color="#007AFF" />
+                    <Text style={styles.menuItemTextActive}>Filter Photos</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#007AFF" />
+                  </TouchableOpacity>
+                  
                   <TouchableOpacity style={styles.menuItem} disabled>
                     <Ionicons name="search" size={20} color="#999" />
                     <Text style={styles.menuItemTextDisabled}>Advanced Search</Text>
@@ -196,10 +227,16 @@ export const SlideOutMenu: React.FC<SlideOutMenuProps> = ({
                     <Ionicons name="chevron-forward" size={16} color="#007AFF" />
                   </TouchableOpacity>
                   
-                  <TouchableOpacity style={styles.menuItem} disabled>
-                    <Ionicons name="settings" size={20} color="#999" />
-                    <Text style={styles.menuItemTextDisabled}>Preferences</Text>
-                    <Text style={styles.comingSoon}>Coming Soon</Text>
+                  <TouchableOpacity 
+                    style={styles.menuItemActive} 
+                    onPress={() => {
+                      console.log('Debug & Settings clicked!');
+                      onDebugPress?.();
+                    }}
+                  >
+                    <Ionicons name="settings" size={20} color="#007AFF" />
+                    <Text style={styles.menuItemTextActive}>Debug & Settings</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#007AFF" />
                   </TouchableOpacity>
                 </View>
               </View>

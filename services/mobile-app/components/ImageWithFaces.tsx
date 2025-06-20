@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Text, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { FaceData, FaceBoundingBox, ScaledFaceData } from '../types/FaceTypes';
+import { API_BASE } from '../config';
 
 interface ImageWithFacesProps {
   imageUrl: string;
@@ -12,8 +13,6 @@ interface ImageWithFacesProps {
   onImageLoad?: () => void;
   onImageError?: (error: string) => void;
 }
-
-const API_BASE = 'http://192.168.40.103:9000';
 
 export const ImageWithFaces: React.FC<ImageWithFacesProps> = ({
   imageUrl,
@@ -144,7 +143,7 @@ export const ImageWithFaces: React.FC<ImageWithFacesProps> = ({
             console.log('ImageWithFaces - Image load event:', event);
             setImageLoaded(true);
             setImageError(null);
-            handleImageLoad();
+            handleImageLoad(event);
           }}
           onLoadStart={() => {
             console.log('ImageWithFaces - Image loading started:', imageUrl);

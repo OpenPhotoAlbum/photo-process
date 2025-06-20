@@ -89,6 +89,212 @@ export const getPersonById = asyncHandler(async (req: Request, res: Response) =>
     });
 });
 
+// Get all images for a person (combining face detection and Google tags)
+export const getPersonImages = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { limit = 50, offset = 0, source = 'all', includeMetadata = true } = req.query;
+    
+    const personId = validatePersonId(id);
+    
+    const person = await PersonRepository.getPersonWithFaceCount(personId);
+    
+    if (!person) {
+        throw new AppError('Person not found', 404);
+    }
+
+    let images: any[] = [];
+    let totalCount = 0;
+    
+    const limitNum = Number(limit);
+    const offsetNum = Number(offset);
+
+    if (source === 'all' || source === 'faces') {
+        // Get images through face detection
+        const faceQuery = db('images')
+            .select([
+                'images.*',
+                'detected_faces.id as face_id',
+                'detected_faces.person_confidence',
+                'detected_faces.recognition_method',
+                'detected_faces.assigned_at',
+                db.raw("'face_detection' as source_type")
+            ])
+            .join('detected_faces', 'images.id', 'detected_faces.image_id')
+            .where('detected_faces.person_id', personId)
+            .where('detected_faces.person_id', '>', 0) // Exclude invalid/unknown faces
+            .orderBy('images.date_taken', 'desc');
+
+        if (includeMetadata === 'true') {
+            faceQuery
+                .leftJoin('google_metadata', 'images.id', 'google_metadata.image_id')
+                .select([
+                    'images.*',
+                    'detected_faces.id as face_id',
+                    'detected_faces.person_confidence',
+                    'detected_faces.recognition_method',
+                    'detected_faces.assigned_at',
+                    'google_metadata.google_view_count',
+                    'google_metadata.device_type',
+                    'google_metadata.google_title',
+                    db.raw("'face_detection' as source_type")
+                ]);
+        }
+
+        if (source === 'faces') {
+            images = await faceQuery.limit(limitNum).offset(offsetNum);
+            totalCount = await db('detected_faces')
+                .join('images', 'detected_faces.image_id', 'images.id')
+                .where('detected_faces.person_id', personId)
+                .where('detected_faces.person_id', '>', 0)
+                .count('* as count')
+                .first()
+                .then(r => Number(r?.count) || 0);
+        }
+    }
+
+    if (source === 'all' || source === 'google') {
+        // Get images through Google Photos tags
+        const googleQuery = db('images')
+            .select([
+                'images.*',
+                'google_people_tags.person_name as google_name',
+                'google_people_tags.is_verified',
+                'google_people_tags.tagged_at',
+                db.raw("'google_photos' as source_type")
+            ])
+            .join('google_people_tags', 'images.id', 'google_people_tags.image_id')
+            .where('google_people_tags.person_id', personId)
+            .orderBy('images.date_taken', 'desc');
+
+        if (includeMetadata === 'true') {
+            googleQuery
+                .leftJoin('google_metadata', 'images.id', 'google_metadata.image_id')
+                .select([
+                    'images.*',
+                    'google_people_tags.person_name as google_name',
+                    'google_people_tags.is_verified',
+                    'google_people_tags.tagged_at',
+                    'google_metadata.google_view_count',
+                    'google_metadata.device_type',
+                    'google_metadata.google_title',
+                    db.raw("'google_photos' as source_type")
+                ]);
+        }
+
+        if (source === 'google') {
+            images = await googleQuery.limit(limitNum).offset(offsetNum);
+            totalCount = await db('google_people_tags')
+                .join('images', 'google_people_tags.image_id', 'images.id')
+                .where('google_people_tags.person_id', personId)
+                .count('* as count')
+                .first()
+                .then(r => Number(r?.count) || 0);
+        }
+    }
+
+    if (source === 'all') {
+        // Combine both sources, remove duplicates, and apply pagination
+        const [faceImages, googleImages] = await Promise.all([
+            db('images')
+                .select([
+                    'images.*',
+                    'detected_faces.id as face_id',
+                    'detected_faces.person_confidence',
+                    'detected_faces.recognition_method',
+                    'detected_faces.assigned_at',
+                    db.raw("'face_detection' as source_type")
+                ])
+                .join('detected_faces', 'images.id', 'detected_faces.image_id')
+                .where('detected_faces.person_id', personId)
+                .where('detected_faces.person_id', '>', 0),
+            
+            db('images')
+                .select([
+                    'images.*',
+                    'google_people_tags.person_name as google_name',
+                    'google_people_tags.is_verified',
+                    'google_people_tags.tagged_at',
+                    db.raw("'google_photos' as source_type")
+                ])
+                .join('google_people_tags', 'images.id', 'google_people_tags.image_id')
+                .where('google_people_tags.person_id', personId)
+        ]);
+
+        // Combine and deduplicate by image ID
+        const imageMap = new Map();
+        
+        faceImages.forEach(img => {
+            if (!imageMap.has(img.id)) {
+                imageMap.set(img.id, { ...img, sources: [img.source_type] });
+            } else {
+                imageMap.get(img.id).sources.push(img.source_type);
+            }
+        });
+
+        googleImages.forEach(img => {
+            if (!imageMap.has(img.id)) {
+                imageMap.set(img.id, { ...img, sources: [img.source_type] });
+            } else {
+                const existing = imageMap.get(img.id);
+                existing.sources.push(img.source_type);
+                // Merge Google metadata
+                existing.google_name = img.google_name;
+                existing.is_verified = img.is_verified;
+                existing.tagged_at = img.tagged_at;
+            }
+        });
+
+        // Sort by date and apply pagination
+        const allImages = Array.from(imageMap.values())
+            .sort((a, b) => new Date(b.date_taken).getTime() - new Date(a.date_taken).getTime());
+        
+        totalCount = allImages.length;
+        images = allImages.slice(offsetNum, offsetNum + limitNum);
+    }
+
+    // Get statistics
+    const [faceStats, googleStats] = await Promise.all([
+        db('detected_faces')
+            .select([
+                db.raw('COUNT(*) as face_count'),
+                db.raw('COUNT(DISTINCT image_id) as face_image_count')
+            ])
+            .where('person_id', personId)
+            .where('person_id', '>', 0)
+            .first(),
+        
+        db('google_people_tags')
+            .select([
+                db.raw('COUNT(*) as google_tag_count'),
+                db.raw('COUNT(DISTINCT image_id) as google_image_count')
+            ])
+            .where('person_id', personId)
+            .first()
+    ]);
+
+    res.json({ 
+        person,
+        images,
+        statistics: {
+            faces: faceStats,
+            google: googleStats,
+            total: {
+                unique_images: totalCount
+            }
+        },
+        pagination: {
+            total: totalCount,
+            limit: limitNum,
+            offset: offsetNum,
+            hasMore: offsetNum + images.length < totalCount
+        },
+        filters: {
+            source: source,
+            includeMetadata: includeMetadata === 'true'
+        }
+    });
+});
+
 // Create new person
 export const createPerson = asyncHandler(async (req: Request, res: Response) => {
     const { name, notes } = req.body;

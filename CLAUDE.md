@@ -357,8 +357,10 @@ jq 'select(.duration > 1000)' /media/stephen/Expansion/photos/logs/api-$(date +%
 ## Current State & Future Plans
 
 ### ✅ Completed Features
-- **Face Recognition System**: Full person management, clustering, training APIs
-- **Mobile App**: React Native app with photo grid, thumbnails, and smooth performance
+- **Face Recognition System**: Full person management, clustering, training APIs with mobile interface
+- **Mobile App**: Complete React Native app with 4-tab navigation (Photos, Albums, Faces, Settings)
+- **Album System**: Google Takeout integration with 40+ albums and metadata import
+- **Faces Management**: Comprehensive CompreFace training interface with 100+ people and smart filtering
 - **FileTracker System**: Database-driven file discovery for instant scanning (8,358+ files tracked)
 - **Hash-Based Storage**: Prevents duplicates, efficient organization
 - **API-Only Architecture**: Clean backend ready for future React frontend
@@ -488,6 +490,17 @@ The README.md is the first thing users see and must always reflect the current s
 - Update achievement statistics regularly (files processed, performance improvements, etc.)
 
 **Pattern**: TODO.md → ACHIEVEMENTS.md workflow keeps documentation clean and showcases progress
+
+## Bug Tracking
+
+**IMPORTANT**: Use BUGS.md to track all known issues and their resolution status
+- Document new bugs immediately when discovered with description, error messages, and reproduction steps
+- Mark bugs as fixed with date and solution when resolved
+- Include priority levels (High/Medium/Low) for issue triage
+- Track both open issues and recently fixed bugs for reference
+- Consider moving long-fixed bugs to ACHIEVEMENTS.md after verification
+
+**Pattern**: Track bugs systematically in BUGS.md to ensure nothing gets lost and fixes are documented
 
 ## Tooling Script Maintenance
 

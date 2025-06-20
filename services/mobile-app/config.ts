@@ -1,19 +1,55 @@
 // API Configuration
 
-// For local development (on same network)
-// export const API_BASE = 'http://192.168.40.103:9000';
+import Constants from 'expo-constants';
 
-// For production (via Cloudflare Tunnel) - ✅ TUNNEL IS RUNNING!
-export const API_BASE = 'https://api.theyoungs.photos'; // Tunnel is working!
-
-// Alternative endpoints for different environments
+// Define available API endpoints
 export const API_ENDPOINTS = {
-  production: 'https://api.theyoungs.photos',
-  local: 'http://192.168.40.103:9000',
-  fallback: 'https://theyoungs.photos'
+  development: 'http://192.168.40.103:9000',    // Local development
+  production: 'https://api.theyoungs.photos',   // Cloudflare tunnel for production
+  fallback: 'https://theyoungs.photos'          // Fallback endpoint
 };
 
-// Helper to switch between environments
-export const getApiEndpoint = (env: 'production' | 'local' = 'local') => {
+// Environment detection function
+const getEnvironment = (): 'development' | 'production' => {
+  // In development mode (Expo Go), use local endpoint
+  if (__DEV__) {
+    return 'development';
+  }
+  
+  // Check execution environment for standalone builds
+  const executionEnvironment = Constants.executionEnvironment;
+  
+  // For standalone builds (bare, standalone), use production endpoint
+  if (executionEnvironment === 'bare' || executionEnvironment === 'standalone') {
+    return 'production';
+  }
+  
+  // Default to development for other cases
+  return 'development';
+};
+
+// Automatically determine API base URL based on environment
+export const API_BASE = API_ENDPOINTS[getEnvironment()];
+
+// Helper function to get specific endpoint
+export const getApiEndpoint = (env: 'development' | 'production' = getEnvironment()) => {
   return API_ENDPOINTS[env];
 };
+
+// Log current configuration for debugging
+console.log('Environment Configuration:', {
+  isDev: __DEV__,
+  executionEnvironment: Constants.executionEnvironment,
+  selectedEndpoint: API_BASE,
+  detectedEnvironment: getEnvironment()
+});
+
+// Validate API_BASE
+if (!API_BASE || API_BASE === 'unknown') {
+  console.error('❌ Invalid API_BASE detected:', API_BASE);
+  console.error('Environment details:', {
+    __DEV__,
+    executionEnvironment: Constants.executionEnvironment,
+    endpoints: API_ENDPOINTS
+  });
+}

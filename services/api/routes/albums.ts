@@ -82,6 +82,179 @@ router.get('/google-people', async (req: express.Request, res: express.Response)
 });
 
 /**
+ * GET /api/albums/google-people/:personName/images
+ * Get all images tagged with a specific Google person
+ */
+router.get('/google-people/:personName/images', async (req: express.Request, res: express.Response) => {
+    try {
+        const { personName } = req.params;
+        const { limit = 50, offset = 0, includeMetadata = true } = req.query;
+        
+        // Build base query to get images tagged with this person
+        let query = db('images')
+            .select([
+                'images.*',
+                'google_people_tags.person_name',
+                'google_people_tags.is_verified',
+                'google_people_tags.tagged_at'
+            ])
+            .join('google_people_tags', 'images.id', 'google_people_tags.image_id')
+            .where('google_people_tags.person_name', personName)
+            .orderBy('images.date_taken', 'desc')
+            .limit(Number(limit))
+            .offset(Number(offset));
+            
+        // Add Google metadata if requested
+        if (includeMetadata === 'true') {
+            query = query
+                .leftJoin('google_metadata', 'images.id', 'google_metadata.image_id')
+                .select([
+                    'images.*',
+                    'google_people_tags.person_name',
+                    'google_people_tags.is_verified', 
+                    'google_people_tags.tagged_at',
+                    'google_metadata.google_view_count',
+                    'google_metadata.device_type',
+                    'google_metadata.google_title',
+                    'google_metadata.google_description'
+                ]);
+        }
+        
+        const images = await query;
+        
+        // Get total count for pagination
+        const totalResult = await db('google_people_tags')
+            .join('images', 'google_people_tags.image_id', 'images.id')
+            .where('google_people_tags.person_name', personName)
+            .count('* as count')
+            .first();
+            
+        // Get person tag statistics
+        const personStats = await db('google_people_tags')
+            .select([
+                'person_name',
+                'person_id',
+                'source',
+                db.raw('COUNT(*) as total_tags'),
+                db.raw('COUNT(DISTINCT image_id) as unique_images'),
+                db.raw('SUM(CASE WHEN is_verified = true THEN 1 ELSE 0 END) as verified_tags')
+            ])
+            .where('person_name', personName)
+            .groupBy('person_name', 'person_id', 'source')
+            .first();
+            
+        res.json({
+            images,
+            personStats,
+            pagination: {
+                total: Number(totalResult?.count) || 0,
+                limit: Number(limit),
+                offset: Number(offset),
+                hasMore: Number(offset) + images.length < Number(totalResult?.count)
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching images for Google person:', error);
+        res.status(500).json({ error: 'Failed to fetch images for person' });
+    }
+});
+
+/**
+ * GET /api/albums/persons/:personId/google-images
+ * Get all images tagged with a specific person ID (linked Google person)
+ */
+router.get('/persons/:personId/google-images', async (req: express.Request, res: express.Response) => {
+    try {
+        const { personId } = req.params;
+        const { limit = 50, offset = 0, includeMetadata = true } = req.query;
+        
+        // Verify person exists
+        const person = await db('persons').where('id', personId).first();
+        if (!person) {
+            return res.status(404).json({ error: 'Person not found' });
+        }
+        
+        // Build base query to get images tagged with this person via Google tags
+        let query = db('images')
+            .select([
+                'images.*',
+                'google_people_tags.person_name as google_name',
+                'google_people_tags.is_verified',
+                'google_people_tags.tagged_at'
+            ])
+            .join('google_people_tags', 'images.id', 'google_people_tags.image_id')
+            .where('google_people_tags.person_id', personId)
+            .orderBy('images.date_taken', 'desc')
+            .limit(Number(limit))
+            .offset(Number(offset));
+            
+        // Add Google metadata if requested
+        if (includeMetadata === 'true') {
+            query = query
+                .leftJoin('google_metadata', 'images.id', 'google_metadata.image_id')
+                .select([
+                    'images.*',
+                    'google_people_tags.person_name as google_name',
+                    'google_people_tags.is_verified',
+                    'google_people_tags.tagged_at',
+                    'google_metadata.google_view_count',
+                    'google_metadata.device_type',
+                    'google_metadata.google_title',
+                    'google_metadata.google_description'
+                ]);
+        }
+        
+        const images = await query;
+        
+        // Get total count for pagination
+        const totalResult = await db('google_people_tags')
+            .join('images', 'google_people_tags.image_id', 'images.id')
+            .where('google_people_tags.person_id', personId)
+            .count('* as count')
+            .first();
+            
+        // Get combined statistics (Google tags + face detection)
+        const [googleStats, faceStats] = await Promise.all([
+            db('google_people_tags')
+                .select([
+                    db.raw('COUNT(*) as google_tags'),
+                    db.raw('COUNT(DISTINCT image_id) as google_images'),
+                    db.raw('SUM(CASE WHEN is_verified = true THEN 1 ELSE 0 END) as verified_tags')
+                ])
+                .where('person_id', personId)
+                .first(),
+            db('detected_faces')
+                .select([
+                    db.raw('COUNT(*) as detected_faces'),
+                    db.raw('COUNT(DISTINCT image_id) as face_images')
+                ])
+                .where('person_id', personId)
+                .first()
+        ]);
+            
+        res.json({
+            person,
+            images,
+            statistics: {
+                google: googleStats,
+                faces: faceStats
+            },
+            pagination: {
+                total: Number(totalResult?.count) || 0,
+                limit: Number(limit),
+                offset: Number(offset),
+                hasMore: Number(offset) + images.length < Number(totalResult?.count)
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching Google images for person:', error);
+        res.status(500).json({ error: 'Failed to fetch Google images for person' });
+    }
+});
+
+/**
  * GET /api/albums/stats
  * Get album system statistics
  */

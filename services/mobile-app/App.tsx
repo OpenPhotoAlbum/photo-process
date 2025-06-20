@@ -13,6 +13,9 @@ import { FilterPanel, FilterOptions } from './components/FilterPanel';
 import { UploadResponse } from './services/UploadAPI';
 import { autoUploadService } from './services/AutoUploadService';
 import { AutoUploadSettingsScreen } from './screens/AutoUploadSettingsScreen';
+import { AlbumsScreen } from './screens/AlbumsScreen';
+import { AlbumDetailScreen } from './screens/AlbumDetailScreen';
+import { FacesScreen } from './screens/FacesScreen';
 import { API_BASE } from './config';
 
 // Calculate grid dimensions
@@ -39,6 +42,17 @@ interface GalleryResponse {
   totalCount: number;
 }
 
+interface Album {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  source: string;
+  album_date?: string;
+  image_count: number;
+  actual_image_count: number;
+}
+
 export default function App() {
   const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,10 +62,16 @@ export default function App() {
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<MediaItem | null>(null);
+  const [photoDetailContext, setPhotoDetailContext] = useState<'gallery' | 'album' | null>(null);
+  const [albumBeforePhoto, setAlbumBeforePhoto] = useState<Album | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [showAutoUploadSettings, setShowAutoUploadSettings] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [showSlideMenu, setShowSlideMenu] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showAlbums, setShowAlbums] = useState(false);
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
+  const [showFaces, setShowFaces] = useState(false);
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterOptions>({
     dateRange: {
@@ -294,7 +314,7 @@ export default function App() {
         const newPhoto: MediaItem = {
           id: response.imageId!,  // We already checked it exists above
           filename: response.upload?.originalFilename || 'uploaded_photo.jpg',
-          dateTaken: response.upload?.uploadedAt || new Date().toISOString(),
+          date_taken: response.upload?.uploadedAt || new Date().toISOString(),
           media_url: response.media?.url || '',
           thumbnail_url: response.media?.thumbnailUrl || '',
           dominant_color: response.processing?.dominantColor || '#333',
@@ -473,18 +493,7 @@ export default function App() {
           </Text>
         </View>
         <View style={styles.headerRight}>
-          <TouchableOpacity 
-            style={styles.filterButton}
-            onPress={() => setShowFilterPanel(true)}
-          >
-            <Text style={styles.filterButtonText}>⚙️</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.debugButton}
-            onPress={() => setShowDebugPanel(true)}
-          >
-            <Text style={styles.debugButtonText}>Debug</Text>
-          </TouchableOpacity>
+          {/* Removed filter button - now available through hamburger menu */}
         </View>
       </View>
       
@@ -496,7 +505,10 @@ export default function App() {
         hasMore={hasMore}
         onLoadMore={handleLoadMore}
         onRefresh={handleRefresh}
-        onPhotoPress={setSelectedPhoto}
+        onPhotoPress={(photo) => {
+          setSelectedPhoto(photo);
+          setPhotoDetailContext('gallery');
+        }}
         renderFooter={renderFooter}
         API_BASE={API_BASE}
         loadingImagesRef={loadingImagesRef}
@@ -540,6 +552,8 @@ export default function App() {
       
       {/* Slide-out Menu */}
       <SlideOutMenu
+        isVisible={showSlideMenu}
+        onClose={() => setShowSlideMenu(false)}
         onUploadComplete={handleUploadComplete}
         onUploadError={handleUploadError}
         onAutoUploadPress={() => {
@@ -551,7 +565,51 @@ export default function App() {
           // TODO: Navigate to trash view
           alert('Trash functionality coming soon! For now, you can delete photos and they\'ll be safely stored in the trash.');
         }}
+        onDebugPress={() => {
+          console.log('Debug press received in App');
+          setShowSlideMenu(false);
+          setShowDebugPanel(true);
+        }}
+        onFilterPress={() => {
+          console.log('Filter press received in App');
+          setShowFilterPanel(true);
+        }}
       />
+      
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNavBar}>
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => {/* Currently on photos tab */}}
+        >
+          <Text style={[styles.navIcon, styles.navIconActive]}>📷</Text>
+          <Text style={[styles.navLabel, styles.navLabelActive]}>Photos</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => setShowAlbums(true)}
+        >
+          <Text style={styles.navIcon}>📚</Text>
+          <Text style={styles.navLabel}>Albums</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => setShowFaces(true)}
+        >
+          <Text style={styles.navIcon}>👤</Text>
+          <Text style={styles.navLabel}>Faces</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.navButton}
+          onPress={() => setShowSlideMenu(true)}
+        >
+          <Text style={styles.navIcon}>☰</Text>
+          <Text style={styles.navLabel}>Menu</Text>
+        </TouchableOpacity>
+      </View>
       
       <StatusBar style="light" />
     </SafeAreaView>
@@ -567,7 +625,15 @@ export default function App() {
           imageId={selectedPhoto.id}
           imageUrl={selectedPhoto.media_url}
           filename={selectedPhoto.filename}
-          onClose={() => setSelectedPhoto(null)}
+          onClose={() => {
+            setSelectedPhoto(null);
+            // If we came from an album, restore the album view
+            if (photoDetailContext === 'album' && albumBeforePhoto) {
+              setSelectedAlbum(albumBeforePhoto);
+              setAlbumBeforePhoto(null);
+            }
+            setPhotoDetailContext(null);
+          }}
           onDelete={() => {
             // Remove the deleted photo from the list
             setPhotos(prev => prev.filter(p => p.id !== selectedPhoto.id));
@@ -608,6 +674,58 @@ export default function App() {
       availableCities={availableCities}
       onCitySearch={fetchAvailableCities}
     />
+
+    {/* Albums Modal */}
+    <Modal
+      visible={showAlbums}
+      animationType="slide"
+      presentationStyle="fullScreen"
+    >
+      <AlbumsScreen
+        onAlbumSelect={(album) => {
+          setSelectedAlbum(album);
+          setShowAlbums(false);
+        }}
+        onClose={() => setShowAlbums(false)}
+      />
+    </Modal>
+
+    {/* Album Detail Modal */}
+    <Modal
+      visible={!!selectedAlbum}
+      animationType="slide"
+      presentationStyle="fullScreen"
+    >
+      {selectedAlbum && (
+        <AlbumDetailScreen
+          album={selectedAlbum}
+          onClose={() => {
+            // Go back to albums list instead of closing everything
+            setSelectedAlbum(null);
+            setShowAlbums(true);
+          }}
+          onPhotoSelect={(photo) => {
+            setSelectedPhoto(photo);
+            setPhotoDetailContext('album');
+            // Save the current album before hiding it
+            setAlbumBeforePhoto(selectedAlbum);
+            // Temporarily hide the album while photo detail is shown
+            setSelectedAlbum(null);
+          }}
+        />
+      )}
+    </Modal>
+
+    {/* Faces Modal */}
+    <Modal
+      visible={showFaces}
+      animationType="slide"
+      presentationStyle="fullScreen"
+    >
+      <FacesScreen
+        onClose={() => setShowFaces(false)}
+      />
+    </Modal>
   </>
   );
 }
@@ -658,6 +776,39 @@ const styles = StyleSheet.create({
     color: '#0066CC',
     fontSize: 12,
     fontWeight: '500',
+  },
+  bottomNavBar: {
+    flexDirection: 'row',
+    backgroundColor: '#1a1a1a',
+    paddingVertical: 8,
+    paddingBottom: 34, // Extra padding for iPhone safe area
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  navButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minWidth: 60,
+  },
+  navIcon: {
+    fontSize: 20,
+    marginBottom: 4,
+    opacity: 0.6,
+  },
+  navIconActive: {
+    opacity: 1,
+  },
+  navLabel: {
+    fontSize: 10,
+    color: '#999',
+    fontWeight: '500',
+  },
+  navLabelActive: {
+    color: '#007AFF',
   },
   headerTitle: {
     color: 'white',
