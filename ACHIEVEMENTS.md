@@ -23,7 +23,48 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
 
 ## 📅 Chronological Achievements
 
+### June 20, 2025
+- ✅ **Face Orientation Fix**: Resolved face rotation issues in EXIF rotated images
+  - **Problem**: Faces displayed 90° counter-clockwise in mobile app modal for orientation 6 images
+  - **Root Cause**: CompreFace returns raw image coordinates but code was double-transforming for EXIF
+  - **Solution**: Removed coordinate transformation logic in `compreface.ts` extractFaces function
+  - **Impact**: Fixed face orientation for all future processing of EXIF rotated images (3,5,6,7,8)
+  - **Retroactive Fix**: Successfully reprocessed 878 existing affected images
+  - **Verification**: Confirmed face extraction working correctly with proper orientation in recent processing
+  - **Files**: `/services/api/util/compreface.ts`, `/platform-tools/maintenance/reprocess-rotated-faces.js`
+
+- ✅ **Direct Elasticsearch Logging Implementation**: Eliminated log rotation data loss with direct ES integration
+  - **Architecture**: Winston transports write directly to Elasticsearch indices
+  - **Index Organization**: Separate indices for system, api, processing, errors, faces, performance, audit logs
+  - **Dual Logging**: Maintains file backups while enabling real-time Elasticsearch analysis
+  - **Configuration**: Simple enable/disable via ENABLE_ELASTICSEARCH_LOGGING environment variable
+  - **Documentation**: Comprehensive setup guide and Kibana query documentation updates
+  - **Files**: `/services/api/util/structured-logger-elasticsearch.ts`, updated logging infrastructure
+
 ### June 19, 2025
+- ✅ **GPS Data Precision Fix**: Resolved ER_DATA_TOO_LONG errors in GPS columns
+  - **Root Cause**: GPS direction column (decimal 6,3) couldn't handle high-precision EXIF values like '270.6248168'
+  - **Solution**: Migration to expand GPS direction to decimal(9,6) allowing 360.123456 degrees with proper precision
+  - **Database Changes**: Updated gps_direction, gps_altitude, and gps_speed columns for enhanced precision
+  - **Data Cleanup**: Migration included cleanup of out-of-range GPS values before schema changes
+  - **Impact**: Eliminated GPS-related database insertion errors during photo processing
+  - **Files**: `/infrastructure/database/migrations/20250619_fix_gps_direction_precision.js`
+
+- ✅ **ELK Stack Setup Complete**: Centralized logging with Elasticsearch and Kibana
+  - **Infrastructure**: Complete ELK stack with Elasticsearch 8.11.0, Kibana, and Filebeat
+  - **Configuration**: Fixed multiple Filebeat permission and configuration issues
+  - **Data Volume**: Successfully indexed 360,730+ log entries for comprehensive monitoring
+  - **Query Documentation**: Created comprehensive Kibana query guide for photo platform monitoring
+  - **NPM Scripts**: Added log management commands for easy infrastructure control
+  - **Files**: `/infrastructure/logging/` directory, `/docs-site/docs/monitoring/kibana-queries.md`
+
+- ✅ **Soft Delete System Implementation**: Trash functionality with restore capability
+  - **Database**: Added deleted_at, deleted_by, deletion_reason columns to images table
+  - **API Endpoints**: Implemented soft delete, restore, permanent delete, and trash listing
+  - **Mobile Integration**: Updated PhotoDetailScreen with "Move to Trash" functionality
+  - **Audit Trail**: Complete deletion tracking with user attribution and reason logging
+  - **Files**: Migration `20250619_add_soft_delete.js`, `/services/api/routes/gallery.ts`, mobile app components
+
 - ✅ **Comprehensive Mobile Filtering System**: Advanced photo filtering with date, location, and sort controls
   - **Mobile Features**: FilterPanel component with date picker, city selection, GPS filtering, and sort options
   - **API Enhancements**: `/api/filters/cities` endpoint, enhanced gallery API with filtering parameters
