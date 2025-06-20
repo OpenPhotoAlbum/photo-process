@@ -267,12 +267,56 @@ This file tracks current development priorities and tasks for the Photo Manageme
 
 ## 📋 Medium Priority
 
+### 📚 Album System & Google Takeout Integration
+- [x] **Google Takeout Metadata Import**: Parse and import rich metadata from Google Photos export ✅ COMPLETED
+  - [x] Scan Google Takeout directories for JSON metadata files
+  - [x] Import people tags and link to existing persons in database
+  - [x] Import precise GPS coordinates and location enrichments
+  - [x] Store view counts, device information, and engagement metrics
+  - [x] Create database schema for albums, people tags, and metadata
+  - [x] Build album discovery from folder structure + metadata.json files
+  - [x] API endpoints: `/api/albums`, `/api/albums/{id}`, `/api/albums/google-people`
+  - ✅ **Results**: 40+ albums imported with 2,564 metadata records and 10,780 people tags
+- [x] **Album Support System**: Full album management with Google Photos organization ✅ COMPLETED
+  - [x] Database tables for albums and album-image relationships
+  - [x] Thunder Client collection updated with album management endpoints
+  - [x] Slug generation and access level management
+  - [x] Album cover photo and image count tracking
+
+### 🤖 CompreFace Auto-Training System
+- [ ] **Intelligent Training Thresholds**: Automated face recognition improvement
+  - [ ] Design training pipeline with face count thresholds (20+ faces to start training)
+  - [ ] Implement suggestion system when 40+ faces are available per person
+  - [ ] Create background training scheduler to retrain models automatically
+  - [ ] Add training status tracking and progress monitoring
+  - [ ] Build API endpoints for manual training triggers and status checks
+  - [ ] Integration with existing person management and face assignment systems
+
+### 📱 Mobile App Bulk Operations
+- [ ] **Multi-Select Gallery Interface**: Long-press image selection for bulk actions
+  - [ ] Implement long-press gesture recognition in React Native gallery
+  - [ ] Add multi-select UI with selection indicators and action bar
+  - [ ] Bulk delete functionality with confirmation dialogs
+  - [ ] Bulk album assignment (when album UI is built)
+  - [ ] Selection state management and smooth user experience
+  - [ ] Integration with existing delete and album APIs
+
 ### 🔧 Technical Improvements
 - [ ] Add linting setup and configuration for the platform
 - [ ] Add comprehensive API error handling and validation
 - [ ] Implement advanced search with filters for objects, faces, dates
 - [ ] Add smart album auto-generation based on content analysis
 - [ ] Optimize face clustering to use CompreFace recognition for better accuracy
+
+## 📋 Low Priority
+
+### 🔄 Future Enhancements
+- [ ] **Standalone Google Takeout Processor**: Independent service for importing new archive sets
+  - [ ] Standalone command-line tool for processing Google Takeout archives
+  - [ ] Advanced deduplication logic to handle Google's export inconsistencies
+  - [ ] Batch processing support for multiple archive sets
+  - [ ] Integration with existing album and metadata import systems
+  - [ ] Progress tracking and resume capability for large imports
 
 ## 📝 Notes
 

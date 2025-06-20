@@ -94,6 +94,13 @@
       "containerId": "",
       "created": "2025-01-18T12:00:00.000Z",
       "sortNum": 130000
+    },
+    {
+      "_id": "album-management",
+      "name": "📚 Album Management",
+      "containerId": "",
+      "created": "2025-06-20T12:00:00.000Z",
+      "sortNum": 135000
     }
   ],
   "requests": [
@@ -1432,6 +1439,77 @@
         "raw": "{\n  \"limit\": 100,\n  \"radius\": 25\n}",
         "form": []
       },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "list-albums",
+      "colId": "",
+      "containerId": "album-management",
+      "name": "List All Albums",
+      "url": "{{apiBase}}/albums",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        },
+        {
+          "name": "offset",
+          "value": "0",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "get-album-details",
+      "colId": "",
+      "containerId": "album-management",
+      "name": "Get Album Details",
+      "url": "{{apiBase}}/albums/{{albumId}}",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "100",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "get-google-people-albums",
+      "colId": "",
+      "containerId": "album-management",
+      "name": "Get Google People Albums",
+      "url": "{{apiBase}}/albums/google-people",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "get-album-stats",
+      "colId": "",
+      "containerId": "album-management",
+      "name": "Get Album Statistics",
+      "url": "{{apiBase}}/albums/stats",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
       "params": [],
       "tests": []
     }

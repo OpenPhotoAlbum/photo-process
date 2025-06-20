@@ -93,6 +93,11 @@ curl "http://localhost:9000/api/gallery?cities=Austin,Seattle&limit=5"          
 curl "http://localhost:9000/api/gallery?sortBy=filename&sortOrder=asc&limit=3"   # Sort options
 curl "http://localhost:9000/api/filters/cities"                                  # Available cities
 
+# Albums & Google Takeout
+curl "http://localhost:9000/api/albums"                                          # List all albums
+curl "http://localhost:9000/api/albums/13"                                       # Album details with images
+curl "http://localhost:9000/api/albums/google-people"                            # People-tagged albums
+
 # Maintenance
 npm run maintenance:retroactive  # Add features to existing photos
 npm run cleanup:menu            # Interactive cleanup options
@@ -120,6 +125,7 @@ Core principles:
 - **Face Recognition**: CompreFace integration with person management, clustering, and training
 - **Object Detection**: YOLO-based detection with confidence filtering and 80+ object classes
 - **Geolocation System**: GPS-based location matching with 45,000+ cities worldwide
+- **Album System**: Google Takeout album support with metadata import and organization
 - **Smart Albums**: Auto-generated albums based on content analysis and metadata
 - **Hash-Based Storage**: Deduplication and organized file structure prevents duplicates
 - **Screenshot Detection**: Automatic identification and classification of screenshots

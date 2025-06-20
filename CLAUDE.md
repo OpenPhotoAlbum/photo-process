@@ -258,6 +258,48 @@ curl "http://localhost:9000/api/images/123/location"
 - **Caching**: Location hierarchy cached for fast repeated queries
 - **Smart Fallbacks**: Graceful handling of missing GPS data or remote locations
 
+## Album System
+
+### Overview
+The Album System provides comprehensive album management with support for Google Takeout imports and vendor-neutral organization.
+
+### Database Schema (albums)
+```sql
+-- Main albums table with vendor-neutral naming
+CREATE TABLE albums (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE,
+  description TEXT,
+  source VARCHAR(50) DEFAULT 'manual', -- 'google_takeout', 'manual', 'smart'
+  source_folder_path VARCHAR(500), -- Original source folder path (vendor-neutral)
+  access_level VARCHAR(50), -- 'protected', 'public', etc.
+  album_date TIMESTAMP, -- When album was created in source system
+  cover_image_hash VARCHAR(64), -- Hash of cover image
+  image_count INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Album-image relationships
+CREATE TABLE album_images (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  album_id INT NOT NULL,
+  image_id INT NOT NULL,
+  sort_order INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (album_id) REFERENCES albums(id),
+  FOREIGN KEY (image_id) REFERENCES images(id)
+);
+```
+
+### Key Features
+- **Vendor-Neutral**: Uses `source_folder_path` instead of vendor-specific naming
+- **Slug Generation**: SEO-friendly URLs with automatic slug creation
+- **Import Support**: Google Takeout integration with metadata preservation
+- **Access Control**: Configurable access levels for album visibility
+
 ## Configuration System
 
 ### Priority Order
@@ -403,6 +445,15 @@ Assign a face to a person.
 
 #### POST /api/compreface/train
 Train CompreFace with assigned faces.
+
+#### GET /api/albums
+List all albums with metadata and image counts.
+
+#### GET /api/albums/{albumId}
+Get album details with associated images.
+
+#### GET /api/albums/google-people
+List albums with Google Photos people tags.
 
 See Thunder Client collection for complete API documentation.
 

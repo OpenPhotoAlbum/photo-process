@@ -24,6 +24,16 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
 ## 📅 Chronological Achievements
 
 ### June 20, 2025
+- ✅ **Google Takeout Album System**: Complete album management with Google Photos metadata import
+  - **Achievement**: Implemented comprehensive Google Takeout metadata parsing and album system
+  - **Features**: Album discovery, people tag import, location enrichments, view counts
+  - **Database**: 5 new tables (albums, album_images, google_metadata, google_people_tags, google_location_enrichments)
+  - **API Endpoints**: `/api/albums`, `/api/albums/{id}`, `/api/albums/google-people`, `/api/albums/stats`
+  - **Import Results**: 40+ albums, 2,564 metadata records, 10,780 people tags, 26 location enrichments
+  - **Performance**: Rich Google Photos-level organization with enhanced metadata beyond EXIF
+  - **Thunder Client**: Updated collection with album management folder and endpoints
+  - **Schema Update**: Renamed `google_folder_path` to `source_folder_path` for vendor-neutral design
+
 - ✅ **Face Orientation Fix**: Resolved face rotation issues in EXIF rotated images
   - **Problem**: Faces displayed 90° counter-clockwise in mobile app modal for orientation 6 images
   - **Root Cause**: CompreFace returns raw image coordinates but code was double-transforming for EXIF
