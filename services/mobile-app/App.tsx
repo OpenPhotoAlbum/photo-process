@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator, Dimensions, RefreshControl, TouchableOpacity, Modal } from 'react-native';
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Image } from 'expo-image';
 import { PhotoDetailScreen } from './screens/PhotoDetailScreen';
 import { SimplePhotoDetailScreen } from './screens/SimplePhotoDetailScreen';
@@ -17,6 +17,7 @@ import { AlbumsScreen } from './screens/AlbumsScreen';
 import { AlbumDetailScreen } from './screens/AlbumDetailScreen';
 import { FacesScreen } from './screens/FacesScreen';
 import { API_BASE } from './config';
+import { ModalLayers } from './constants/ModalLayers';
 
 // Calculate grid dimensions
 const screenWidth = Dimensions.get('window').width;
@@ -28,6 +29,7 @@ interface MediaItem {
   filename: string;
   date_taken: string | null;
   media_url: string;
+  relative_media_path?: string;
   thumbnail_url?: string;
   dominant_color?: string;
   faces?: any[];
@@ -62,16 +64,23 @@ export default function App() {
   const [hasMore, setHasMore] = useState(true);
   const [cursor, setCursor] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<MediaItem | null>(null);
-  const [photoDetailContext, setPhotoDetailContext] = useState<'gallery' | 'album' | null>(null);
+  const [photoDetailContext, setPhotoDetailContext] = useState<'gallery' | 'album' | 'faces' | null>(null);
   const [albumBeforePhoto, setAlbumBeforePhoto] = useState<Album | null>(null);
+  const [personBeforePhoto, setPersonBeforePhoto] = useState<any | null>(null);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [showAutoUploadSettings, setShowAutoUploadSettings] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [showSlideMenu, setShowSlideMenu] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  
+  // Debug showFilterPanel state changes
+  useEffect(() => {
+    console.log('showFilterPanel state changed to:', showFilterPanel);
+  }, [showFilterPanel]);
   const [showAlbums, setShowAlbums] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [showFaces, setShowFaces] = useState(false);
+  const [modalStack, setModalStack] = useState<string[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterOptions>({
     dateRange: {
@@ -493,7 +502,7 @@ export default function App() {
           </Text>
         </View>
         <View style={styles.headerRight}>
-          {/* Removed filter button - now available through hamburger menu */}
+          {/* Empty space for future header buttons */}
         </View>
       </View>
       
@@ -572,7 +581,9 @@ export default function App() {
         }}
         onFilterPress={() => {
           console.log('Filter press received in App');
+          console.log('Current showFilterPanel state:', showFilterPanel);
           setShowFilterPanel(true);
+          console.log('Setting showFilterPanel to true');
         }}
       />
       
@@ -614,36 +625,6 @@ export default function App() {
       <StatusBar style="light" />
     </SafeAreaView>
     
-    {/* Photo Detail Modal - Full Screen */}
-    <Modal
-      visible={!!selectedPhoto}
-      animationType="slide"
-      presentationStyle="fullScreen"
-    >
-      {selectedPhoto && (
-        <PhotoDetailScreen
-          imageId={selectedPhoto.id}
-          imageUrl={selectedPhoto.media_url}
-          filename={selectedPhoto.filename}
-          onClose={() => {
-            setSelectedPhoto(null);
-            // If we came from an album, restore the album view
-            if (photoDetailContext === 'album' && albumBeforePhoto) {
-              setSelectedAlbum(albumBeforePhoto);
-              setAlbumBeforePhoto(null);
-            }
-            setPhotoDetailContext(null);
-          }}
-          onDelete={() => {
-            // Remove the deleted photo from the list
-            setPhotos(prev => prev.filter(p => p.id !== selectedPhoto.id));
-            // Update total count
-            setTotalCount(prev => Math.max(0, (prev || 0) - 1));
-            console.log(`Photo ${selectedPhoto.filename} deleted from gallery`);
-          }}
-        />
-      )}
-    </Modal>
 
     {/* Auto-Upload Settings Overlay */}
     {showAutoUploadSettings && (
@@ -653,7 +634,7 @@ export default function App() {
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 9999
+        zIndex: ModalLayers.OVERLAY_SETTINGS
       }}>
         <AutoUploadSettingsScreen onClose={() => setShowAutoUploadSettings(false)} />
       </View>
@@ -665,67 +646,123 @@ export default function App() {
       onClose={() => setShowDebugPanel(false)}
     />
 
-    {/* Filter Panel Modal */}
-    <FilterPanel
-      visible={showFilterPanel}
-      onClose={() => setShowFilterPanel(false)}
-      filters={filters}
-      onFiltersChange={handleFiltersChange}
-      availableCities={availableCities}
-      onCitySearch={fetchAvailableCities}
-    />
-
-    {/* Albums Modal */}
-    <Modal
-      visible={showAlbums}
-      animationType="slide"
-      presentationStyle="fullScreen"
-    >
-      <AlbumsScreen
-        onAlbumSelect={(album) => {
-          setSelectedAlbum(album);
-          setShowAlbums(false);
-        }}
-        onClose={() => setShowAlbums(false)}
-      />
-    </Modal>
-
-    {/* Album Detail Modal */}
-    <Modal
-      visible={!!selectedAlbum}
-      animationType="slide"
-      presentationStyle="fullScreen"
-    >
-      {selectedAlbum && (
-        <AlbumDetailScreen
-          album={selectedAlbum}
+    {/* Single Modal Manager - Photo Detail has highest priority */}
+    {!!selectedPhoto && (
+      <Modal
+        visible={true}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        statusBarTranslucent={true}
+      >
+        <PhotoDetailScreen
+          imageId={selectedPhoto.id}
+          imageUrl={selectedPhoto.relative_media_path || selectedPhoto.media_url}
+          filename={selectedPhoto.filename}
           onClose={() => {
-            // Go back to albums list instead of closing everything
-            setSelectedAlbum(null);
-            setShowAlbums(true);
+            setSelectedPhoto(null);
+            // Navigate back to the context where photo was opened from
+            if (photoDetailContext === 'album' && albumBeforePhoto) {
+              setSelectedAlbum(albumBeforePhoto);
+              setAlbumBeforePhoto(null);
+            } else if (photoDetailContext === 'faces') {
+              // Don't need to setShowFaces(true) - it's already open underneath
+              // Just closing the photo detail will reveal the faces screen
+            } else {
+              // Clear person context if returning to gallery
+              setPersonBeforePhoto(null);
+            }
+            setPhotoDetailContext(null);
           }}
-          onPhotoSelect={(photo) => {
-            setSelectedPhoto(photo);
-            setPhotoDetailContext('album');
-            // Save the current album before hiding it
-            setAlbumBeforePhoto(selectedAlbum);
-            // Temporarily hide the album while photo detail is shown
-            setSelectedAlbum(null);
+          onDelete={() => {
+            // Remove the deleted photo from the list
+            setPhotos(prev => prev.filter(p => p.id !== selectedPhoto.id));
+            // Update total count
+            setTotalCount(prev => Math.max(0, (prev || 0) - 1));
+            console.log(`Photo ${selectedPhoto.filename} deleted from gallery`);
           }}
         />
-      )}
-    </Modal>
+      </Modal>
+    )}
 
-    {/* Faces Modal */}
-    <Modal
-      visible={showFaces}
-      animationType="slide"
-      presentationStyle="fullScreen"
-    >
-      <FacesScreen
-        onClose={() => setShowFaces(false)}
-      />
-    </Modal>
+    {/* Only show other modals when photo detail is NOT active */}
+    {!selectedPhoto && (
+      <>
+        {/* Albums Modal */}
+        <Modal
+          visible={showAlbums}
+          animationType="slide"
+          presentationStyle="fullScreen"
+        >
+          <AlbumsScreen
+            onAlbumSelect={(album) => {
+              setSelectedAlbum(album);
+              setShowAlbums(false);
+            }}
+            onClose={() => setShowAlbums(false)}
+          />
+        </Modal>
+
+        {/* Album Detail Modal */}
+        <Modal
+          visible={!!selectedAlbum}
+          animationType="slide"
+          presentationStyle="fullScreen"
+        >
+          {selectedAlbum && (
+            <AlbumDetailScreen
+              album={selectedAlbum}
+              onClose={() => {
+                // Go back to albums list instead of closing everything
+                setSelectedAlbum(null);
+                setShowAlbums(true);
+              }}
+              onPhotoSelect={(photo) => {
+                setSelectedPhoto(photo);
+                setPhotoDetailContext('album');
+                // Save the current album before hiding it
+                setAlbumBeforePhoto(selectedAlbum);
+                // Temporarily hide the album while photo detail is shown
+                setSelectedAlbum(null);
+              }}
+            />
+          )}
+        </Modal>
+
+        {/* Faces Modal */}
+        <Modal
+          visible={showFaces}
+          animationType="slide"
+          presentationStyle="fullScreen"
+        >
+          <FacesScreen
+            onClose={() => {
+              setShowFaces(false);
+              setPersonBeforePhoto(null); // Clear person context when closing faces
+            }}
+            onSelectPhoto={(photo, person) => {
+              setSelectedPhoto(photo);
+              setPhotoDetailContext('faces'); // Track that we came from faces
+              setPersonBeforePhoto(person); // Track which person we were viewing
+              // Keep faces screen open underneath - don't close it
+            }}
+            initialSelectedPerson={personBeforePhoto}
+          />
+        </Modal>
+
+        {/* Filter Panel Modal */}
+        <FilterPanel
+          visible={showFilterPanel}
+          onClose={() => {
+            console.log('FilterPanel onClose called');
+            setShowFilterPanel(false);
+          }}
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          availableCities={availableCities}
+          onCitySearch={fetchAvailableCities}
+        />
+      </>
+    )}
   </>
   );
 }
@@ -765,17 +802,6 @@ const styles = StyleSheet.create({
   },
   filterButtonText: {
     fontSize: 14,
-  },
-  debugButton: {
-    backgroundColor: '#333',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  debugButtonText: {
-    color: '#0066CC',
-    fontSize: 12,
-    fontWeight: '500',
   },
   bottomNavBar: {
     flexDirection: 'row',

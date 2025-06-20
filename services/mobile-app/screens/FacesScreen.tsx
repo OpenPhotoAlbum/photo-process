@@ -36,9 +36,11 @@ interface PersonsResponse {
 
 interface FacesScreenProps {
   onClose: () => void;
+  onSelectPhoto: (photo: any, person?: any) => void;
+  initialSelectedPerson?: any; // Optional prop to pre-select a person
 }
 
-export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
+export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto, initialSelectedPerson }) => {
   const [persons, setPersons] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -47,6 +49,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [personImages, setPersonImages] = useState<any[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [imageFilter, setImageFilter] = useState<'all' | 'needs_attention'>('all');
 
   const fetchPersons = async (isRefresh = false) => {
     try {
@@ -79,6 +82,14 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
     fetchPersons();
   }, []);
 
+  // Auto-select person if provided
+  useEffect(() => {
+    if (initialSelectedPerson && persons.length > 0) {
+      setSelectedPerson(initialSelectedPerson);
+      fetchPersonImages(initialSelectedPerson.id);
+    }
+  }, [initialSelectedPerson, persons]);
+
   const fetchPersonImages = async (personId: number) => {
     try {
       setLoadingImages(true);
@@ -105,19 +116,30 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to remove face assignment');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
-      Alert.alert('Success', 'Face assignment removed successfully');
+      const result = await response.json();
+      
+      Alert.alert(
+        'Face Removed', 
+        `Face removed from ${result.personName}. ${result.remainingFaceCount} faces remaining.`,
+        [{ text: 'OK' }]
+      );
       
       // Refresh the person images and persons list
       if (selectedPerson) {
-        fetchPersonImages(selectedPerson.id);
-        fetchPersons(true);
+        await fetchPersonImages(selectedPerson.id);
+        await fetchPersons(true);
       }
     } catch (error) {
       console.error('Failed to remove face assignment:', error);
-      Alert.alert('Error', 'Failed to remove face assignment. Please try again.');
+      Alert.alert(
+        'Removal Failed', 
+        error instanceof Error ? error.message : 'Failed to remove face assignment. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -135,6 +157,22 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
   };
 
   const filteredPersons = getFilteredPersons();
+
+  // Helper function to check if an image has faces assigned to the current person
+  const imageHasAssignedFaces = (image: any) => {
+    if (!selectedPerson || !image.faces) return false;
+    return image.faces.some((face: any) => face.person_id === selectedPerson.id);
+  };
+
+  // Filter images based on assignment status
+  const getFilteredImages = () => {
+    if (imageFilter === 'needs_attention') {
+      return personImages.filter(image => !imageHasAssignedFaces(image));
+    }
+    return personImages;
+  };
+
+  const filteredImages = getFilteredImages();
 
   const getPersonStatusColor = (person: Person) => {
     if (person.recognition_status === 'trained') return '#00ff88';
@@ -172,10 +210,10 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
   };
 
   const handleTrainPerson = async (person: Person) => {
-    if (person.face_count < 5) {
+    if ((person.face_count || 0) < 5) {
       Alert.alert(
         'Not Enough Faces',
-        `${person.name} needs at least 5 faces to train. Currently has ${person.face_count} faces assigned.`,
+        `${person.name} needs at least 5 faces to train. Currently has ${person.face_count || 0} faces assigned.`,
         [{ text: 'OK' }]
       );
       return;
@@ -203,7 +241,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
     <View style={styles.filterContainer}>
       {[
         { key: 'all', label: 'All', count: persons.length },
-        { key: 'high_potential', label: 'High Potential', count: persons.filter(p => p.google_tag_count >= 20).length },
+        { key: 'high_potential', label: 'High Potential', count: persons.filter(p => (p.google_tag_count || 0) >= 20).length },
         { key: 'untrained', label: 'Untrained', count: persons.filter(p => p.recognition_status === 'untrained').length },
         { key: 'trained', label: 'Trained', count: persons.filter(p => p.recognition_status === 'trained').length },
       ].map(({ key, label, count }) => (
@@ -280,25 +318,38 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
     if (!selectedPerson) return null;
 
     const renderImageItem = ({ item }: { item: any }) => {
-      const imageUrl = item.thumbnail_url ? `${API_BASE}${item.thumbnail_url}` : `${API_BASE}${item.media_url}`;
+      const imageUrl = `${API_BASE}/media/${item.relative_media_path}`;
+      const hasAssignedFaces = imageHasAssignedFaces(item);
       
       return (
-        <TouchableOpacity style={styles.imageGridItem}>
+        <TouchableOpacity 
+          style={styles.imageGridItem}
+          onPress={() => onSelectPhoto(item, selectedPerson)}
+          activeOpacity={0.7}
+        >
           <Image
             source={{ uri: imageUrl }}
             style={styles.imageGridPhoto}
             contentFit="cover"
           />
+          
+          {/* Checkmark for assigned faces */}
+          {hasAssignedFaces && (
+            <View style={styles.assignedIndicator}>
+              <Text style={styles.checkmarkText}>✓</Text>
+            </View>
+          )}
           {item.faces && item.faces.length > 0 && (
             <View style={styles.faceActions}>
               {item.faces.map((face: any) => (
                 <TouchableOpacity
                   key={face.id}
                   style={styles.removeFaceButton}
-                  onPress={() => {
+                  onPress={(event) => {
+                    event.stopPropagation(); // Prevent image press when removing face
                     Alert.alert(
                       'Remove Face Assignment',
-                      `Remove this face from ${selectedPerson.name}?`,
+                      `Remove this face from ${selectedPerson.name}?\n\nThis will:\n• Remove the face from ${selectedPerson.name}'s profile\n• Update their training model\n• Make the face unassigned`,
                       [
                         { text: 'Cancel', style: 'cancel' },
                         { 
@@ -359,7 +410,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
             </View>
           </View>
 
-          {(selectedPerson.face_count >= 5 && selectedPerson.recognition_status !== 'trained') ? (
+          {((selectedPerson.face_count || 0) >= 5 && selectedPerson.recognition_status !== 'trained') ? (
             <TouchableOpacity
               style={styles.trainButton}
               onPress={() => handleTrainPerson(selectedPerson)}
@@ -375,11 +426,48 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose }) => {
             </View>
           ) : (
             <View style={styles.imagesSection}>
-              <Text style={styles.sectionTitle}>
-                Photos ({personImages.length}) - Long press ✕ to remove face assignments
-              </Text>
+              {/* Header with title and toggle */}
+              <View style={styles.imagesSectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  Photos ({filteredImages.length} of {personImages.length})
+                </Text>
+                
+                {/* Filter Toggle */}
+                <View style={styles.imageFilterToggle}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterToggleButton,
+                      imageFilter === 'all' && styles.filterToggleButtonActive
+                    ]}
+                    onPress={() => setImageFilter('all')}
+                  >
+                    <Text style={[
+                      styles.filterToggleText,
+                      imageFilter === 'all' && styles.filterToggleTextActive
+                    ]}>
+                      All
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.filterToggleButton,
+                      imageFilter === 'needs_attention' && styles.filterToggleButtonActive
+                    ]}
+                    onPress={() => setImageFilter('needs_attention')}
+                  >
+                    <Text style={[
+                      styles.filterToggleText,
+                      imageFilter === 'needs_attention' && styles.filterToggleTextActive
+                    ]}>
+                      Needs Attention
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              
               <FlatList
-                data={personImages}
+                data={filteredImages}
                 renderItem={renderImageItem}
                 keyExtractor={(item) => item.id.toString()}
                 numColumns={3}
@@ -745,5 +833,52 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 10,
     fontWeight: '600',
+  },
+  // New styles for image filter and checkmarks
+  imagesSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  imageFilterToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#222',
+    borderRadius: 16,
+    padding: 2,
+  },
+  filterToggleButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+  filterToggleButtonActive: {
+    backgroundColor: '#007AFF',
+  },
+  filterToggleText: {
+    color: '#999',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  filterToggleTextActive: {
+    color: '#fff',
+  },
+  assignedIndicator: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#00AA00',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  checkmarkText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });

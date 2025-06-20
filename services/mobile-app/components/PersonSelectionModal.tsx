@@ -54,7 +54,42 @@ export const PersonSelectionModal: React.FC<PersonSelectionModalProps> = ({
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const data = await response.json();
-      setPersons(data.persons || []);
+      const fetchedPersons = data.persons || [];
+      
+      // Custom sorting: Top 10 by face count, then alphabetical
+      const sortedPersons = [...fetchedPersons].sort((a, b) => {
+        const aFaceCount = a.face_count || 0;
+        const bFaceCount = b.face_count || 0;
+        
+        // If both have faces or both don't have faces, compare face counts
+        if ((aFaceCount > 0 && bFaceCount > 0) || (aFaceCount === 0 && bFaceCount === 0)) {
+          if (aFaceCount !== bFaceCount) {
+            return bFaceCount - aFaceCount; // Higher face count first
+          }
+          // If face counts are equal, sort alphabetically
+          return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+        }
+        
+        // People with faces come before people without faces
+        return bFaceCount - aFaceCount;
+      });
+      
+      // Separate top 10 by face count and the rest
+      const personsWithFaces = sortedPersons.filter(p => (p.face_count || 0) > 0);
+      const personsWithoutFaces = sortedPersons.filter(p => (p.face_count || 0) === 0);
+      
+      // Get top 10 by face count
+      const top10ByFaceCount = personsWithFaces.slice(0, 10);
+      const remainingWithFaces = personsWithFaces.slice(10);
+      
+      // Sort remaining persons alphabetically
+      const remainingAlphabetical = [...remainingWithFaces, ...personsWithoutFaces]
+        .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      
+      // Combine: top 10 by face count + remaining alphabetical
+      const finalSortedPersons = [...top10ByFaceCount, ...remainingAlphabetical];
+      
+      setPersons(finalSortedPersons);
     } catch (error) {
       console.error('Error loading persons:', error);
       Alert.alert('Error', 'Failed to load persons list');

@@ -140,13 +140,22 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   };
 
   const getOptimizedImageUrl = () => {
-    // Try using thumbnail URL format that works in gallery
-    const thumbnailUrl = `${API_BASE}${imageUrl}?thumb=1`;
-    const originalUrl = `${API_BASE}${imageUrl}`;
-    const optimizedUrl = `${API_BASE}${imageUrl}?width=${Math.round(Dimensions.get('window').width * 2)}`;
-    console.log('PhotoDetailScreen: Thumbnail URL:', thumbnailUrl);
-    console.log('PhotoDetailScreen: Original image URL:', originalUrl);
-    console.log('PhotoDetailScreen: Optimized image URL:', optimizedUrl);
+    // Validate imageUrl prop
+    if (!imageUrl) {
+      console.error('PhotoDetailScreen: imageUrl is undefined or null');
+      return `${API_BASE}/media/placeholder.jpg`; // Fallback URL
+    }
+    
+    // Ensure imageUrl starts with /media/ for consistency
+    const mediaPath = imageUrl.startsWith('/media/') ? imageUrl : `/media/${imageUrl}`;
+    
+    const thumbnailUrl = `${API_BASE}${mediaPath}?thumb=1`;
+    const originalUrl = `${API_BASE}${mediaPath}`;
+    const optimizedUrl = `${API_BASE}${mediaPath}?width=${Math.round(Dimensions.get('window').width * 2)}`;
+    
+    console.log('PhotoDetailScreen: Image URL prop:', imageUrl);
+    console.log('PhotoDetailScreen: Media path:', mediaPath);
+    console.log('PhotoDetailScreen: Final URL:', originalUrl);
     
     // Now that we know thumbnails work, try the full-size image
     return originalUrl;
@@ -206,6 +215,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+    zIndex: 99999,
+    elevation: 99999, // Android elevation
   },
   header: {
     flexDirection: 'row',

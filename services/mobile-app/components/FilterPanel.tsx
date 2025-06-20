@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { ModalLayers } from '../constants/ModalLayers';
 
 export interface FilterOptions {
   dateRange: {
@@ -65,6 +66,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
+
+  // Debug visibility changes
+  useEffect(() => {
+    console.log('FilterPanel visibility changed:', visible);
+  }, [visible]);
 
   // Handle city search with debouncing for server-side search
   useEffect(() => {
@@ -180,25 +186,41 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     });
   };
 
+  // Debug: Add more explicit logging
+  console.log('FilterPanel render called with visible:', visible);
+  
+  // Test if the issue is with Modal component by adding a simple test
+  if (visible) {
+    console.log('FilterPanel is visible, about to render modal');
+  }
+  
   return (
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
+      transparent={false}
+      onShow={() => console.log('FilterPanel modal onShow called')}
+      onDismiss={() => console.log('FilterPanel modal onDismiss called')}
+      onRequestClose={() => {
+        console.log('FilterPanel modal onRequestClose called');
+        onClose();
+      }}
+      style={{ zIndex: ModalLayers.L2_FILTERS }}
     >
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.headerButton}>
+          <TouchableOpacity style={styles.headerButton} onPress={onClose}>
             <Ionicons name="close" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Filter & Sort</Text>
-          <TouchableOpacity onPress={resetFilters} style={styles.headerButton}>
+          <Text style={styles.headerTitle}>Filters</Text>
+          <TouchableOpacity style={styles.headerButton} onPress={resetFilters}>
             <Text style={styles.resetText}>Reset</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.content}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {/* Date Range Filter */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -619,7 +641,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </ScrollView>
 
         {/* Apply Button */}
         <View style={styles.footer}>
@@ -679,10 +701,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+    position: 'relative',
+    zIndex: 9999,
   },
   header: {
     flexDirection: 'row',
