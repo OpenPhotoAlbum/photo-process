@@ -45,6 +45,8 @@ const sidebars: SidebarsConfig = {
       label: '👨‍💻 Development',
       items: [
         'development/setup',
+        'development/mcp-integration',
+        'development/bug-tracking',
       ],
     },
     {
@@ -69,6 +71,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '📊 Monitoring & Logs',
       items: [
+        'monitoring/overview',
         'monitoring/kibana-queries',
       ],
     },

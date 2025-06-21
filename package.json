@@ -71,7 +71,10 @@
     "logs:check-indices": "curl -s http://localhost:9200/_cat/indices/photo-platform-* | sort",
     "logs:ship-today": "./infrastructure/logging/ship-logs.sh",
     "logs:ship-date": "./infrastructure/logging/ship-logs.sh",
-    "logs:setup-auto": "./infrastructure/logging/setup-auto-logging.sh"
+    "logs:setup-auto": "./infrastructure/logging/setup-auto-logging.sh",
+    "mcp:start": "npm run --prefix ./claude_brain start-mcp",
+    "mcp:start-simple": "npm run --prefix ./claude_brain start-mcp-simple",
+    "mcp:test": "npm run --prefix ./claude_brain test-server"
   },
   "dependencies": {
     "chalk": "^5.4.1",

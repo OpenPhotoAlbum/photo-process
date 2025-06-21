@@ -10,6 +10,7 @@ Modern microservices platform architecture with Docker orchestration:
 photo-process/
 ├── VISION.md                    # Product vision and goals
 ├── docker-compose.platform.yml # Main Docker orchestration
+├── claude_brain/               # MCP server for Claude Code integration (6GB embeddings)
 ├── services/                   # Microservices
 │   ├── api/                   # TypeScript API service (worker threads, FileTracker)
 │   ├── mobile-app/            # React Native mobile app (auto-upload, face recognition)
@@ -108,6 +109,17 @@ npm run cleanup:menu            # Interactive cleanup options
 npm run test:unit              # Unit tests
 npm run test:integration       # Integration tests
 npm run test:coverage         # Coverage report
+
+# Claude Brain MCP Integration
+npm run mcp:start              # Start MCP server for Claude Code integration
+npm run mcp:test               # Test MCP server (show help)
+npm run mcp:start-simple       # Start simple MCP server version
+
+# Monitoring & Logging (Elasticsearch/Kibana)
+npm run logs:start             # Start Elasticsearch and Kibana monitoring stack
+npm run logs:kibana            # Open Kibana dashboard (http://localhost:5601)
+npm run logs:stop              # Stop monitoring stack
+npm run logs:check-indices     # View current Elasticsearch indices
 ```
 
 ## 🎯 **Vision & Goals**
@@ -152,7 +164,9 @@ Core principles:
 ### ✅ **Technical Infrastructure**
 - **Worker Threads**: Non-blocking image processing prevents API blocking during CPU-intensive operations
 - **FileTracker**: Database-indexed file discovery enables instant scanning of 8,358+ files
-- **Structured Logging**: Category-based log files with JSON format for easy analysis
+- **Claude Brain MCP**: Semantic codebase search integration with Claude Code (6GB indexed database)
+- **Elasticsearch Monitoring**: Real-time log analysis with Kibana dashboards and automatic indexing
+- **Structured Logging**: Category-based log files with JSON format and dual Elasticsearch/file storage
 - **Docker Orchestration**: Complete development and production environment via Docker Compose
 - **Migration System**: Comprehensive database migrations with automatic schema updates
 - **Testing Suite**: 93 passing tests covering unit, integration, and end-to-end scenarios

@@ -72,6 +72,33 @@ sleep 3 && curl -s http://localhost:9000/api/persons/unidentified?limit=1 > /dev
 - `npm run logs:faces` - Monitor face detection/recognition logs
 - `npm run logs:system` - Monitor system startup logs
 
+### Claude Brain MCP Commands
+- `npm run mcp:start` - Start Claude Brain MCP server for Claude Code integration
+- `npm run mcp:start-simple` - Start simple MCP server version
+- `npm run mcp:test` - Test MCP server (show help message)
+
+**Claude Brain Integration**: Provides semantic codebase search tools to Claude Code:
+- **search_codebase**: Natural language search across entire project (6GB indexed database)
+- **search_by_file_type**: Filter search by file extensions (.ts, .py, .js, etc.)
+- **Database**: 6GB embeddings.db with full project codebase semantically indexed
+- **Architecture**: Python MCP server in `claude_brain/` directory with virtual environment
+
+### Monitoring & Logging Commands
+- `npm run logs:start` - Start Elasticsearch and Kibana monitoring stack
+- `npm run logs:stop` - Stop monitoring stack
+- `npm run logs:restart` - Restart monitoring stack
+- `npm run logs:status` - Check monitoring service status
+- `npm run logs:kibana` - Open Kibana dashboard (http://localhost:5601)
+- `npm run logs:check-indices` - View current Elasticsearch indices
+- `npm run logs:ship-today` - Ship today's logs to Elasticsearch
+
+**Monitoring Stack**: Comprehensive logging and analysis system:
+- **Elasticsearch**: Primary log storage with organized daily indices
+- **Kibana**: Web-based visualization and query interface at http://localhost:5601
+- **Direct Logging**: Application logs directly to Elasticsearch (no Filebeat)
+- **Log Categories**: System, API, processing, faces, errors, performance, audit
+- **Dual Logging**: Both Elasticsearch and local files for redundancy
+
 **Pattern**: Whenever we add new processing features, always create retroactive scripts to update existing images.
 
 ## Architecture Overview

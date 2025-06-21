@@ -1,0 +1,11 @@
+{
+  "name": "claude-brain-mcp",
+  "version": "1.0.0",
+  "description": "Claude Brain MCP Server",
+  "scripts": {
+    "start-mcp": "cd /mnt/hdd/photo-process/claude_brain && ./venv/bin/python mcp_server_simple.py --project-root /mnt/hdd/photo-process",
+    "start-mcp-simple": "cd /mnt/hdd/photo-process/claude_brain && ./venv/bin/python mcp_server_simple.py",
+    "test-server": "cd /mnt/hdd/photo-process/claude_brain && ./venv/bin/python mcp_server_simple.py --help"
+  },
+  "private": true
+}
