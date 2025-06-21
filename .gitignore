@@ -92,3 +92,11 @@ test.gif
 test.webp
 sample-*.jpg
 sample-*.png
+
+# React Native / Expo
+.expo/
+
+# Debug and temporary scripts
+debug-*.js
+find-*.js
+fix-single-*.js
