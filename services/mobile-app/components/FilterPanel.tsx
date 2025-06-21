@@ -14,27 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ModalLayers } from '../constants/ModalLayers';
-
-export interface FilterOptions {
-  dateRange: {
-    enabled: boolean;
-    startDate: Date | null;
-    endDate: Date | null;
-  };
-  location: {
-    enabled: boolean;
-    hasGPS: boolean | null; // null = all, true = with GPS, false = without GPS
-    selectedCities: string[];
-  };
-  user: {
-    enabled: boolean;
-    selectedUsers: string[]; // stephen, cayce, google, etc.
-  };
-  sort: {
-    field: 'date_taken' | 'filename' | 'date_processed';
-    direction: 'desc' | 'asc';
-  };
-}
+import { FilterOptions } from '../types';
 
 interface FilterPanelProps {
   visible: boolean;

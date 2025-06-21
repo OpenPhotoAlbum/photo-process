@@ -194,6 +194,25 @@ curl -X POST "http://localhost:9000/api/faces/auto-recognize?limit=100&minConfid
 }
 ```
 
+### `DELETE /api/faces/:faceId`
+**Description**: Completely delete face detection (removes record and physical file)
+
+**Path Parameters**:
+- `faceId` (number): Face ID
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Face deleted successfully",
+  "deletedFaceId": 123
+}
+```
+
+:::warning Complete Deletion
+This permanently removes the face detection from the database and deletes the physical face crop file. This action cannot be undone. Use with caution.
+:::
+
 ### `POST /api/faces/:faceId/mark-invalid`
 **Description**: Mark face as invalid (not actually a face)
 

@@ -166,12 +166,12 @@ function validateAndCorrectGPSCoordinate(
     
     // Auto-correction for missing longitude reference
     if (coordinateType === 'longitude') {
-        // North America: 25°N to 70°N latitude typically has negative longitude
-        // This catches most US/Canada photos with missing GPSLongitudeRef
-        if (coordinate > 0 && coordinate <= 180) {
-            // For now, log this as a potential correction but don't auto-fix
-            // to avoid false positives for Asia/Australia coordinates
-            console.warn(`GPS longitude ${coordinate} appears positive but may need correction for Western hemisphere`);
+        // North America longitude ranges: approximately -170° to -50°
+        // If longitude is positive and in typical North American range, it's likely missing the 'W' reference
+        if (coordinate > 0 && coordinate >= 50 && coordinate <= 180) {
+            const correctedLongitude = -coordinate;
+            console.warn(`GPS longitude auto-corrected: ${coordinate} → ${correctedLongitude} (missing 'W' reference)`);
+            return correctedLongitude;
         }
     }
     
@@ -315,8 +315,16 @@ export function extractEnhancedMetadata(exif: Tags): EnhancedExifMetadata {
         light_source: exif.LightSource,
         
         // Location
-        latitude: parseGPSCoordinate(exif.GPSLatitude, exif.GPSLatitudeRef),
-        longitude: parseGPSCoordinate(exif.GPSLongitude, exif.GPSLongitudeRef),
+        latitude: validateAndCorrectGPSCoordinate(
+            parseGPSCoordinate(exif.GPSLatitude, exif.GPSLatitudeRef), 
+            exif.GPSLatitudeRef, 
+            'latitude'
+        ),
+        longitude: validateAndCorrectGPSCoordinate(
+            parseGPSCoordinate(exif.GPSLongitude, exif.GPSLongitudeRef), 
+            exif.GPSLongitudeRef, 
+            'longitude'
+        ),
         altitude: parseNumeric(exif.GPSAltitude),
         city: exif.City,
         // state: exif.State, // Property doesn't exist in Tags

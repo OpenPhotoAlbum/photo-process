@@ -1,7 +1,7 @@
 {
   "client": "Thunder Client",
   "collectionName": "Photo Processing API",
-  "dateExported": "2025-01-18T12:00:00.000Z",
+  "dateExported": "2025-06-21T12:00:00.000Z",
   "version": "1.1",
   "folders": [
     {
@@ -599,6 +599,25 @@
       "headers": [],
       "params": [],
       "tests": []
+    },
+    {
+      "_id": "delete-face-completely",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Delete Face Completely",
+      "url": "{{apiBase}}/faces/{{faceId}}",
+      "method": "DELETE",
+      "sortNum": 65000,
+      "headers": [],
+      "params": [],
+      "tests": [
+        {
+          "type": "res-code",
+          "custom": "",
+          "action": "equal",
+          "value": "200"
+        }
+      ]
     },
     {
       "_id": "mark-face-invalid",

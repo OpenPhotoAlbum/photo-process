@@ -48,8 +48,9 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
   const [filter, setFilter] = useState<'all' | 'trained' | 'untrained' | 'high_potential'>('all');
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [personImages, setPersonImages] = useState<any[]>([]);
+  const [personFaces, setPersonFaces] = useState<any[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
-  const [imageFilter, setImageFilter] = useState<'all' | 'needs_attention'>('all');
+  const [imageFilter, setImageFilter] = useState<'all' | 'needs_attention' | 'face_crops'>('face_crops');
 
   const fetchPersons = async (isRefresh = false) => {
     try {
@@ -87,6 +88,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     if (initialSelectedPerson && persons.length > 0) {
       setSelectedPerson(initialSelectedPerson);
       fetchPersonImages(initialSelectedPerson.id);
+      fetchPersonFaces(initialSelectedPerson.id);
     }
   }, [initialSelectedPerson, persons]);
 
@@ -104,6 +106,25 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     } catch (err) {
       console.error('Error fetching person images:', err);
       setPersonImages([]);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
+  const fetchPersonFaces = async (personId: number) => {
+    try {
+      setLoadingImages(true);
+      const response = await fetch(`${API_BASE}/api/persons/${personId}/faces`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch person faces: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setPersonFaces(data.faces || []);
+    } catch (err) {
+      console.error('Error fetching person faces:', err);
+      setPersonFaces([]);
     } finally {
       setLoadingImages(false);
     }
@@ -144,16 +165,33 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
   };
 
   const getFilteredPersons = () => {
+    let filtered: Person[];
     switch (filter) {
       case 'trained':
-        return persons.filter(p => p.recognition_status === 'trained');
+        filtered = persons.filter(p => p.recognition_status === 'trained');
+        break;
       case 'untrained':
-        return persons.filter(p => p.recognition_status === 'untrained');
+        filtered = persons.filter(p => p.recognition_status === 'untrained');
+        break;
       case 'high_potential':
-        return persons.filter(p => (p.google_tag_count || 0) >= 20);
+        filtered = persons.filter(p => (p.google_tag_count || 0) >= 20);
+        break;
       default:
-        return persons;
+        filtered = persons;
     }
+
+    // Sort: faces with assigned faces first (alphabetically), then placeholders (alphabetically)
+    return filtered.sort((a, b) => {
+      const aHasFaces = (a.face_count || 0) > 0;
+      const bHasFaces = (b.face_count || 0) > 0;
+      
+      // If one has faces and the other doesn't, prioritize the one with faces
+      if (aHasFaces && !bHasFaces) return -1;
+      if (!aHasFaces && bHasFaces) return 1;
+      
+      // Both have faces or both don't have faces - sort alphabetically by name
+      return a.name.localeCompare(b.name);
+    });
   };
 
   const filteredPersons = getFilteredPersons();
@@ -164,15 +202,17 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     return image.faces.some((face: any) => face.person_id === selectedPerson.id);
   };
 
-  // Filter images based on assignment status
-  const getFilteredImages = () => {
-    if (imageFilter === 'needs_attention') {
+  // Filter images/faces based on assignment status and view type
+  const getFilteredImagesOrFaces = () => {
+    if (imageFilter === 'face_crops') {
+      return personFaces;
+    } else if (imageFilter === 'needs_attention') {
       return personImages.filter(image => !imageHasAssignedFaces(image));
     }
     return personImages;
   };
 
-  const filteredImages = getFilteredImages();
+  const filteredData = getFilteredImagesOrFaces();
 
   const getPersonStatusColor = (person: Person) => {
     if (person.recognition_status === 'trained') return '#00ff88';
@@ -270,6 +310,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
         onPress={() => {
           setSelectedPerson(item);
           fetchPersonImages(item.id);
+          fetchPersonFaces(item.id);
         }}
         activeOpacity={0.7}
       >
@@ -292,7 +333,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
           
           <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
             <Text style={styles.statusBadgeText}>
-              {item.recognition_status === 'trained' ? '✓' : (item.face_count || item.google_tag_count || 0).toString()}
+              {item.recognition_status === 'trained' ? '✓' : (item.face_count || 0).toString()}
             </Text>
           </View>
         </View>
@@ -375,6 +416,69 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
       );
     };
 
+    const renderFaceItem = ({ item }: { item: any }) => {
+      const faceUrl = `${API_BASE}/processed/faces/${item.relative_face_path}`;
+      
+      return (
+        <TouchableOpacity 
+          style={styles.imageGridItem}
+          onPress={() => {
+            // Navigate to the parent photo when face is tapped
+            if (item.image) {
+              onSelectPhoto(item.image, selectedPerson);
+            }
+          }}
+          activeOpacity={0.7}
+        >
+          <Image
+            source={{ uri: faceUrl }}
+            style={styles.imageGridPhoto}
+            contentFit="cover"
+          />
+          
+          {/* Show confidence score on face crops */}
+          {item.recognition_confidence && (
+            <View style={styles.confidenceOverlay}>
+              <Text style={styles.confidenceText}>
+                {(item.recognition_confidence * 100).toFixed(0)}%
+              </Text>
+            </View>
+          )}
+          
+          {/* Remove face button */}
+          <TouchableOpacity
+            style={styles.removeFaceButton}
+            onPress={(event) => {
+              event.stopPropagation();
+              Alert.alert(
+                'Remove Face Assignment',
+                `Remove this face from ${selectedPerson.name}?\n\nThis will:\n• Remove the face from ${selectedPerson.name}'s profile\n• Update their training model\n• Make the face unassigned`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Remove', 
+                    style: 'destructive',
+                    onPress: () => removeFaceAssignment(item.id)
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.removeFaceButtonText}>✕</Text>
+          </TouchableOpacity>
+          
+          {/* Show assignment method badge */}
+          {item.assigned_by && (
+            <View style={styles.assignmentMethodOverlay}>
+              <Text style={styles.assignmentMethodText}>
+                {item.assigned_by === 'auto_recognition' ? 'Auto' : 'Manual'}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    };
+
     return (
       <Modal
         visible={!!selectedPerson}
@@ -386,6 +490,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
             <TouchableOpacity onPress={() => {
               setSelectedPerson(null);
               setPersonImages([]);
+              setPersonFaces([]);
             }} style={styles.modalCloseButton}>
               <Text style={styles.modalCloseButtonText}>Done</Text>
             </TouchableOpacity>
@@ -429,7 +534,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
               {/* Header with title and toggle */}
               <View style={styles.imagesSectionHeader}>
                 <Text style={styles.sectionTitle}>
-                  Photos ({filteredImages.length} of {personImages.length})
+                  {imageFilter === 'face_crops' ? `Face Crops (${filteredData.length})` : `Photos (${filteredData.length} of ${personImages.length})`}
                 </Text>
                 
                 {/* Filter Toggle */}
@@ -463,12 +568,27 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
                       Needs Attention
                     </Text>
                   </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[
+                      styles.filterToggleButton,
+                      imageFilter === 'face_crops' && styles.filterToggleButtonActive
+                    ]}
+                    onPress={() => setImageFilter('face_crops')}
+                  >
+                    <Text style={[
+                      styles.filterToggleText,
+                      imageFilter === 'face_crops' && styles.filterToggleTextActive
+                    ]}>
+                      Face Crops
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
               
               <FlatList
-                data={filteredImages}
-                renderItem={renderImageItem}
+                data={filteredData}
+                renderItem={imageFilter === 'face_crops' ? renderFaceItem : renderImageItem}
                 keyExtractor={(item) => item.id.toString()}
                 numColumns={3}
                 contentContainerStyle={styles.imageGrid}
@@ -813,7 +933,6 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 4,
   },
   removeFaceButtonText: {
     color: '#fff',
@@ -880,5 +999,33 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  confidenceOverlay: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  confidenceText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  assignmentMethodOverlay: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    backgroundColor: 'rgba(0, 119, 255, 0.8)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  assignmentMethodText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
   },
 });

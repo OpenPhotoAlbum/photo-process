@@ -84,6 +84,7 @@ const main = async () => {
     app.get('/api/persons', routes.Persons.getAllPersons as any);
     app.get('/api/persons/:id', routes.Persons.getPersonById as any);
     app.get('/api/persons/:id/images', routes.Persons.getPersonImages as any);
+    app.get('/api/persons/:id/faces', routes.Persons.getPersonFaces as any);
     app.post('/api/persons', routes.Persons.createPerson as any);
     app.put('/api/persons/:id', routes.Persons.updatePerson as any);
     app.delete('/api/persons/:id', routes.Persons.deletePerson as any);
@@ -92,6 +93,7 @@ const main = async () => {
     app.post('/api/faces/assign', routes.Persons.assignFaceToPerson as any);
     app.post('/api/faces/batch-assign', routes.Persons.batchAssignFacesToPerson as any);
     app.delete('/api/faces/:faceId/person', routes.Persons.removeFaceFromPerson as any);
+    app.delete('/api/faces/:faceId', routes.Persons.deleteFace as any);
     app.post('/api/faces/:faceId/mark-invalid', routes.Persons.markFaceAsInvalid as any);
     app.post('/api/faces/:faceId/mark-unknown', routes.Persons.markFaceAsUnknown as any);
     app.get('/api/faces/unidentified', routes.Persons.getUnidentifiedFaces as any);

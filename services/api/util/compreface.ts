@@ -403,18 +403,26 @@ export const extractFaces = async (imagepath: string, dest: string): Promise<Rec
     for (const res in result) {
         const { box } = result[res];
         
-        // CompreFace returns coordinates based on RAW image orientation (ignores EXIF)
-        // Use coordinates directly without transformation
-        const extractCoords = {
-            left: box.x_min,
-            top: box.y_min,
-            width: box.x_max - box.x_min,
-            height: box.y_max - box.y_min,
-        };
+        // CompreFace returns coordinates based on display orientation, but Sharp works with raw orientation
+        // Apply coordinate transformation for EXIF orientation
+        let displayWidth, displayHeight;
+        if (orientation === 6 || orientation === 8) {
+            // For 90° rotations, display dimensions are swapped
+            displayWidth = rawHeight;
+            displayHeight = rawWidth;
+        } else {
+            displayWidth = rawWidth;
+            displayHeight = rawHeight;
+        }
+        
+        const extractCoords = transformCoordinatesForOrientation(
+            box.x_min, box.y_min, box.x_max, box.y_max,
+            displayWidth, displayHeight, orientation
+        );
         
         logger.info(`[EXTRACT FACES] Face ${i}: original box(${box.x_min},${box.y_min},${box.x_max},${box.y_max}) -> extract(${extractCoords.left},${extractCoords.top},${extractCoords.width},${extractCoords.height})`);
         
-        // Use Sharp WITHOUT withMetadata() and apply our coordinate transformation
+        // Use Sharp and apply our coordinate transformation
         const s = sharp(imagepath);
 
         // Create face filename in the dest directory
@@ -426,7 +434,18 @@ export const extractFaces = async (imagepath: string, dest: string): Promise<Rec
         // Ensure the dest directory exists
         fs.mkdirSync(dest, { recursive: true });
         try {
-            await s.extract(extractCoords).toFile(filename);
+            if (orientation === 3) {
+                // For orientation 3 (180° rotation), extract and then rotate the face 180°
+                await s.extract(extractCoords).rotate(180).toFile(filename);
+            } else if (orientation === 6) {
+                // For orientation 6 (90° CW rotation), extract and then rotate the face 90° CW (was -90° + 180°)
+                await s.extract(extractCoords).rotate(90).toFile(filename);
+            } else if (orientation === 8) {
+                // For orientation 8 (90° CCW rotation), extract and then rotate the face 90° CCW (was 90° + 180°)
+                await s.extract(extractCoords).rotate(-90).toFile(filename);
+            } else {
+                await s.extract(extractCoords).toFile(filename);
+            }
         } catch (error) {
             logger.error(`[EXTRACT FACES] Error extracting face ${i} from ${imagepath}: ${error}`);
             continue; // Skip this face if extraction fails

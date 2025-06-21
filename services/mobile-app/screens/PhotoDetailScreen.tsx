@@ -103,22 +103,65 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
     );
   };
 
+  const handleFaceRemoval = async (face: FaceData) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/faces/${face.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        // Remove the face from our local state
+        setFaces(prevFaces => prevFaces.filter(f => f.id !== face.id));
+        Alert.alert('Success', 'Face removed successfully');
+      } else {
+        const error = await response.json();
+        Alert.alert('Error', error.error || 'Failed to remove face');
+      }
+    } catch (error) {
+      console.error('Failed to remove face:', error);
+      Alert.alert('Error', 'Failed to remove face');
+    }
+  };
+
   const handleFacePress = (face: FaceData) => {
     const isAssigned = face.person_name && face.person_id;
     
+    const buttons = [
+      { text: 'Cancel', style: 'cancel' as const },
+      {
+        text: 'Remove Face',
+        style: 'destructive' as const,
+        onPress: () => {
+          Alert.alert(
+            'Remove Face',
+            'This will permanently remove this face detection. Are you sure?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Remove',
+                style: 'destructive',
+                onPress: () => handleFaceRemoval(face)
+              }
+            ]
+          );
+        }
+      },
+      {
+        text: isAssigned ? 'Reassign Person' : 'Assign Person',
+        onPress: () => {
+          setSelectedFace(face);
+          setShowPersonModal(true);
+        }
+      }
+    ];
+
     Alert.alert(
       'Face Details',
       `Face ID: ${face.id}\nConfidence: ${(parseFloat(face.detection_confidence) * 100).toFixed(1)}%\nPerson: ${face.person_name || 'Unassigned'}`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: isAssigned ? 'Reassign Person' : 'Assign Person',
-          onPress: () => {
-            setSelectedFace(face);
-            setShowPersonModal(true);
-          }
-        }
-      ]
+      buttons
     );
   };
 

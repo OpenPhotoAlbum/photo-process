@@ -8,6 +8,8 @@ import { Logger } from '../logger';
 import { CompreFaceTrainingManager, AutoTrainingConfig } from '../util/compreface-training';
 import { FaceClusteringService } from '../util/face-clustering';
 import fetch from 'node-fetch';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const logger = Logger.getInstance();
 
@@ -503,38 +505,42 @@ export const removeFaceFromPerson = async (req: Request, res: Response) => {
         }
 
         // If person still has faces, retrain their model in the background
-        if (person && person.compreface_subject_id) {
+        if (person && person.compreface_subject_id && personId) {
+            const capturedPersonId = personId;
+            const capturedSubjectId = person.compreface_subject_id;
+            const capturedPersonName = person.name;
+            
             (async () => {
                 try {
-                    const updatedPerson = await PersonRepository.getPersonWithFaceCount(personId);
+                    const updatedPerson = await PersonRepository.getPersonWithFaceCount(capturedPersonId);
                     if (updatedPerson && updatedPerson.face_count > 0) {
-                        req.logger.info(`Retraining ${person.name} after face removal (${updatedPerson.face_count} faces remaining)`);
+                        req.logger.info(`Retraining ${capturedPersonName} after face removal (${updatedPerson.face_count} faces remaining)`);
                         
                         // Get remaining faces for this person
-                        const remainingFaces = await FaceRepository.getFacesByPerson(personId);
+                        const remainingFaces = await FaceRepository.getFacesByPerson(capturedPersonId);
                         const facePaths = remainingFaces
                             .filter(f => f.face_image_path)
                             .map(f => `${configManager.getStorage().processedDir}/${f.face_image_path}`);
                         
                         if (facePaths.length > 0) {
                             // Re-upload remaining faces to CompreFace for training
-                            await addFacesToSubjectBatch(person.compreface_subject_id, facePaths, 2);
-                            req.logger.info(`Retraining completed for ${person.name} with ${facePaths.length} faces`);
+                            await addFacesToSubjectBatch(capturedSubjectId, facePaths, 2);
+                            req.logger.info(`Retraining completed for ${capturedPersonName} with ${facePaths.length} faces`);
                             
                             // Update person status
-                            await PersonRepository.updatePerson(personId, {
+                            await PersonRepository.updatePerson(capturedPersonId, {
                                 recognition_status: 'trained',
                                 last_trained_at: new Date()
                             });
                         } else {
                             // No faces left, mark as untrained
-                            await PersonRepository.updatePerson(personId, {
+                            await PersonRepository.updatePerson(capturedPersonId, {
                                 recognition_status: 'untrained'
                             });
                         }
                     }
                 } catch (retrainError) {
-                    req.logger.error(`Failed to retrain person ${person.name} after face removal:`, retrainError);
+                    req.logger.error(`Failed to retrain person ${capturedPersonName} after face removal:`, retrainError);
                 }
             })();
         }
@@ -2463,6 +2469,175 @@ export const autoRecognizeFaces = asyncHandler(async (req: Request, res: Respons
     } catch (error) {
         req.logger.error(`Auto-recognition failed for image ${imageId}:`, error);
         throw new AppError('Auto-recognition failed', 500);
+    }
+});
+
+// Get all face crops for a specific person
+export const getPersonFaces = asyncHandler(async (req: Request, res: Response) => {
+    const personId = validatePersonId(req.params.id);
+    
+    req.logger.info(`Getting face crops for person ${personId}`);
+    
+    try {
+        // Get all faces assigned to this person with additional metadata
+        const faces = await db('detected_faces')
+            .join('images', 'detected_faces.image_id', 'images.id')
+            .where('detected_faces.person_id', personId)
+            .select(
+                'detected_faces.id',
+                'detected_faces.face_image_path',
+                'detected_faces.relative_face_path',
+                'detected_faces.x_min',
+                'detected_faces.y_min',
+                'detected_faces.x_max',
+                'detected_faces.y_max',
+                'detected_faces.detection_confidence',
+                'detected_faces.person_confidence as recognition_confidence',
+                'detected_faces.assigned_by',
+                'detected_faces.assigned_at',
+                'images.id as image_id',
+                'images.filename as image_filename',
+                'images.relative_media_path',
+                'images.date_taken'
+            )
+            .orderBy('detected_faces.assigned_at', 'desc'); // Most recently assigned first
+        
+        // Enrich faces with proper URLs and image data
+        const enrichedFaces = faces.map(face => ({
+            id: face.id,
+            relative_face_path: face.relative_face_path || face.face_image_path,
+            x_min: face.x_min,
+            y_min: face.y_min,
+            x_max: face.x_max,
+            y_max: face.y_max,
+            detection_confidence: face.detection_confidence,
+            recognition_confidence: face.recognition_confidence,
+            assigned_by: face.assigned_by,
+            assigned_at: face.assigned_at,
+            image: {
+                id: face.image_id,
+                filename: face.image_filename,
+                relative_media_path: face.relative_media_path,
+                media_url: getMediaUrl({ relative_media_path: face.relative_media_path }),
+                date_taken: face.date_taken
+            }
+        }));
+        
+        req.logger.info(`Found ${enrichedFaces.length} face crops for person ${personId}`);
+        
+        res.json({
+            faces: enrichedFaces,
+            count: enrichedFaces.length
+        });
+        
+    } catch (error) {
+        req.logger.error(`Error getting face crops for person ${personId}:`, error);
+        throw new AppError('Failed to get person faces', 500);
+    }
+});
+
+// Complete face deletion - removes face record and physical file
+export const deleteFace = asyncHandler(async (req: Request, res: Response) => {
+    const faceId = validateFaceId(req.params.faceId);
+    
+    req.logger.info(`Starting complete deletion for face ${faceId}`);
+    
+    try {
+        // Get the face record first
+        const face = await FaceRepository.getFaceById(faceId);
+        if (!face) {
+            throw new AppError('Face not found', 404);
+        }
+        
+        const personId = face.person_id;
+        let person = null;
+        
+        if (personId && personId > 0) {
+            person = await PersonRepository.getPersonWithFaceCount(personId);
+        }
+        
+        req.logger.info(`Deleting face ${faceId} from person ${person?.name || 'unassigned'}`);
+        
+        // Remove from CompreFace if it was assigned to someone
+        if (face.face_image_path && person?.compreface_subject_id) {
+            try {
+                const deletionResult = await deleteFaceFromSubject(face.face_image_path);
+                req.logger.info(`CompreFace face deletion result:`, deletionResult);
+            } catch (comprefaceError) {
+                req.logger.warn('CompreFace removal failed (continuing with database deletion):', comprefaceError);
+            }
+        }
+        
+        // Delete physical face crop file if it exists
+        const faceImagePath = face.relative_face_path || face.face_image_path;
+        if (faceImagePath) {
+            let fullFacePath: string;
+            
+            if (face.relative_face_path) {
+                // Hash-based path
+                fullFacePath = path.join(configManager.getStorage().processedDir, 'media', face.relative_face_path);
+            } else {
+                // Legacy path
+                fullFacePath = path.join(configManager.getStorage().processedDir, face.face_image_path);
+            }
+            
+            try {
+                if (fs.existsSync(fullFacePath)) {
+                    fs.unlinkSync(fullFacePath);
+                    req.logger.info(`Deleted face crop file: ${fullFacePath}`);
+                } else {
+                    req.logger.warn(`Face crop file not found (may have been already deleted): ${fullFacePath}`);
+                }
+            } catch (fileError) {
+                req.logger.warn(`Failed to delete face crop file: ${fullFacePath}`, fileError);
+                // Continue with database deletion even if file deletion fails
+            }
+        }
+        
+        // Remove from face clustering if applicable
+        try {
+            await db('face_cluster_members').where('face_id', faceId).del();
+            req.logger.debug(`Removed face ${faceId} from clustering data`);
+        } catch (clusterError) {
+            req.logger.warn(`Failed to remove face from clustering data:`, clusterError);
+        }
+        
+        // Delete the face record from database
+        const deletedRows = await db('detected_faces').where('id', faceId).del();
+        
+        if (deletedRows === 0) {
+            throw new AppError('Face record not found in database', 404);
+        }
+        
+        req.logger.info(`Successfully deleted face record ${faceId} from database`);
+        
+        // Update person face count if person was assigned
+        if (personId && personId > 0) {
+            await PersonRepository.updateFaceCount(personId);
+            req.logger.info(`Updated face count for person ${personId}`);
+            
+            // If person now has no faces, mark as untrained
+            const updatedPerson = await PersonRepository.getPersonWithFaceCount(personId);
+            if (updatedPerson && updatedPerson.face_count === 0) {
+                await PersonRepository.updatePerson(personId, {
+                    recognition_status: 'untrained'
+                });
+                req.logger.info(`Marked person ${personId} as untrained (no remaining faces)`);
+            }
+        }
+        
+        res.json({ 
+            success: true,
+            message: 'Face deleted successfully',
+            deletedFaceId: faceId
+        });
+        
+    } catch (error) {
+        req.logger.error(`Failed to delete face ${faceId}:`, error);
+        if (error instanceof AppError) {
+            throw error;
+        }
+        throw new AppError('Failed to delete face', 500);
     }
 });
 
