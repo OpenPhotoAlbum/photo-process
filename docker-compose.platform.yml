@@ -132,13 +132,16 @@ services:
     restart: unless-stopped
     environment:
       - ML_PORT=3000
-      - UWSGI_PROCESSES=2
+      - UWSGI_PROCESSES=1
       - UWSGI_THREADS=1
+      - UWSGI_LISTEN=200  # Increase listen queue size
+      - UWSGI_MAX_REQUESTS=1000
+      - UWSGI_HARAKIRI=300  # Increase timeout for long operations
     healthcheck:
       test: curl --fail http://localhost:3000/healthcheck || exit 1
-      interval: 30s
-      retries: 3
-      timeout: 10s
+      interval: 60s
+      retries: 5
+      timeout: 30s
     networks:
       - photo-platform
 

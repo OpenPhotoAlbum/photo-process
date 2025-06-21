@@ -24,6 +24,27 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
 ## 📅 Chronological Achievements
 
 ### June 21, 2025
+- ✅ **Cross-Platform API Connectivity Resolution**: Fixed hardcoded URLs enabling seamless operation across all environments
+  - **Achievement**: Eliminated hardcoded API URLs preventing mobile app functionality in different environments
+  - **Root Cause**: Mobile app components contained hardcoded `http://192.168.40.103:9000` instead of config-based endpoints
+  - **Fixed Components**: MetadataSection.tsx, FaceRow.tsx, PersonSelectionModal.tsx, FaceAPI.ts, SimplePhotoDetailScreen.tsx, BasicImageTest.tsx, NativeImageTest.tsx
+  - **Config Integration**: All components now use `API_BASE` from config.ts for environment-aware endpoint selection
+  - **Environment Support**: Development (local network), standalone/preview (Expo), production (Cloudflare tunnel)
+  - **Cloudflare Fix**: Resolved 524 timeout errors by switching CompreFace from Docker-internal to external IP
+  - **Gallery Compatibility**: Added mobile app compatibility fields (totalCount, hasMore, nextCursor) to gallery API response
+  - **Impact**: Mobile app now works consistently across all deployment environments
+
+- ✅ **CompreFace UI Backend Connectivity**: Fixed CompreFace admin interface showing no subjects despite 88 stored subjects
+  - **Achievement**: Resolved CompreFace UI unable to communicate with backend services causing empty admin interface
+  - **Root Cause**: Missing port mapping for CompreFace API service and incorrect UI backend configuration
+  - **Port Mapping**: Added `8080:8080` port mapping to compreface-api service in docker-compose.platform.yml
+  - **UI Configuration**: Added `ADMIN_API_JAVA_URL` and `API_JAVA_URL` environment variables to compreface-ui
+  - **Backend URLs**: UI now properly connects to `http://compreface-admin:8080` and `http://compreface-api:8080`
+  - **Performance**: Eliminated 504 Gateway Timeout errors in CompreFace UI manage-collection page
+  - **Verification**: CompreFace UI now displays all 88 subjects correctly at http://localhost:8001/manage-collection
+  - **Impact**: Complete CompreFace administration interface now functional for face management
+
+### June 21, 2025 (earlier)
 - ✅ **CompreFace Training Infrastructure Complete**: Fixed critical path duplication and timeout issues preventing reliable training
   - **Achievement**: Resolved systematic training failures that prevented CompreFace model building
   - **Root Cause**: Found 5 instances of faulty path construction in routes/persons.ts causing duplicate paths
