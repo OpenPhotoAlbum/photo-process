@@ -1,219 +1,39 @@
 import { Request, Response } from 'express';
-import { generateImageDataJsonHashed, storeImageDataHashed } from '../util/process-source';
-import { FaceRepository, ObjectRepository, MetadataRepository, DatabaseUtils } from '../models/database';
-import { Logger } from '../logger';
-import { AppError, asyncHandler, validateRequired } from '../middleware/error-handler';
-import fetch from 'node-fetch';
-import fs from 'fs';
-import path from 'path';
-import { configManager } from '../util/config-manager';
-import multer from 'multer';
+import { AppError, asyncHandler } from '../middleware/error-handler';
+import * as processResolvers from '../resolvers/process';
 
-const logger = Logger.getInstance();
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        // Create uploads directory in temp folder
-        const uploadDir = path.join(configManager.getStorage().processedDir, 'temp', 'uploads');
-        fs.mkdirSync(uploadDir, { recursive: true });
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        // Generate unique filename with original extension
-        const ext = path.extname(file.originalname) || '.jpg';
-        const timestamp = Date.now();
-        const filename = `upload_${timestamp}${ext}`;
-        cb(null, filename);
-    }
-});
-
-// File filter to only allow images
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
-    
-    if (allowedMimes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error(`Unsupported file type: ${file.mimetype}. Allowed types: ${allowedMimes.join(', ')}`));
-    }
-};
-
-// Configure multer with size limits and file filtering
-export const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB limit
-        files: 1 // Only allow single file upload for now
-    }
-});
-
-interface ProcessImageRequest {
-    url?: string;
-    path?: string;
-    filename?: string;
-    dateTaken?: string;
-}
+// Export multer configuration from resolver
+export const upload = processResolvers.upload;
 
 /**
  * Process a single image by URL or file path
  */
 export const processImage = asyncHandler(async (req: Request, res: Response) => {
-    const { url, path: imagePath, filename, dateTaken }: ProcessImageRequest = req.body;
-    
-    // Validate input - must provide either URL or path
-    if (!url && !imagePath) {
-        throw new AppError('Either url or path must be provided', 400);
-    }
-    
-    if (url && imagePath) {
-        throw new AppError('Provide either url or path, not both', 400);
-    }
-    
-    let tempFilePath: string | null = null;
-    let finalImagePath: string;
-    
     try {
-        if (url) {
-            // Download image from URL
-            req.logger.info('Processing image from URL', { url });
-            
-            // Validate URL
-            try {
-                new URL(url);
-            } catch {
-                throw new AppError('Invalid URL format', 400);
-            }
-            
-            // Create temp directory
-            const tempDir = path.join(configManager.getStorage().processedDir, 'temp');
-            await fs.promises.mkdir(tempDir, { recursive: true });
-            
-            // Generate temp filename
-            const urlPath = new URL(url).pathname;
-            const extension = path.extname(urlPath) || '.jpg';
-            const tempFilename = filename || `temp_${Date.now()}${extension}`;
-            tempFilePath = path.join(tempDir, tempFilename);
-            
-            // Download the image
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new AppError(`Failed to download image: ${response.statusText}`, 400);
-            }
-            
-            const arrayBuffer = await response.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            await fs.promises.writeFile(tempFilePath, buffer);
-            
-            finalImagePath = tempFilePath;
-            req.logger.info('Image downloaded successfully', { tempPath: tempFilePath, size: buffer.length });
-            
-        } else {
-            // Use provided file path
-            req.logger.info('Processing image from file path', { path: imagePath });
-            
-            // Validate path exists
-            if (!fs.existsSync(imagePath!)) {
-                throw new AppError('File does not exist at provided path', 404);
-            }
-            
-            finalImagePath = imagePath!;
-        }
-        
-        // Parse dateTaken if provided
-        let parsedDateTaken: Date | undefined;
-        if (dateTaken) {
-            parsedDateTaken = new Date(dateTaken);
-            if (isNaN(parsedDateTaken.getTime())) {
-                throw new AppError('Invalid dateTaken format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)', 400);
-            }
-        }
-        
-        // Process the image using hash-based processing
-        req.logger.info('Starting image processing', { imagePath: finalImagePath });
-        const { fileInfo, processingResults } = await generateImageDataJsonHashed(finalImagePath, parsedDateTaken);
-        
-        // Store in database
-        const imageId = await storeImageDataHashed(finalImagePath, fileInfo, processingResults);
-        req.logger.info('Image stored in database', { imageId });
-        
-        // Face, object, and metadata storage is now handled in storeImageDataHashed
-        const faceCount = processingResults.people ? Object.keys(processingResults.people).length : 0;
-        const objectCount = processingResults.objects ? processingResults.objects.length : 0;
-        
-        req.logger.info('Image processing completed successfully', {
-            imageId,
-            faceCount,
-            objectCount,
-            fileHash: fileInfo.hash,
-            relativePath: fileInfo.relativePath
+        const result = await processResolvers.processImage({
+            ...req.body,
+            logger: req.logger
         });
-        
-        // Clean up temp file if it was downloaded
-        if (tempFilePath && url) {
-            try {
-                await fs.promises.unlink(tempFilePath);
-                req.logger.debug('Temp file cleaned up', { tempPath: tempFilePath });
-            } catch (cleanupError) {
-                req.logger.warn('Failed to cleanup temp file', { tempPath: tempFilePath, error: cleanupError });
-            }
-        }
-        
-        // Return processing results
-        res.json({
-            success: true,
-            imageId,
-            processing: {
-                mode: 'hash-based',
-                fileHash: fileInfo.hash,
-                relativePath: fileInfo.relativePath,
-                faceCount,
-                objectCount,
-                screenshotDetected: processingResults.screenshotDetection?.isScreenshot || false,
-                dominantColor: processingResults.dominantColor
-            },
-            media: {
-                url: `/media/${fileInfo.relativePath}`,
-                thumbnailUrl: `/media/${fileInfo.relativePath}?thumb=1`
-            },
-            metadata: {
-                width: processingResults.exif?.ImageWidth || processingResults.exif?.ExifImageWidth,
-                height: processingResults.exif?.ImageHeight || processingResults.exif?.ExifImageHeight,
-                camera: processingResults.exif?.Make && processingResults.exif?.Model ? 
-                    `${processingResults.exif.Make} ${processingResults.exif.Model}` : null,
-                dateTaken: parsedDateTaken || null
-            }
-        });
-        
+        res.json(result);
     } catch (error) {
-        // Clean up temp file on error
-        if (tempFilePath && url) {
-            try {
-                await fs.promises.unlink(tempFilePath);
-            } catch (cleanupError) {
-                req.logger.warn('Failed to cleanup temp file after error', { tempPath: tempFilePath });
-            }
+        if (error instanceof Error && error.message.includes('Either url or path must be provided')) {
+            throw new AppError(error.message, 400);
         }
-        
-        // Handle duplicate file detection as success
-        if (error instanceof Error && error.message.includes('Duplicate file detected')) {
-            const hashMatch = error.message.match(/Hash: ([a-f0-9]+), existing ID: (\d+)/);
-            if (hashMatch) {
-                const [, hash, existingId] = hashMatch;
-                req.logger.info('Duplicate file detected', { hash, existingId });
-                
-                return res.json({
-                    success: true,
-                    duplicate: true,
-                    existingImageId: parseInt(existingId),
-                    message: `File already processed (ID: ${existingId})`,
-                    hash
-                });
-            }
+        if (error instanceof Error && error.message.includes('Provide either url or path, not both')) {
+            throw new AppError(error.message, 400);
         }
-        
-        req.logger.error('Image processing failed', { error, url, path: imagePath });
+        if (error instanceof Error && error.message.includes('Invalid URL format')) {
+            throw new AppError(error.message, 400);
+        }
+        if (error instanceof Error && error.message.includes('File does not exist')) {
+            throw new AppError(error.message, 404);
+        }
+        if (error instanceof Error && error.message.includes('Invalid dateTaken format')) {
+            throw new AppError(error.message, 400);
+        }
+        if (error instanceof Error && error.message.includes('Failed to download image')) {
+            throw new AppError(error.message, 400);
+        }
         throw error;
     }
 });
@@ -223,132 +43,16 @@ export const processImage = asyncHandler(async (req: Request, res: Response) => 
  * Expects multipart/form-data with 'photo' field
  */
 export const uploadPhoto = asyncHandler(async (req: Request, res: Response) => {
-    // The file will be available as req.file after multer processing
-    if (!req.file) {
-        throw new AppError('No photo file provided. Expected form field: photo', 400);
-    }
-    
-    const uploadedFile = req.file;
-    req.logger.info('Photo uploaded for processing', {
-        originalName: uploadedFile.originalname,
-        filename: uploadedFile.filename,
-        size: uploadedFile.size,
-        mimetype: uploadedFile.mimetype,
-        tempPath: uploadedFile.path
-    });
-    
     try {
-        // Extract any additional metadata from form data
-        const dateTaken = req.body.dateTaken;
-        
-        // Parse dateTaken if provided
-        let parsedDateTaken: Date | undefined;
-        if (dateTaken) {
-            parsedDateTaken = new Date(dateTaken);
-            if (isNaN(parsedDateTaken.getTime())) {
-                throw new AppError('Invalid dateTaken format. Use ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)', 400);
-            }
-        }
-        
-        // Process the uploaded image
-        req.logger.info('Starting processing of uploaded photo', { tempPath: uploadedFile.path });
-        const { fileInfo, processingResults } = await generateImageDataJsonHashed(uploadedFile.path, parsedDateTaken);
-        
-        // Store in database
-        const imageId = await storeImageDataHashed(uploadedFile.path, fileInfo, processingResults);
-        req.logger.info('Uploaded photo stored in database', { imageId, originalName: uploadedFile.originalname });
-        
-        // Face, object, and metadata storage is handled in storeImageDataHashed
-        const faceCount = processingResults.people ? Object.keys(processingResults.people).length : 0;
-        const objectCount = processingResults.objects ? processingResults.objects.length : 0;
-        
-        req.logger.info('Photo upload and processing completed successfully', {
-            imageId,
-            originalName: uploadedFile.originalname,
-            faceCount,
-            objectCount,
-            fileHash: fileInfo.hash,
-            relativePath: fileInfo.relativePath
-        });
-        
-        // Clean up temp file
-        try {
-            await fs.promises.unlink(uploadedFile.path);
-            req.logger.debug('Temp upload file cleaned up', { tempPath: uploadedFile.path });
-        } catch (cleanupError) {
-            req.logger.warn('Failed to cleanup temp upload file', { tempPath: uploadedFile.path, error: cleanupError });
-        }
-        
-        // Return processing results
-        res.json({
-            success: true,
-            imageId,
-            upload: {
-                originalFilename: uploadedFile.originalname,
-                fileSize: uploadedFile.size,
-                uploadedAt: new Date().toISOString()
-            },
-            processing: {
-                mode: 'hash-based',
-                fileHash: fileInfo.hash,
-                relativePath: fileInfo.relativePath,
-                faceCount,
-                objectCount,
-                screenshotDetected: processingResults.screenshotDetection?.isScreenshot || false,
-                dominantColor: processingResults.dominantColor
-            },
-            media: {
-                url: `/media/${fileInfo.relativePath}`,
-                thumbnailUrl: `/media/${fileInfo.relativePath}?thumb=1`
-            },
-            metadata: {
-                width: processingResults.exif?.ImageWidth || processingResults.exif?.ExifImageWidth,
-                height: processingResults.exif?.ImageHeight || processingResults.exif?.ExifImageHeight,
-                camera: processingResults.exif?.Make && processingResults.exif?.Model ? 
-                    `${processingResults.exif.Make} ${processingResults.exif.Model}` : null,
-                dateTaken: parsedDateTaken || null
-            }
-        });
-        
+        const result = await processResolvers.uploadPhoto(req.file!, req.body, req.logger);
+        res.json(result);
     } catch (error) {
-        // Clean up temp file on error
-        try {
-            await fs.promises.unlink(uploadedFile.path);
-        } catch (cleanupError) {
-            req.logger.warn('Failed to cleanup temp upload file after error', { tempPath: uploadedFile.path });
+        if (error instanceof Error && error.message.includes('No photo file provided')) {
+            throw new AppError(error.message, 400);
         }
-        
-        // Handle duplicate file detection as success
-        if (error instanceof Error && error.message.includes('Duplicate file detected')) {
-            const hashMatch = error.message.match(/Hash: ([a-f0-9]+), existing ID: (\d+)/);
-            if (hashMatch) {
-                const [, hash, existingId] = hashMatch;
-                req.logger.info('Duplicate photo detected in upload', { 
-                    hash, 
-                    existingId, 
-                    originalName: uploadedFile.originalname 
-                });
-                
-                return res.json({
-                    success: true,
-                    duplicate: true,
-                    existingImageId: parseInt(existingId),
-                    message: `Photo already exists in your library (ID: ${existingId})`,
-                    hash,
-                    upload: {
-                        originalFilename: uploadedFile.originalname,
-                        fileSize: uploadedFile.size,
-                        uploadedAt: new Date().toISOString()
-                    }
-                });
-            }
+        if (error instanceof Error && error.message.includes('Invalid dateTaken format')) {
+            throw new AppError(error.message, 400);
         }
-        
-        req.logger.error('Photo upload processing failed', { 
-            error, 
-            originalName: uploadedFile.originalname,
-            tempPath: uploadedFile.path 
-        });
         throw error;
     }
 });
@@ -357,46 +61,18 @@ export const uploadPhoto = asyncHandler(async (req: Request, res: Response) => {
  * Get processing status and information for an image by ID
  */
 export const getProcessingStatus = asyncHandler(async (req: Request, res: Response) => {
-    const imageId = parseInt(req.params.id);
-    
-    if (isNaN(imageId)) {
-        throw new AppError('Invalid image ID', 400);
-    }
-    
-    // Get image with processing information
-    const image = await DatabaseUtils.getImageWithAllData(imageId);
-    
-    if (!image) {
-        throw new AppError('Image not found', 404);
-    }
-    
-    res.json({
-        imageId,
-        status: image.processing_status,
-        processing: {
-            mode: 'hash-based',
-            dateProcessed: image.date_processed,
-            fileHash: image.file_hash,
-            relativePath: image.relative_media_path,
-            screenshotDetected: image.is_screenshot || false
-        },
-        media: {
-            url: `/media/${image.relative_media_path}`,
-            thumbnailUrl: `/media/${image.relative_media_path}?thumb=1`
-        },
-        counts: {
-            faces: image.faces?.length || 0,
-            objects: image.objects?.length || 0
+    try {
+        const imageId = parseInt(req.params.id);
+        const result = await processResolvers.getProcessingStatus(imageId);
+        res.json(result);
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('Invalid image ID')) {
+            throw new AppError(error.message, 400);
         }
-    });
-});
-
-// Helper function
-function parseNumeric(value: any): number | undefined {
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') {
-        const parsed = parseFloat(value);
-        return isNaN(parsed) ? undefined : parsed;
+        const status = (error as any).status || 500;
+        if (status === 404) {
+            throw new AppError(error instanceof Error ? error.message : 'Image not found', 404);
+        }
+        throw error;
     }
-    return undefined;
-}
+});

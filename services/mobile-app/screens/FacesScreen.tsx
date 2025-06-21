@@ -927,6 +927,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   removeFaceButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
     backgroundColor: 'rgba(255, 0, 0, 0.8)',
     borderRadius: 12,
     width: 24,
