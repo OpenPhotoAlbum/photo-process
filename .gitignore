@@ -112,6 +112,17 @@ claude_brain/__pycache__/
 claude_brain/claude_brain_env/
 claude_brain/demo_usage.py
 claude_brain/example_usage.py
+claude_brain/venv/
+claude_brain/usage_log.json
+claude_brain/claude_desktop_config.json
+claude_brain/inject.sh
+claude_brain/test-server.sh
+
+# MCP server development iterations (keep only working version in repo)
+claude_brain/mcp_server.py
+claude_brain/mcp_server_fixed.py
+claude_brain/mcp_server_v2.py
+claude_brain/mcp_server_working.py
 
 # MCP setup scripts
 setupmcp.sh
