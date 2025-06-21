@@ -2,13 +2,12 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { FaceData } from '../types/FaceTypes';
+import { API_BASE } from '../config';
 
 interface FaceRowProps {
   faces: FaceData[];
   onFacePress?: (face: FaceData) => void;
 }
-
-const API_BASE = 'http://192.168.40.103:9000';
 
 export const FaceRow: React.FC<FaceRowProps> = ({ faces, onFacePress }) => {
   if (!faces || faces.length === 0) {

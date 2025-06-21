@@ -78,15 +78,14 @@ export const getGalleryList = async (query: any) => {
                 'images.date_processed',
                 'images.width',
                 'images.height',
-                'images.size',
+                'images.file_size',
                 'images.mime_type',
                 'images.thumbnail_path',
                 'images.dominant_color',
                 'images.is_screenshot',
                 'images.screenshot_confidence',
                 'images.is_astrophotography',
-                'images.astrophotography_confidence',
-                'images.uploaded_by',
+                'images.astro_confidence',
                 db.raw('COUNT(DISTINCT detected_faces.id) as face_count'),
                 db.raw('COUNT(DISTINCT detected_faces.person_id) as person_count')
             ])
@@ -131,17 +130,23 @@ export const getGalleryList = async (query: any) => {
             }
         }
         
-        // User filter
-        if (users) {
-            const userList = users.split(',').map(u => u.trim()).filter(u => u);
-            if (userList.length > 0) {
-                imagesQuery = imagesQuery.whereIn('images.uploaded_by', userList);
-            }
-        }
+        // User filter (disabled - uploaded_by column not present)
+        // if (users) {
+        //     const userList = users.split(',').map(u => u.trim()).filter(u => u);
+        //     if (userList.length > 0) {
+        //         imagesQuery = imagesQuery.whereIn('images.uploaded_by', userList);
+        //     }
+        // }
         
         // Apply sorting
         const validSortFields = ['date_taken', 'date_processed', 'filename', 'size'];
-        const sortField = validSortFields.includes(sortBy) ? `images.${sortBy}` : 'images.date_taken';
+        let sortField: string;
+        if (validSortFields.includes(sortBy)) {
+            // Handle special case for size column
+            sortField = sortBy === 'size' ? 'images.file_size' : `images.${sortBy}`;
+        } else {
+            sortField = 'images.date_taken';
+        }
         const sortDirection = sortOrder === 'asc' ? 'asc' : 'desc';
         
         imagesQuery = imagesQuery.orderBy(sortField, sortDirection);
@@ -237,19 +242,25 @@ export const getGalleryList = async (query: any) => {
                     .whereIn('geo_cities.city', cityList);
             }
         }
-        if (users) {
-            const userList = users.split(',').map(u => u.trim()).filter(u => u);
-            if (userList.length > 0) {
-                totalQuery = totalQuery.whereIn('images.uploaded_by', userList);
-            }
-        }
+        // User filter (disabled - uploaded_by column not present)
+        // if (users) {
+        //     const userList = users.split(',').map(u => u.trim()).filter(u => u);
+        //     if (userList.length > 0) {
+        //         totalQuery = totalQuery.whereIn('images.uploaded_by', userList);
+        //     }
+        // }
         
         const totalCount = await totalQuery.count('images.id as count').first();
         
         const result = {
             count: enrichedImages.length,
             total: parseInt(totalCount?.count as string) || 0,
+            totalCount: parseInt(totalCount?.count as string) || 0, // Mobile app compatibility
             images: enrichedImages,
+            hasMore, // Mobile app compatibility
+            nextCursor: hasMore && enrichedImages.length > 0  // Mobile app compatibility
+                ? enrichedImages[enrichedImages.length - 1].date_taken.toISOString()
+                : null,
             pagination: {
                 limit,
                 hasMore,

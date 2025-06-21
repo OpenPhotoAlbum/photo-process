@@ -8,6 +8,7 @@ import {
   Image, // Using React Native's built-in Image component
   Alert
 } from 'react-native';
+import { API_BASE } from '../config';
 
 interface NativeImageTestProps {
   imageId: number;
@@ -26,7 +27,7 @@ export const NativeImageTest: React.FC<NativeImageTestProps> = ({
   const [error, setError] = useState<string | null>(null);
   
   // Build the full URL for this specific image
-  const API_BASE = 'http://192.168.40.103:9000';
+  // Using imported API_BASE from config
   const testUrl = `${API_BASE}${imageUrl}`;
   
   const handleLoadStart = () => {

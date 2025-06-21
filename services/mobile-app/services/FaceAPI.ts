@@ -1,6 +1,5 @@
 import { ImageFacesResponse } from '../types/FaceTypes';
-
-const API_BASE = 'http://192.168.40.103:9000';
+import { API_BASE } from '../config';
 
 export class FaceAPI {
   static async getImageFaces(imageId: number): Promise<ImageFacesResponse> {

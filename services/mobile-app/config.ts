@@ -11,6 +11,13 @@ export const API_ENDPOINTS = {
 
 // Environment detection function
 const getEnvironment = (): 'development' | 'production' => {
+  // TEMPORARY DEBUG: Force development endpoint for standalone debugging
+  // TODO: Remove this override after debugging network issues
+  if (Constants.executionEnvironment === 'standalone') {
+    console.log('🐛 [DEBUG] Forcing development endpoint for standalone debugging');
+    return 'development';
+  }
+  
   // In development mode (Expo Go), use local endpoint
   if (__DEV__) {
     return 'development';

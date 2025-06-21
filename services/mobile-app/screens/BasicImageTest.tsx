@@ -8,6 +8,7 @@ import {
   Alert
 } from 'react-native';
 import { Image } from 'expo-image';
+import { API_BASE } from '../config';
 
 interface BasicImageTestProps {
   onClose: () => void;
@@ -17,10 +18,9 @@ export const BasicImageTest: React.FC<BasicImageTestProps> = ({ onClose }) => {
   const [loadState, setLoadState] = useState('initial');
   const [loadTime, setLoadTime] = useState<number | null>(null);
   
-  // Test URLs - both hash-based and a simple external image
+  // Test URLs - using config-based API base and external test image
   const testUrls = [
-    'http://192.168.40.103:9000/media/2025/06/2023-04-27_12-17-53_img_1642_44b01a86.jpg',
-    'http://192.168.40.6:9000/media/2025/06/2023-04-27_12-17-53_img_1642_44b01a86.jpg',
+    `${API_BASE}/media/2025/06/2023-04-27_12-17-53_img_1642_44b01a86.jpg`,
     'https://picsum.photos/400/600', // External test image
   ];
   

@@ -13,7 +13,7 @@ services:
       - NODE_ENV=development
       - MYSQL_HOST=database              # Container name vs localhost in .env
       - MYSQL_PORT=3306                  # Internal port vs external 3307
-      - COMPREFACE_URL=http://compreface-api:8080    # Internal URL for API container
+      # COMPREFACE_URL is now set in .env file for flexibility
       - TZ=America/New_York              # Match host timezone
     depends_on:
       - database
@@ -111,6 +111,8 @@ services:
     image: exadel/compreface-api:1.0.0
     container_name: compreface-api
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -148,6 +150,8 @@ services:
       - "8001:80"
     environment:
       - CLIENT_MAX_BODY_SIZE=5MB
+      - ADMIN_API_JAVA_URL=http://compreface-admin:8080
+      - API_JAVA_URL=http://compreface-api:8080
     depends_on:
       - compreface-api
       - compreface-admin

@@ -9,6 +9,7 @@ import {
   Alert
 } from 'react-native';
 import { Image } from 'expo-image';
+import { API_BASE } from '../config';
 
 interface SimplePhotoDetailScreenProps {
   imageId: number;
@@ -19,8 +20,6 @@ interface SimplePhotoDetailScreenProps {
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
-const API_BASE_PRIMARY = 'http://192.168.40.103:9000';
-const API_BASE_SECONDARY = 'http://192.168.40.6:9000';
 
 export const SimplePhotoDetailScreen: React.FC<SimplePhotoDetailScreenProps> = ({
   imageId,
@@ -30,21 +29,13 @@ export const SimplePhotoDetailScreen: React.FC<SimplePhotoDetailScreenProps> = (
 }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [currentApiBase, setCurrentApiBase] = useState(API_BASE_PRIMARY);
-
   const getFullImageUrl = () => {
-    const fullUrl = `${currentApiBase}${imageUrl}`;
+    const fullUrl = `${API_BASE}${imageUrl}`;
     console.log('Simple detail view image URL:', fullUrl);
     return fullUrl;
   };
 
-  const switchApiBase = () => {
-    const newBase = currentApiBase === API_BASE_PRIMARY ? API_BASE_SECONDARY : API_BASE_PRIMARY;
-    setCurrentApiBase(newBase);
-    setImageLoading(true);
-    setImageError(null);
-    console.log('Switched API base to:', newBase);
-  };
+  // Removed dual API base functionality - now uses config-based API_BASE
 
   const handleImageLoad = () => {
     console.log('✅ Image loaded successfully!');
@@ -61,9 +52,8 @@ export const SimplePhotoDetailScreen: React.FC<SimplePhotoDetailScreenProps> = (
   const showDebugInfo = () => {
     Alert.alert(
       'Debug Info',
-      `Image ID: ${imageId}\nFilename: ${filename}\nAPI Base: ${currentApiBase}\nURL: ${getFullImageUrl()}\nLoading: ${imageLoading}\nError: ${imageError || 'None'}`,
+      `Image ID: ${imageId}\nFilename: ${filename}\nAPI Base: ${API_BASE}\nURL: ${getFullImageUrl()}\nLoading: ${imageLoading}\nError: ${imageError || 'None'}`,
       [
-        { text: 'Switch IP', onPress: switchApiBase },
         { text: 'OK' }
       ]
     );
@@ -116,13 +106,10 @@ export const SimplePhotoDetailScreen: React.FC<SimplePhotoDetailScreenProps> = (
       <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>Debug Information</Text>
         <Text style={styles.infoText}>Image ID: {imageId}</Text>
-        <Text style={styles.infoText}>API Base: {currentApiBase}</Text>
+        <Text style={styles.infoText}>API Base: {API_BASE}</Text>
         <Text style={styles.infoText}>URL: {getFullImageUrl()}</Text>
         <Text style={styles.infoText}>Loading: {imageLoading ? 'Yes' : 'No'}</Text>
         <Text style={styles.infoText}>Error: {imageError || 'None'}</Text>
-        <TouchableOpacity style={styles.switchButton} onPress={switchApiBase}>
-          <Text style={styles.switchButtonText}>Switch to {currentApiBase === API_BASE_PRIMARY ? 'IP .6' : 'IP .103'}</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

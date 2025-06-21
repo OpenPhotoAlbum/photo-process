@@ -12,8 +12,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { FaceData } from '../types/FaceTypes';
-
-const API_BASE = 'http://192.168.40.103:9000';
+import { API_BASE } from '../config';
 
 interface Person {
   id: number;

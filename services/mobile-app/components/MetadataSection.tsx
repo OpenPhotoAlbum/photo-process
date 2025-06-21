@@ -9,8 +9,7 @@ import {
   Platform,
   Image,
 } from 'react-native';
-
-const API_BASE = 'http://192.168.40.103:9000';
+import { API_BASE } from '../config';
 
 interface MetadataProps {
   imageId: number;
