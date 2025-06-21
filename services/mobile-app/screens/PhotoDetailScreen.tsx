@@ -28,6 +28,9 @@ interface PhotoDetailScreenProps {
   filename: string;
   onClose: () => void;
   onDelete?: () => void;
+  photos?: any[]; // Array of all photos for navigation
+  currentIndex?: number; // Current photo index
+  onNavigate?: (newPhoto: any) => void; // Callback when navigating to new photo
 }
 
 const screenHeight = Dimensions.get('window').height;
@@ -37,15 +40,59 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
   imageUrl,
   filename,
   onClose,
-  onDelete
+  onDelete,
+  photos = [],
+  currentIndex = 0,
+  onNavigate
 }) => {
   const [faces, setFaces] = useState<FaceData[]>([]);
   const [selectedFace, setSelectedFace] = useState<FaceData | null>(null);
   const [showPersonModal, setShowPersonModal] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   useEffect(() => {
     loadFaces();
   }, [imageId]);
+
+  // Create pan responder for swipe gestures
+  const panResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only capture horizontal swipes
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 2) && Math.abs(gestureState.dx) > 10;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const swipeThreshold = 50;
+        
+        if (gestureState.dx > swipeThreshold && !isTransitioning) {
+          // Swipe right - go to previous photo
+          navigateToPrevious();
+        } else if (gestureState.dx < -swipeThreshold && !isTransitioning) {
+          // Swipe left - go to next photo
+          navigateToNext();
+        }
+      },
+    })
+  ).current;
+
+  const navigateToPrevious = () => {
+    if (photos.length === 0 || currentIndex === 0 || !onNavigate) return;
+    
+    setIsTransitioning(true);
+    const previousPhoto = photos[currentIndex - 1];
+    onNavigate(previousPhoto);
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
+
+  const navigateToNext = () => {
+    if (photos.length === 0 || currentIndex >= photos.length - 1 || !onNavigate) return;
+    
+    setIsTransitioning(true);
+    const nextPhoto = photos[currentIndex + 1];
+    onNavigate(nextPhoto);
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
 
   const loadFaces = async () => {
     try {
@@ -219,7 +266,11 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        {...panResponder.panHandlers}
+      >
         {/* Main image with face overlays */}
         <View style={styles.imageSection}>
           <ImageWithFaces
@@ -229,6 +280,45 @@ export const PhotoDetailScreen: React.FC<PhotoDetailScreenProps> = ({
             style={styles.mainImage}
             onFacePress={handleFacePress}
           />
+          
+          {/* Navigation indicators - shown when photos array is provided */}
+          {photos.length > 0 && onNavigate && (
+            <>
+              {currentIndex > 0 && (
+                <TouchableOpacity 
+                  style={styles.navButton} 
+                  onPress={navigateToPrevious}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.navButtonText}>‹</Text>
+                </TouchableOpacity>
+              )}
+              
+              {currentIndex < photos.length - 1 && (
+                <TouchableOpacity 
+                  style={[styles.navButton, styles.navButtonRight]} 
+                  onPress={navigateToNext}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.navButtonText}>›</Text>
+                </TouchableOpacity>
+              )}
+              
+              {/* Photo counter */}
+              <View style={styles.photoCounter}>
+                <Text style={styles.photoCounterText}>
+                  {currentIndex + 1} / {photos.length}
+                </Text>
+              </View>
+            </>
+          )}
+          
+          {/* Swipe hint - shown when navigation is available but no visible controls */}
+          {photos.length > 1 && onNavigate && (
+            <View style={styles.swipeHint}>
+              <Text style={styles.swipeHintText}>Swipe left/right to navigate</Text>
+            </View>
+          )}
         </View>
 
         {/* Face thumbnails row */}
@@ -316,5 +406,53 @@ const styles = StyleSheet.create({
   },
   mainImage: {
     flex: 1,
+  },
+  navButton: {
+    position: 'absolute',
+    left: 10,
+    top: '50%',
+    marginTop: -30,
+    width: 60,
+    height: 60,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navButtonRight: {
+    left: undefined,
+    right: 10,
+  },
+  navButtonText: {
+    color: 'white',
+    fontSize: 32,
+    fontWeight: '300',
+  },
+  photoCounter: {
+    position: 'absolute',
+    bottom: 10,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  photoCounterText: {
+    color: 'white',
+    fontSize: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  swipeHint: {
+    position: 'absolute',
+    top: 10,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  swipeHintText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
+    fontStyle: 'italic',
   },
 });

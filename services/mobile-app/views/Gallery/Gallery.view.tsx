@@ -24,7 +24,7 @@ const numColumns = 3;
 const photoSize = (screenWidth - (numColumns + 1) * 2) / numColumns; // 2px margin
 
 interface GalleryProps {
-  onPhotoSelect: (photo: MediaItem, context: 'gallery') => void;
+  onPhotoSelect: (photo: MediaItem, context: 'gallery', photos?: MediaItem[], index?: number) => void;
   onShowAlbums: () => void;
   onShowFaces: () => void;
   onShowAutoUploadSettings: () => void;
@@ -287,7 +287,10 @@ export const Gallery: React.FC<GalleryProps> = ({
         hasMore={hasMore}
         onLoadMore={loadMore}
         onRefresh={refresh}
-        onPhotoPress={(photo: MediaItem) => onPhotoSelect(photo, 'gallery')}
+        onPhotoPress={(photo: MediaItem) => {
+          const photoIndex = visiblePhotos.findIndex(p => p.id === photo.id);
+          onPhotoSelect(photo, 'gallery', visiblePhotos, photoIndex);
+        }}
         renderFooter={() => null}
         API_BASE={API_BASE}
         loadingImagesRef={loadingImagesRef}

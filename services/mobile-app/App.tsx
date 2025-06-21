@@ -24,6 +24,10 @@ export default function App() {
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [showFaces, setShowFaces] = useState(false);
   
+  // Photo navigation state for swipe functionality
+  const [contextPhotos, setContextPhotos] = useState<MediaItem[]>([]);
+  const [photoIndex, setPhotoIndex] = useState<number>(0);
+  
   // Debug auto-upload state changes
   useEffect(() => {
     console.log('App: showAutoUploadSettings changed to:', showAutoUploadSettings);
@@ -52,9 +56,11 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       {/* Main Gallery View */}
       <Gallery
-        onPhotoSelect={(photo, context) => {
+        onPhotoSelect={(photo, context, photos, index) => {
           setSelectedPhoto(photo);
           setPhotoDetailContext(context);
+          setContextPhotos(photos || []);
+          setPhotoIndex(index || 0);
         }}
         onShowAlbums={() => setShowAlbums(true)}
         onShowFaces={() => setShowFaces(true)}
@@ -76,6 +82,13 @@ export default function App() {
           imageId={selectedPhoto.id}
           imageUrl={selectedPhoto.relative_media_path || selectedPhoto.media_url}
           filename={selectedPhoto.filename}
+          photos={contextPhotos}
+          currentIndex={photoIndex}
+          onNavigate={(newPhoto) => {
+            const newIndex = contextPhotos.findIndex(p => p.id === newPhoto.id);
+            setSelectedPhoto(newPhoto);
+            setPhotoIndex(newIndex >= 0 ? newIndex : 0);
+          }}
           onClose={() => {
             const photo = selectedPhoto; // Capture for closure
             setSelectedPhoto(null);
