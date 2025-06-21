@@ -105,3 +105,13 @@ fix-single-*.js
 # Filebeat logging configuration files (environment-specific)
 infrastructure/logging/config/filebeat.yml
 infrastructure/logging/config/filebeat-*.yml
+
+# Claude Brain development files
+claude_brain/.brainignore
+claude_brain/__pycache__/
+claude_brain/claude_brain_env/
+claude_brain/demo_usage.py
+claude_brain/example_usage.py
+
+# MCP setup scripts
+setupmcp.sh
