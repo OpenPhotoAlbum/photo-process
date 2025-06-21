@@ -188,8 +188,24 @@ export class CompreFaceTrainingManager {
             // Prepare face paths for training
             const processedDir = configManager.getStorage().processedDir;
             const facePaths = faces
-                .filter(face => face.face_image_path)
-                .map(face => `${processedDir}/${face.face_image_path}`)
+                .filter(face => face.relative_face_path || face.face_image_path)
+                .map(face => {
+                    // Use relative_face_path (preferred) or fall back to face_image_path
+                    const facePath = face.relative_face_path || face.face_image_path;
+                    
+                    if (!facePath) {
+                        return null; // Will be filtered out
+                    }
+                    
+                    if (facePath.startsWith('/')) {
+                        // Already absolute path, use as-is
+                        return facePath;
+                    } else {
+                        // Relative path, construct full path
+                        return `${processedDir}/faces/${facePath}`;
+                    }
+                })
+                .filter((path): path is string => path !== null) // Filter out nulls and assert type
                 .slice(0, this.config.maxFacesPerBatch); // Limit batch size
 
             logger.info(`Training ${facePaths.length} faces for ${person.name}`);

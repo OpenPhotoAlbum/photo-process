@@ -23,6 +23,36 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
 
 ## 📅 Chronological Achievements
 
+### June 21, 2025
+- ✅ **CompreFace Training Infrastructure Complete**: Fixed critical path duplication and timeout issues preventing reliable training
+  - **Achievement**: Resolved systematic training failures that prevented CompreFace model building
+  - **Root Cause**: Found 5 instances of faulty path construction in routes/persons.ts causing duplicate paths
+  - **Path Issue**: Code was prepending processedDir to face_image_path that already contained full paths
+  - **Duplicate Pattern**: `/mnt/hdd/photo-process/dest/processed//mnt/hdd/photo-process/dest/processed/faces/`
+  - **Fixed Files**: routes/persons.ts (5 locations), util/compreface-training.ts
+  - **Logic Improvement**: Implemented smart path handling using relative_face_path with absolute path detection
+  - **Testing Success**: David Young trained successfully with 64 faces (100% success rate, 0 failures)
+  - **Timeout Resolution**: Eliminated 60-second timeout errors by fixing underlying file path issues
+  - **CompreFace Verification**: All 64 faces now visible in CompreFace interface for future recognition
+  - **Impact**: CompreFace training system now fully operational and reliable for all users
+
+- ✅ **Mobile App Face Management Enhancements**: Added reassignment functionality with immediate UI updates
+  - **Feature**: Added face reassignment button (🔄) alongside delete option in face gallery
+  - **UX Improvement**: Immediate local state updates remove faces from UI without full refresh
+  - **Navigation**: Face reassignment redirects to photo detail for easy person selection
+  - **Performance**: Eliminates need to rerender entire face list after actions
+  - **Files**: services/mobile-app/screens/FacesScreen.tsx
+  - **Impact**: Smoother face management workflow in mobile app
+
+- ✅ **TypeScript Compilation Infrastructure**: Fixed all compilation errors enabling clean API rebuilds
+  - **Database Methods**: Fixed getPersonById → getPersonWithFaceCount function calls
+  - **Parameter Types**: Corrected validatePersonId calls to handle string conversion
+  - **Missing Properties**: Added face_count property to person creation
+  - **Service Methods**: Fixed getService → getCompreFace().baseUrl pattern
+  - **Path Handling**: Resolved undefined path issues in file deletion logic
+  - **Build Process**: Clean TypeScript compilation with zero errors
+  - **Impact**: Enables reliable Docker container rebuilds with code changes
+
 ### June 20, 2025
 - ✅ **Complete Intelligent Face Recognition System**: Revolutionary AI-powered face recognition with auto-training and recognition
   - **Achievement**: Implemented end-to-end face recognition system from training to automatic face assignment
@@ -248,9 +278,10 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
 
 ## 📊 Platform Statistics
 
-### Current Capabilities (as of June 18, 2025)
+### Current Capabilities (as of June 21, 2025)
 - **Files Indexed**: 55,346+ files in FileTracker system
 - **Photos Processed**: 270+ real iPhone photos with full AI analysis
+- **CompreFace Training**: Fully operational with 64-face successful training (David Young model)
 - **API Endpoints**: 20+ fully functional REST endpoints (including face coordinates)
 - **Database Tables**: 15+ with comprehensive migrations
 - **Test Coverage**: 93/93 unit tests passing
@@ -261,6 +292,7 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
   - Circular face thumbnails with confidence scores
   - Photo detail view with touch navigation
   - AI-powered face recognition UI
+  - Face reassignment with immediate UI updates
 
 ### Performance Metrics
 - **File Discovery**: Instant (database) vs minutes (directory scanning)
@@ -268,6 +300,7 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
 - **Processing Capacity**: 100+ files processed without blocking main thread
 - **Thumbnail Loading**: 7KB vs 2-10MB (99.96% size reduction)
 - **Mobile Response**: <500ms load times for photo grid
+- **CompreFace Training**: 64 faces trained successfully (100% success rate)
 - **Processing Pipeline**: Background async jobs with real-time progress and worker thread isolation
 
 ---

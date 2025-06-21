@@ -13,7 +13,7 @@ services:
       - NODE_ENV=development
       - MYSQL_HOST=database              # Container name vs localhost in .env
       - MYSQL_PORT=3306                  # Internal port vs external 3307
-      - COMPREFACE_BASE_URL=http://compreface-ui:80  # Internal URL vs external in .env
+      - COMPREFACE_URL=http://compreface-api:8080    # Internal URL for API container
       - TZ=America/New_York              # Match host timezone
     depends_on:
       - database

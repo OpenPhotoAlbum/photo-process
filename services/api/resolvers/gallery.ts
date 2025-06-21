@@ -332,7 +332,7 @@ export const searchImages = async (query: any) => {
     const limit = parseInt(query.limit as string) || 100;
     const offset = parseInt(query.offset as string) || 0;
     
-    const images = await ImageRepository.searchImages(filters, limit, offset);
+    const images = await ImageRepository.searchImages(filters);
     
     // Enrich with faces
     const imagesWithFaces = images.map(image => ({

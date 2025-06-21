@@ -124,7 +124,7 @@ Core principles:
 
 ### ✅ **Core Platform**
 - **Photo Processing**: Worker thread-based processing with EXIF extraction and thumbnail generation
-- **Face Recognition**: CompreFace integration with person management, clustering, and training
+- **Face Recognition**: CompreFace integration with person management, clustering, and reliable training (64-face successful models)
 - **Object Detection**: YOLO-based detection with confidence filtering and 80+ object classes
 - **Geolocation System**: GPS-based location matching with 45,000+ cities worldwide
 - **Album System**: Google Takeout album support with metadata import and organization
@@ -142,7 +142,7 @@ Core principles:
 - **Sticky Date Headers**: Organize photos by month/year with smooth scrolling headers
 - **Advanced Filtering**: Date range, location, GPS presence, and city-based filtering with sort options
 - **Photo Details**: Full-screen view with pinch-to-zoom, face detection visualization, and metadata display
-- **Face Recognition**: Tap faces to assign to persons with real-time training integration
+- **Face Recognition**: Tap faces to assign to persons with fully operational CompreFace training system
 - **Photo Upload**: Camera and gallery selection with progress tracking and duplicate detection
 - **Auto-Upload**: Real-time camera roll sync with background processing and network-aware uploading
 - **Debug System**: On-screen debug logging for troubleshooting standalone app issues

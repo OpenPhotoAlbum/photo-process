@@ -149,10 +149,25 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
         [{ text: 'OK' }]
       );
       
-      // Refresh the person images and persons list
+      // Remove the face from local state immediately
       if (selectedPerson) {
-        await fetchPersonImages(selectedPerson.id);
-        await fetchPersons(true);
+        // Update face crops list by removing the deleted face
+        setPersonFaces(prevFaces => prevFaces.filter(face => face.id !== faceId));
+        
+        // Update face count in selectedPerson
+        setSelectedPerson(prev => prev ? {
+          ...prev,
+          face_count: Math.max(0, (prev.face_count || 1) - 1)
+        } : null);
+        
+        // Update persons list to reflect new face count
+        setPersons(prevPersons => 
+          prevPersons.map(person => 
+            person.id === selectedPerson.id 
+              ? { ...person, face_count: Math.max(0, (person.face_count || 1) - 1) }
+              : person
+          )
+        );
       }
     } catch (error) {
       console.error('Failed to remove face assignment:', error);
@@ -479,12 +494,41 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
                   { text: 'Cancel', style: 'cancel' },
                   { 
                     text: 'Reassign', 
-                    onPress: () => {
-                      // First remove the current assignment
-                      removeFaceAssignment(item.id);
-                      // Then navigate to the parent photo for reassignment
-                      if (item.image) {
-                        onSelectPhoto(item.image, selectedPerson);
+                    onPress: async () => {
+                      try {
+                        // Remove the current assignment
+                        const response = await fetch(`${API_BASE}/api/faces/${item.id}/person`, {
+                          method: 'DELETE',
+                        });
+
+                        if (response.ok) {
+                          // Remove the face from local state immediately
+                          setPersonFaces(prevFaces => prevFaces.filter(face => face.id !== item.id));
+                          
+                          // Update face count in selectedPerson
+                          setSelectedPerson(prev => prev ? {
+                            ...prev,
+                            face_count: Math.max(0, (prev.face_count || 1) - 1)
+                          } : null);
+                          
+                          // Update persons list to reflect new face count
+                          setPersons(prevPersons => 
+                            prevPersons.map(person => 
+                              person.id === selectedPerson.id 
+                                ? { ...person, face_count: Math.max(0, (person.face_count || 1) - 1) }
+                                : person
+                            )
+                          );
+
+                          // Then navigate to the parent photo for reassignment
+                          if (item.image) {
+                            onSelectPhoto(item.image, selectedPerson);
+                          }
+                        } else {
+                          throw new Error('Failed to remove face assignment');
+                        }
+                      } catch (error) {
+                        Alert.alert('Error', 'Failed to reassign face. Please try again.');
                       }
                     }
                   }

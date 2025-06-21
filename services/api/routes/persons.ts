@@ -518,9 +518,19 @@ export const removeFaceFromPerson = async (req: Request, res: Response) => {
                         
                         // Get remaining faces for this person
                         const remainingFaces = await FaceRepository.getFacesByPerson(capturedPersonId);
+                        const processedDir = configManager.getStorage().processedDir;
                         const facePaths = remainingFaces
-                            .filter(f => f.face_image_path)
-                            .map(f => `${configManager.getStorage().processedDir}/${f.face_image_path}`);
+                            .filter(f => f.relative_face_path || f.face_image_path)
+                            .map(f => {
+                                const facePath = f.relative_face_path || f.face_image_path;
+                                if (!facePath) return null;
+                                if (facePath.startsWith('/')) {
+                                    return facePath;
+                                } else {
+                                    return `${processedDir}/faces/${facePath}`;
+                                }
+                            })
+                            .filter((path): path is string => path !== null);
                         
                         if (facePaths.length > 0) {
                             // Re-upload remaining faces to CompreFace for training
@@ -677,9 +687,17 @@ export const batchAssignFacesToPerson = asyncHandler(async (req: Request, res: R
             await FaceRepository.assignFaceToPerson(faceId, personId, 1.0, 'manual');
             
             // Collect face path for batch upload to CompreFace
-            if (person.compreface_subject_id && face.face_image_path) {
-                const fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
-                facePaths.push(fullFacePath);
+            if (person.compreface_subject_id) {
+                const facePath = face.relative_face_path || face.face_image_path;
+                if (facePath) {
+                    let fullFacePath: string;
+                    if (facePath.startsWith('/')) {
+                        fullFacePath = facePath;
+                    } else {
+                        fullFacePath = `${configManager.getStorage().processedDir}/faces/${facePath}`;
+                    }
+                    facePaths.push(fullFacePath);
+                }
             }
 
             successCount++;
@@ -1021,17 +1039,25 @@ export const batchAutoRecognizeInternal = async (options: {
                             await PersonRepository.updateFaceCount(person.id!);
                             
                             // Collect faces for batch upload to CompreFace
-                            if (person.compreface_subject_id && face.face_image_path) {
-                                const fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
-                                
-                                if (!faceAssignmentsByPerson.has(person.compreface_subject_id)) {
-                                    faceAssignmentsByPerson.set(person.compreface_subject_id, {
-                                        person,
-                                        facePaths: []
-                                    });
+                            if (person.compreface_subject_id) {
+                                const facePath = face.relative_face_path || face.face_image_path;
+                                if (facePath) {
+                                    let fullFacePath: string;
+                                    if (facePath.startsWith('/')) {
+                                        fullFacePath = facePath;
+                                    } else {
+                                        fullFacePath = `${configManager.getStorage().processedDir}/faces/${facePath}`;
+                                    }
+                                    
+                                    if (!faceAssignmentsByPerson.has(person.compreface_subject_id)) {
+                                        faceAssignmentsByPerson.set(person.compreface_subject_id, {
+                                            person,
+                                            facePaths: []
+                                        });
+                                    }
+                                    
+                                    faceAssignmentsByPerson.get(person.compreface_subject_id)!.facePaths.push(fullFacePath);
                                 }
-                                
-                                faceAssignmentsByPerson.get(person.compreface_subject_id)!.facePaths.push(fullFacePath);
                             }
                             
                             recognized++;
@@ -1473,9 +1499,26 @@ async function trainPersonAsync(personId: number, person: any, faces: any[], tra
             });
 
         // Collect face paths for CompreFace training
+        const processedDir = configManager.getStorage().processedDir;
         const facePaths = faces
-            .filter(face => face.face_image_path)
-            .map(face => `${configManager.getStorage().processedDir}/${face.face_image_path}`);
+            .filter(face => face.relative_face_path || face.face_image_path)
+            .map(face => {
+                // Use relative_face_path (preferred) or fall back to face_image_path
+                const facePath = face.relative_face_path || face.face_image_path;
+                
+                if (!facePath) {
+                    return null; // Will be filtered out
+                }
+                
+                if (facePath.startsWith('/')) {
+                    // Already absolute path, use as-is
+                    return facePath;
+                } else {
+                    // Relative path, construct full path
+                    return `${processedDir}/faces/${facePath}`;
+                }
+            })
+            .filter((path): path is string => path !== null); // Filter out nulls
 
         if (facePaths.length === 0) {
             throw new Error('No valid face images found for training');
@@ -2578,7 +2621,7 @@ export const deleteFace = asyncHandler(async (req: Request, res: Response) => {
                 fullFacePath = path.join(configManager.getStorage().processedDir, 'media', face.relative_face_path);
             } else {
                 // Legacy path
-                fullFacePath = path.join(configManager.getStorage().processedDir, face.face_image_path);
+                fullFacePath = path.join(configManager.getStorage().processedDir, faceImagePath);
             }
             
             try {

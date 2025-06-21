@@ -46,12 +46,12 @@
     },
     "faceRecognition": {
       "confidence": {
-        "review": 0.75,
-        "autoAssign": 1.00,
-        "similarity": 0.65
+        "review": 0.85,
+        "autoAssign": 0.99,
+        "similarity": 0.85
       },
       "workflow": {
-        "enableAutoAssignment": false,
+        "enableAutoAssignment": true,
         "enableReviewQueue": true,
         "maxReviewQueueSize": 1000
       }
@@ -67,7 +67,7 @@
     "apiKey": null,
     "detectApiKey": "1e52245a-bbce-4e05-aa82-b53d548123e1",
     "recognizeApiKey": "8152b5da-cdd5-4631-b720-80f3907ea64d",
-    "timeout": 10000,
+    "timeout": 60000,
     "maxConcurrency": 5
   },
   

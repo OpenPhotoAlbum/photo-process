@@ -82,7 +82,7 @@ export const getAllPersons = async (reqLogger?: any) => {
  * Get images for a specific person
  */
 export const getPersonImages = async (personId: number, query: any, reqLogger?: any) => {
-    validatePersonId(personId);
+    validatePersonId(String(personId));
     
     const limit = parseInt(query.limit as string) || 50;
     const offset = parseInt(query.offset as string) || 0;
@@ -100,7 +100,7 @@ export const getPersonImages = async (personId: number, query: any, reqLogger?: 
     });
     
     // Get person details first
-    const person = await PersonRepository.getPersonById(personId);
+    const person = await PersonRepository.getPersonWithFaceCount(personId);
     if (!person) {
         const error = new Error('Person not found');
         (error as any).status = 404;
@@ -209,9 +209,9 @@ export const getPersonImages = async (personId: number, query: any, reqLogger?: 
  * Get person by ID
  */
 export const getPersonById = async (personId: number) => {
-    validatePersonId(personId);
+    validatePersonId(String(personId));
     
-    const person = await PersonRepository.getPersonById(personId);
+    const person = await PersonRepository.getPersonWithFaceCount(personId);
     if (!person) {
         const error = new Error('Person not found');
         (error as any).status = 404;
@@ -229,11 +229,12 @@ export const createPerson = async (data: { name: string; notes?: string }) => {
     
     const personId = await PersonRepository.createPerson({
         name: data.name.trim(),
-        notes: data.notes?.trim()
+        notes: data.notes?.trim(),
+        face_count: 0
     });
     
     // Create CompreFace subject if configured
-    const comprefaceEnabled = configManager.getService('compreface').enabled;
+    const comprefaceEnabled = configManager.getCompreFace().baseUrl !== null;
     if (comprefaceEnabled) {
         try {
             await createComprefaceSubject(data.name.trim());
@@ -253,9 +254,9 @@ export const createPerson = async (data: { name: string; notes?: string }) => {
  * Update person
  */
 export const updatePerson = async (personId: number, data: { name?: string; notes?: string }) => {
-    validatePersonId(personId);
+    validatePersonId(String(personId));
     
-    const person = await PersonRepository.getPersonById(personId);
+    const person = await PersonRepository.getPersonWithFaceCount(personId);
     if (!person) {
         const error = new Error('Person not found');
         (error as any).status = 404;
@@ -278,9 +279,9 @@ export const updatePerson = async (personId: number, data: { name?: string; note
  * Delete person
  */
 export const deletePerson = async (personId: number) => {
-    validatePersonId(personId);
+    validatePersonId(String(personId));
     
-    const person = await PersonRepository.getPersonById(personId);
+    const person = await PersonRepository.getPersonWithFaceCount(personId);
     if (!person) {
         const error = new Error('Person not found');
         (error as any).status = 404;
@@ -299,8 +300,8 @@ export const deletePerson = async (personId: number) => {
  * Assign face to person
  */
 export const assignFaceToPerson = async (faceId: number, data: { personId: number; confidence?: number }, reqLogger?: any) => {
-    validateFaceId(faceId);
-    validatePersonId(data.personId);
+    validateFaceId(String(faceId));
+    validatePersonId(String(data.personId));
     
     const face = await FaceRepository.getFaceById(faceId);
     if (!face) {
@@ -309,7 +310,7 @@ export const assignFaceToPerson = async (faceId: number, data: { personId: numbe
         throw error;
     }
     
-    const person = await PersonRepository.getPersonById(data.personId);
+    const person = await PersonRepository.getPersonWithFaceCount(data.personId);
     if (!person) {
         const error = new Error('Person not found');
         (error as any).status = 404;
@@ -328,7 +329,7 @@ export const assignFaceToPerson = async (faceId: number, data: { personId: numbe
         });
     
     // Add to CompreFace if configured and face file exists
-    const comprefaceEnabled = configManager.getService('compreface').enabled;
+    const comprefaceEnabled = configManager.getCompreFace().baseUrl !== null;
     if (comprefaceEnabled && face.face_image_path) {
         try {
             const processedDir = configManager.getStorage().processedDir;
@@ -364,7 +365,7 @@ export const assignFaceToPerson = async (faceId: number, data: { personId: numbe
  * Remove face from person
  */
 export const removeFaceFromPerson = async (faceId: number, reqLogger?: any) => {
-    validateFaceId(faceId);
+    validateFaceId(String(faceId));
     
     const face = await db('detected_faces')
         .leftJoin('persons', 'detected_faces.person_id', 'persons.id')
@@ -402,10 +403,10 @@ export const removeFaceFromPerson = async (faceId: number, reqLogger?: any) => {
         });
     
     // Remove from CompreFace if configured
-    const comprefaceEnabled = configManager.getService('compreface').enabled;
+    const comprefaceEnabled = configManager.getCompreFace().baseUrl !== null;
     if (comprefaceEnabled && face.face_image_path && originalPersonName) {
         try {
-            await deleteFaceFromSubject(originalPersonName, face.face_image_path);
+            await deleteFaceFromSubject(face.face_image_path);
             reqLogger?.info('Removed face from CompreFace subject', { 
                 faceId, 
                 originalPersonId, 

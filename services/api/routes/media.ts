@@ -11,7 +11,7 @@ export const Media = async (request: Request, response: Response) => {
         if (mediaInfo.type === 'hash-based') {
             // Serve directly from processedDir/media/ using custom options
             await ImageServer.serveImage(request, response, {
-                baseDir: mediaInfo.basePath,
+                baseDir: mediaInfo.basePath || '',
                 cacheDuration: 86400,
                 securityCheck: true
             });

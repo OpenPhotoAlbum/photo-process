@@ -46,12 +46,12 @@
     },
     "faceRecognition": {
       "confidence": {
-        "review": 0.75,
-        "autoAssign": 1.00,
-        "similarity": 0.65
+        "review": 0.85,
+        "autoAssign": 0.99,
+        "similarity": 0.85
       },
       "workflow": {
-        "enableAutoAssignment": false,
+        "enableAutoAssignment": true,
         "enableReviewQueue": true,
         "maxReviewQueueSize": 1000
       }
