@@ -132,10 +132,12 @@ export class ConsistencyManager {
                     }
                     
                     // Get all assigned faces for this person that haven't been synced yet
+                    // Only include high-confidence faces for training (0.98 or higher)
                     const assignedFaces = await db('detected_faces')
                         .where('person_id', person.id!)
                         .where('compreface_synced', false)
-                        .whereNotNull('face_image_path');
+                        .whereNotNull('face_image_path')
+                        .where('detection_confidence', '>=', 0.98);
                     
                     const allFaces = await FaceRepository.getFacesByPerson(person.id!);
                     logger.info(`Found ${assignedFaces.length} unsynced faces for ${person.name} (${allFaces.length} total)`);

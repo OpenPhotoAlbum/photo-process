@@ -61,6 +61,7 @@ export const setupRoutes = (app: Express) => {
     app.post('/api/faces/:faceId/mark-invalid', routes.Persons.markFaceAsInvalid as any);
     app.post('/api/faces/:faceId/mark-unknown', routes.Persons.markFaceAsUnknown as any);
     app.get('/api/faces/unidentified', routes.Persons.getUnidentifiedFaces as any);
+    app.get('/api/faces/unassigned', routes.Persons.getUnidentifiedFaces as any); // Alias for mobile app
     app.get('/api/faces/filter-options', routes.Persons.getFaceFilterOptions as any);
     app.post('/api/faces/auto-recognize', routes.Persons.batchAutoRecognize as any);
     app.post('/api/faces/cleanup-orphaned', routes.Persons.cleanupOrphanedFaces as any);
@@ -100,6 +101,10 @@ export const setupRoutes = (app: Express) => {
     app.get('/api/system/consistency', routes.Persons.checkConsistency as any);
     app.post('/api/system/sync-persons-compreface', routes.Persons.syncPersonsToCompreFace as any);
     app.post('/api/system/sync-existing-faces-compreface', routes.Persons.syncExistingFacesToCompreFace as any);
+    
+    // Auto-face cleanup endpoints
+    app.get('/api/system/preview-auto-face-cleanup', routes.Persons.previewAutoFaceCleanup as any);
+    app.post('/api/system/cleanup-auto-faces', routes.Persons.cleanupAutoFacesFromCompreFace as any);
     
     // CompreFace training endpoint (mobile app compatible)
     app.post('/compreface/train', routes.Persons.trainPersonModel as any);

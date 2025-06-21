@@ -7,6 +7,7 @@ import { configManager } from '../util/config-manager';
 import { Logger } from '../logger';
 import { CompreFaceTrainingManager, AutoTrainingConfig } from '../util/compreface-training';
 import { FaceClusteringService } from '../util/face-clustering';
+import { AutoFaceCleanup } from '../util/cleanup-auto-faces';
 import fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -428,9 +429,15 @@ export const assignFaceToPerson = asyncHandler(async (req: Request, res: Respons
                     req.logger.info(`Updated person ${person.name} with CompreFace subject ID: ${comprefaceSubjectId}`);
                 }
                 
-                // Add face to CompreFace for training
+                // Add face to CompreFace for training (only high-confidence faces)
                 if (!face.face_image_path) {
                     req.logger.warn('Face has no image path, skipping CompreFace sync');
+                    return;
+                }
+                
+                // Only add high-confidence faces to CompreFace (0.98 or higher)
+                if (face.detection_confidence < 0.98) {
+                    req.logger.info(`Face confidence ${face.detection_confidence} below 0.98 threshold, skipping CompreFace sync`);
                     return;
                 }
                 
@@ -439,7 +446,7 @@ export const assignFaceToPerson = asyncHandler(async (req: Request, res: Respons
                 if (!fullFacePath.startsWith('/')) {
                     fullFacePath = `${configManager.getStorage().processedDir}/${face.face_image_path}`;
                 }
-                req.logger.info(`Adding face to CompreFace: ${comprefaceSubjectId}, path: ${fullFacePath}`);
+                req.logger.info(`Adding high-confidence face (${face.detection_confidence}) to CompreFace: ${comprefaceSubjectId}, path: ${fullFacePath}`);
                 await addFaceToSubject(comprefaceSubjectId, fullFacePath);
                 
                 // Mark face as synced to CompreFace
@@ -521,6 +528,7 @@ export const removeFaceFromPerson = async (req: Request, res: Response) => {
                         const processedDir = configManager.getStorage().processedDir;
                         const facePaths = remainingFaces
                             .filter(f => f.relative_face_path || f.face_image_path)
+                            .filter(f => f.detection_confidence >= 0.98) // Only high-confidence faces
                             .map(f => {
                                 const facePath = f.relative_face_path || f.face_image_path;
                                 if (!facePath) return null;
@@ -686,8 +694,8 @@ export const batchAssignFacesToPerson = asyncHandler(async (req: Request, res: R
             // Update face in database
             await FaceRepository.assignFaceToPerson(faceId, personId, 1.0, 'manual');
             
-            // Collect face path for batch upload to CompreFace
-            if (person.compreface_subject_id) {
+            // Collect face path for batch upload to CompreFace (only high-confidence faces)
+            if (person.compreface_subject_id && face.detection_confidence >= 0.98) {
                 const facePath = face.relative_face_path || face.face_image_path;
                 if (facePath) {
                     let fullFacePath: string;
@@ -1038,8 +1046,8 @@ export const batchAutoRecognizeInternal = async (options: {
                             await FaceRepository.assignFaceToPerson(face.id!, person.id!, bestMatch.similarity, 'auto_compreface');
                             await PersonRepository.updateFaceCount(person.id!);
                             
-                            // Collect faces for batch upload to CompreFace
-                            if (person.compreface_subject_id) {
+                            // Collect faces for batch upload to CompreFace (only high-confidence faces)
+                            if (person.compreface_subject_id && face.detection_confidence >= 0.98) {
                                 const facePath = face.relative_face_path || face.face_image_path;
                                 if (facePath) {
                                     let fullFacePath: string;
@@ -1498,10 +1506,11 @@ async function trainPersonAsync(personId: number, person: any, faces: any[], tra
                 started_at: new Date()
             });
 
-        // Collect face paths for CompreFace training
+        // Collect face paths for CompreFace training (only high-confidence faces)
         const processedDir = configManager.getStorage().processedDir;
         const facePaths = faces
             .filter(face => face.relative_face_path || face.face_image_path)
+            .filter(face => face.detection_confidence >= 0.98) // Only high-confidence faces
             .map(face => {
                 // Use relative_face_path (preferred) or fall back to face_image_path
                 const facePath = face.relative_face_path || face.face_image_path;
@@ -2682,5 +2691,42 @@ export const deleteFace = asyncHandler(async (req: Request, res: Response) => {
         }
         throw new AppError('Failed to delete face', 500);
     }
+});
+
+// Preview cleanup of auto-assigned faces from CompreFace
+export const previewAutoFaceCleanup = asyncHandler(async (req: Request, res: Response) => {
+    req.logger.info('Previewing auto-face cleanup from CompreFace');
+    
+    const preview = await AutoFaceCleanup.previewCleanup();
+    
+    res.json({
+        success: true,
+        message: 'Auto-face cleanup preview completed',
+        preview
+    });
+});
+
+// Clean up auto-assigned faces from CompreFace
+export const cleanupAutoFacesFromCompreFace = asyncHandler(async (req: Request, res: Response) => {
+    req.logger.info('Starting cleanup of auto-assigned faces from CompreFace');
+    
+    const { dryRun = false } = req.body;
+    
+    if (dryRun) {
+        const preview = await AutoFaceCleanup.previewCleanup();
+        return res.json({
+            success: true,
+            message: 'Dry run completed - no changes made',
+            preview
+        });
+    }
+    
+    const result = await AutoFaceCleanup.cleanupAutoFacesFromCompreFace();
+    
+    res.json({
+        success: true,
+        message: 'Auto-face cleanup completed',
+        result
+    });
 });
 

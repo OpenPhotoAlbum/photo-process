@@ -326,7 +326,7 @@ export const recognizeFacesFromImagesBatch = async (imagePaths: string[], maxCon
     return results;
 };
 
-export const addFacesToSubjectBatch = async (subjectId: string, imagePaths: string[], maxConcurrency: number = Math.max(1, Math.floor(configManager.getCompreFace().maxConcurrency / 2))): Promise<{ successful: string[], failed: Array<{ path: string, error: string }> }> => {
+export const addFacesToSubjectBatch = async (subjectId: string, imagePaths: string[], maxConcurrency: number = 1): Promise<{ successful: string[], failed: Array<{ path: string, error: string }> }> => {
     const successful: string[] = [];
     const failed: Array<{ path: string, error: string }> = [];
     
@@ -355,6 +355,12 @@ export const addFacesToSubjectBatch = async (subjectId: string, imagePaths: stri
         });
         
         const batchResults = await Promise.allSettled(batchPromises);
+        
+        // Add delay between batches to prevent overwhelming CompreFace
+        if (batchIndex < batches.length - 1) {
+            logger.info(`Waiting 2 seconds before next batch to prevent CompreFace overload...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
         
         // Collect results from current batch
         for (const promiseResult of batchResults) {
