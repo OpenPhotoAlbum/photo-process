@@ -101,3 +101,7 @@ debug-*.js
 find-*.js
 fix-single-*.js
 .mcp.json
+
+# Filebeat logging configuration files (environment-specific)
+infrastructure/logging/config/filebeat.yml
+infrastructure/logging/config/filebeat-*.yml
