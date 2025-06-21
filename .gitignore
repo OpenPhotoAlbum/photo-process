@@ -100,3 +100,4 @@ sample-*.png
 debug-*.js
 find-*.js
 fix-single-*.js
+.mcp.json
