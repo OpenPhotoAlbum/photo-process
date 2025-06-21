@@ -90,7 +90,7 @@ The system automatically recognizes faces in new photos using several smart tech
 Real-world performance metrics:
 - **High-Quality Faces**: 95%+ accuracy with good lighting and clear images
 - **Challenging Conditions**: 70-85% accuracy with poor lighting or angles
-- **False Positives**: <1% with 70% confidence threshold
+- **False Positives**: Less than 1% with 70% confidence threshold
 
 ## 📊 Face Recognition APIs
 

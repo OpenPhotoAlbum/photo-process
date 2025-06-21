@@ -26,7 +26,7 @@ Create production `.env` file:
 MYSQL_HOST=localhost
 MYSQL_PORT=3307
 MYSQL_USER=photo
-MYSQL_PASSWORD=<secure-password>
+MYSQL_PASSWORD=your-secure-password
 MYSQL_DATABASE=photo-process
 
 # Storage Paths
@@ -36,7 +36,7 @@ MEDIA_LOGS_DIR=/var/photo-platform/logs
 
 # CompreFace
 COMPREFACE_URL=http://compreface-ui:80
-COMPREFACE_API_KEY=<your-api-key>
+COMPREFACE_API_KEY=your-api-key
 
 # Security
 NODE_ENV=production
