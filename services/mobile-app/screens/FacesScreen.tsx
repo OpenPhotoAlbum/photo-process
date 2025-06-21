@@ -466,6 +466,34 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
           >
             <Text style={styles.removeFaceButtonText}>✕</Text>
           </TouchableOpacity>
+
+          {/* Reassign face button */}
+          <TouchableOpacity
+            style={styles.reassignFaceButton}
+            onPress={(event) => {
+              event.stopPropagation();
+              Alert.alert(
+                'Reassign Face',
+                `Reassign this face to a different person?\n\nThis will:\n• Remove the face from ${selectedPerson.name}'s profile\n• Allow you to assign it to another person\n• Update training models accordingly`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Reassign', 
+                    onPress: () => {
+                      // First remove the current assignment
+                      removeFaceAssignment(item.id);
+                      // Then navigate to the parent photo for reassignment
+                      if (item.image) {
+                        onSelectPhoto(item.image, selectedPerson);
+                      }
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.reassignFaceButtonText}>🔄</Text>
+          </TouchableOpacity>
           
           {/* Show assignment method badge */}
           {item.assigned_by && (
@@ -938,6 +966,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   removeFaceButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  reassignFaceButton: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reassignFaceButtonText: {
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
