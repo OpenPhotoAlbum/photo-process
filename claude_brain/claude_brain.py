@@ -20,7 +20,7 @@ from usage_tracker import tracker
 class ClaudeBrain:
     def __init__(self, db_path: str = "embeddings.db"):
         self.db_path = db_path
-        self.processor = FileProcessor()
+        self.processor = None  # Will be initialized when we know the project root
         
     def initialize(self):
         """Initialize the database."""
@@ -32,6 +32,10 @@ class ClaudeBrain:
         if not os.path.exists(filepath):
             print(f"Error: File {filepath} does not exist")
             return 0
+        
+        # Initialize processor with file's directory as project root
+        if not self.processor:
+            self.processor = FileProcessor(project_root=os.path.dirname(filepath))
         
         # Start tracking
         tracker.start_session("ingest_file", f"Processing {filepath}")
@@ -56,6 +60,10 @@ class ClaudeBrain:
         if not os.path.exists(directory_path):
             print(f"Error: Directory {directory_path} does not exist")
             return 0
+        
+        # Initialize processor with project root
+        if not self.processor:
+            self.processor = FileProcessor(project_root=directory_path)
         
         # Start tracking
         tracker.start_session("ingest_directory", f"Processing {directory_path} (recursive={recursive})")

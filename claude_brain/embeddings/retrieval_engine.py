@@ -12,7 +12,7 @@ def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
 def search_embeddings(query, db_path="embeddings.db", top_n=5):
-    response = client.embeddings.create(input=query, model="text-embedding-ada-002")
+    response = client.embeddings.create(input=query, model="text-embedding-3-small")
     query_embedding = response.data[0].embedding
     conn = sqlite3.connect(db_path)
     c = conn.cursor()

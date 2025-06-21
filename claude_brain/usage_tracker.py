@@ -49,7 +49,11 @@ class UsageTracker:
         total_tokens = 0
         for text in texts:
             if isinstance(text, str):
-                total_tokens += len(self.encoding.encode(text))
+                try:
+                    total_tokens += len(self.encoding.encode(text, disallowed_special=()))
+                except Exception:
+                    # If encoding fails, estimate based on character count
+                    total_tokens += len(text) // 4  # Rough approximation
         
         self.current_session["tokens_processed"] += total_tokens
         self.current_session["api_calls"] += 1
@@ -160,7 +164,7 @@ class UsageTracker:
         print(f"Total Tokens: {usage['total_tokens']:,}")
         print(f"Total Estimated Cost: ${usage['total_cost']:.4f}")
         
-        if usage['sessions']:
+        if usage.get('sessions'):
             print("\nRecent Sessions:")
             for session in usage['sessions'][-5:]:  # Show last 5 sessions
                 print(f"  {session['start_time'][:19]} | {session['operation']} | "

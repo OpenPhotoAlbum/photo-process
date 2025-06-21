@@ -5,9 +5,13 @@ from typing import List, Tuple, Dict, Any
 from text_chunker import TextChunker
 
 class FileProcessor:
-    def __init__(self, chunk_size: int = 1000, overlap: int = 200):
-        self.chunker = TextChunker(chunk_size, overlap)
-        self.ignore_patterns = self._load_ignore_patterns()
+    def __init__(self, chunk_size: int = 1000, overlap: int = 200, project_root: str = None):
+        # Reduce chunk size to ensure we stay well under token limits
+        # ~4 chars per token, 8192 token limit, use 2000 tokens max per chunk = ~800 chars
+        safe_chunk_size = min(chunk_size, 800)
+        safe_overlap = min(overlap, 150)
+        self.chunker = TextChunker(safe_chunk_size, safe_overlap)
+        self.ignore_patterns = self._load_ignore_patterns(project_root)
         self.supported_extensions = {
             '.py': self._process_python,
             '.js': self._process_javascript,
@@ -23,25 +27,58 @@ class FileProcessor:
             '.css': self._process_css,
         }
     
-    def _load_ignore_patterns(self) -> List[str]:
+    def _load_ignore_patterns(self, project_root: str = None) -> List[str]:
         """Load ignore patterns from .brainignore file."""
         patterns = []
-        ignore_file = '.brainignore'
         
-        if os.path.exists(ignore_file):
-            with open(ignore_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if line and not line.startswith('#'):
-                        patterns.append(line)
+        # Look for .brainignore in project root first, then current directory
+        ignore_files = []
+        if project_root:
+            ignore_files.append(os.path.join(project_root, '.brainignore'))
+        ignore_files.append('.brainignore')
         
+        for ignore_file in ignore_files:
+            if os.path.exists(ignore_file):
+                print(f"📝 Loading ignore patterns from: {ignore_file}")
+                with open(ignore_file, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            patterns.append(line)
+                break
+        
+        print(f"🚫 Loaded {len(patterns)} ignore patterns")
         return patterns
     
     def _should_ignore(self, filepath: str) -> bool:
         """Check if a file should be ignored based on ignore patterns."""
+        # Normalize path for matching
+        normalized_path = filepath.replace(os.sep, '/')
+        basename = os.path.basename(filepath)
+        
         for pattern in self.ignore_patterns:
-            if fnmatch.fnmatch(filepath, pattern) or fnmatch.fnmatch(os.path.basename(filepath), pattern):
-                return True
+            # Normalize pattern
+            pattern = pattern.replace(os.sep, '/')
+            
+            # Check if any part of the path matches the pattern
+            if pattern.endswith('/'):
+                # Directory pattern - check if any directory in path matches
+                pattern = pattern.rstrip('/')
+                if f'/{pattern}/' in f'/{normalized_path}/' or normalized_path.endswith(f'/{pattern}'):
+                    return True
+            else:
+                # File pattern - check full path and basename
+                if fnmatch.fnmatch(normalized_path, pattern) or fnmatch.fnmatch(basename, pattern):
+                    return True
+                    
+                # Also check if the file is inside a directory that matches
+                if '/' in pattern:
+                    path_parts = normalized_path.split('/')
+                    for i in range(len(path_parts)):
+                        subpath = '/'.join(path_parts[i:])
+                        if fnmatch.fnmatch(subpath, pattern):
+                            return True
+        
         return False
     
     def process_file(self, filepath: str) -> List[Tuple[str, str]]:
@@ -64,10 +101,20 @@ class FileProcessor:
         
         try:
             return self.supported_extensions[ext](filepath)
+        except PermissionError as e:
+            print(f"⚠️  Permission denied, skipping: {filepath}")
+            return []
         except Exception as e:
             print(f"Error processing {filepath}: {e}")
-            # Fallback to text processing
-            return self._process_text(filepath)
+            # Try fallback to text processing
+            try:
+                return self._process_text(filepath)
+            except PermissionError:
+                print(f"⚠️  Permission denied, skipping: {filepath}")
+                return []
+            except Exception as e2:
+                print(f"⚠️  Skipping unreadable file {filepath}: {e2}")
+                return []
     
     def _process_python(self, filepath: str) -> List[Tuple[str, str]]:
         """Process Python files with AST awareness."""
