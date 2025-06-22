@@ -5,6 +5,7 @@ import * as Junk from './junk';
 import * as Jobs from './jobs';
 import * as Process from './process';
 import * as Geolocation from './geolocation';
+import * as SelectiveTraining from './selective-training';
 import { configManager } from '../util/config-manager';
 
 export const setupRoutes = (app: Express) => {
@@ -98,6 +99,15 @@ export const setupRoutes = (app: Express) => {
     app.post('/api/training/jobs/:jobId/retry', routes.Persons.retryTrainingJob as any);
     app.post('/api/training/cleanup', routes.Persons.cleanupTrainingHistory as any);
     
+    // Selective Training API routes (Phase 2 - Clean Slate Approach)
+    app.post('/api/training/selective/batch', SelectiveTraining.batchTrainSelective as any);
+    app.post('/api/training/selective/:personId', SelectiveTraining.trainPersonSelective as any);
+    app.get('/api/training/selective/:personId/stats', SelectiveTraining.getPersonTrainingStats as any);
+    app.post('/api/training/selective/:personId/reset', SelectiveTraining.resetPersonTraining as any);
+    app.get('/api/training/selective/:personId/manual-faces', SelectiveTraining.getManuallyAssignedFaces as any);
+    app.get('/api/training/selective/:personId/log', SelectiveTraining.getPersonTrainingLog as any);
+    app.post('/api/training/selective/:personId/auto-training', SelectiveTraining.setAutoTraining as any);
+    
     app.get('/api/system/consistency', routes.Persons.checkConsistency as any);
     app.post('/api/system/sync-persons-compreface', routes.Persons.syncPersonsToCompreFace as any);
     app.post('/api/system/sync-existing-faces-compreface', routes.Persons.syncExistingFacesToCompreFace as any);
@@ -125,7 +135,7 @@ export const setupRoutes = (app: Express) => {
     app.post('/api/locations/retroactive', Geolocation.processRetroactiveGeolocation as any);
     
     // System configuration API route
-    app.get('/api/config', (req, res) => {
+    app.get('/api/config', (_req, res) => {
         res.json({
             system: {
                 version: '1.0.0',

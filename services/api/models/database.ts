@@ -434,6 +434,22 @@ export class FaceRepository {
     static async getFacesByPerson(person_id: number): Promise<DetectedFace[]> {
         return db('detected_faces').where({ person_id });
     }
+
+    // NEW: Get only faces that haven't been uploaded to CompreFace yet
+    static async getUnsyncedFacesByPerson(person_id: number): Promise<DetectedFace[]> {
+        return db('detected_faces')
+            .where({ person_id })
+            .where('compreface_synced', false)
+            .whereNull('compreface_uploaded_at');
+    }
+
+    // NEW: Get only manually assigned faces for training
+    static async getManuallyAssignedFacesByPerson(person_id: number): Promise<DetectedFace[]> {
+        return db('detected_faces')
+            .where({ person_id })
+            .where('assigned_by', 'user')
+            .where('compreface_synced', false);
+    }
     
     static async getUnidentifiedFaces(
         limit = 50, 
