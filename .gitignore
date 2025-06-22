@@ -129,3 +129,11 @@ setupmcp.sh
 
 # My thoughts
 THOUGHTS.md
+
+# Backup directories and files
+backups/
+*.backup
+
+# Claude Brain cache and temporary files
+claude_brain/drift_cache.json
+claude_brain/embeddings.db.backup
