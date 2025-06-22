@@ -4,6 +4,14 @@ This file tracks current development priorities and tasks for the Photo Manageme
 
 ## 🔥 High Priority
 
+### 🚨 Critical CompreFace Data Issues
+- [ ] **Margaret CompreFace Cleanup**: Investigate and fix Margaret's 3,000+ faces in CompreFace UI
+  - [ ] Use cleanup scripts to clear all her CompreFace UI images
+  - [ ] Clear appropriate database columns across all tables  
+  - [ ] Re-upload only manually associated faces using selective training
+  - [ ] Verify database consistency after cleanup
+  - **Context**: Unknown source of excessive faces, need clean slate approach
+
 ### 🏗️ API Architecture Refactoring ✅ COMPLETED
 - [x] **Routes/Resolvers Separation**: Implement clean architecture with business logic separation ✅ COMPLETED
   - [x] Create `/resolvers/` directory for business logic functions
@@ -43,6 +51,41 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [ ] Memory notifications ("On this day 3 years ago")
   - [ ] Smart reminders ("Haven't backed up in 3 days")
   - [ ] System updates (sync status, storage warnings)
+
+### 🗂️ Google Takeout Standalone Processor
+- [ ] **Standalone Google Takeout Import System**: Independent service for processing new Google Takeout archives
+  - [ ] Build standalone command-line tool that can process new Google Takeout archive sets
+  - [ ] Implement advanced deduplication logic (Google exports don't provide good control)
+  - [ ] Add validation to ensure images aren't double-imported from existing /source SMB directory
+  - [ ] Support for batch processing multiple archive sets with progress tracking
+  - [ ] Resume capability for interrupted large imports
+  - **Use Case**: Process new takeout archives without duplicating existing system data
+  - **Testing**: Use existing extracted archives to understand organization and validate current data
+
+### 🛠️ Configuration & Path Management
+- [ ] **Remove Hardcoded Paths**: Find and replace all /mnt/hdd/** instances in source files
+  - [ ] Audit all source files for hardcoded /mnt/hdd/** paths
+  - [ ] Replace with configuration-driven paths from config manager
+  - [ ] Ensure NO paths in source code bypass configuration system
+  - [ ] Update any database column values containing /mnt/hdd/** paths (Low Priority)
+  - **Goal**: Complete path independence from hardcoded mount points
+
+### 🎯 Face Management Enhancements  
+- [ ] **Auto-to-Manual Face Conversion**: Add batch action to mark auto-assigned faces as manual
+  - [ ] Add "Mark as Manual" option in face detail page batch actions
+  - [ ] Update assigned_by field from 'auto' to 'user' for selected faces
+  - [ ] Integrate with selective training system for manual face preference
+
+- [ ] **Enhanced Face Reassignment Flow**: Improve bulk reassignment in person view
+  - [ ] When viewing person with "Auto" faces selected, "Reassign" should show person selection modal
+  - [ ] Add separate "Unassign" button to remove face associations without reassignment
+  - [ ] Improve UX for bulk face management workflows
+
+- [ ] **Auto-Recognition Cleanup & Re-checking**: Remove low-confidence auto assignments
+  - [ ] Add "recheck" capability after person receives new manual assignments and re-training
+  - [ ] Help remove lower-scored photos from auto selection based on improved model
+  - [ ] Retroactively remove all auto-assigned faces with confidence score ≤ 80%
+  - [ ] Add person editing capabilities (rename persons)
 
 ### 📁 Media Path Restructuring
 - [x] **PLANNING PHASE**: Design flattened media path structure ✅ COMPLETED
@@ -290,6 +333,19 @@ This file tracks current development priorities and tasks for the Photo Manageme
 
 ## 📋 Medium Priority
 
+### 🔄 Scanning & Processing Improvements
+- [ ] **Smart Limit Processing**: Improve scan limit behavior to find actual valid files
+  - [ ] When scan includes a limit, find enough valid files to match the limit
+  - [ ] Don't slice first X files then filter down to smaller number
+  - [ ] Example: If limit is 500, system should find 500 valid files, not start with 500 and filter to 348
+  - [ ] Implement smarter file validation and counting logic
+
+- [ ] **Video Processing Support**: Extend platform to handle video files
+  - [ ] Develop comprehensive plan for video file processing
+  - [ ] Add video thumbnail generation and metadata extraction
+  - [ ] Consider video face detection and object recognition capabilities
+  - [ ] Design video-specific storage and organization strategy
+
 ### 📚 Album System & Google Takeout Integration
 - [x] **Google Takeout Metadata Import**: Parse and import rich metadata from Google Photos export ✅ COMPLETED
   - [x] Scan Google Takeout directories for JSON metadata files
@@ -357,6 +413,19 @@ This file tracks current development priorities and tasks for the Photo Manageme
 - [ ] Optimize face clustering to use CompreFace recognition for better accuracy
 
 ## 📋 Low Priority
+
+### 🤖 Advanced AI/ML Vision Enhancement System
+- [ ] **Multi-Model AI Integration**: Self-hosted intelligent image analysis combining multiple AI models
+  - [ ] **Places365**: Scene classification for location/context detection (parties, weddings, nature, etc.)
+  - [ ] **BLIP-2**: Advanced image captioning and visual question answering ("is this a wedding?")
+  - [ ] **OpenCLIP**: Enhanced object/concept recognition and semantic understanding
+  - [ ] **PaddleOCR**: Text detection and recognition for "junk" detection and document classification
+  - [ ] **Integration Strategy**: Combine model results for comprehensive scene understanding
+  - [ ] **Self-Hosting**: Dockerize all models for independence from cloud services
+  - [ ] **Smart Search**: Build super-intelligent search tool leveraging all model outputs
+  - **Priority**: Discuss comprehensive plan first, develop after CompreFace system is rock solid
+  - **Goal**: Revolutionary photo understanding and search capabilities
+  - **Applications**: Could power specialized products (AstroVault scene detection, PeopleStories context)
 
 ### 🔄 Future Enhancements
 - [ ] **Standalone Google Takeout Processor**: Independent service for importing new archive sets
