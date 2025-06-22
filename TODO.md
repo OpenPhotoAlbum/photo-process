@@ -12,6 +12,18 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [ ] Verify database consistency after cleanup
   - **Context**: Unknown source of excessive faces, need clean slate approach
 
+### 🧠 Claude Brain Drift Detection Mastery
+- [ ] **Learn and Setup Claude Brain Drift Detection System**: Master the automated codebase monitoring system
+  - [ ] Understand how drift detection monitors file changes across the entire project
+  - [ ] Learn the `.brainignore` configuration system for filtering unwanted files
+  - [ ] Master the drift detection commands: `mcp:check-drift`, `mcp:auto-update`, `mcp:monitor`
+  - [ ] Set up continuous monitoring service for real-time drift detection
+  - [ ] Understand cache system and when/how to trigger database rebuilds
+  - [ ] Learn optimal workflow for development sessions with drift monitoring
+  - [ ] Test various scenarios: large changes, small edits, ignored files
+  - **Goal**: Ensure Claude Brain database stays current with codebase changes automatically
+  - **Commands**: `npm run mcp:check-drift`, `npm run mcp:monitor`, `npm run mcp:auto-update`
+
 ### 🏗️ API Architecture Refactoring ✅ COMPLETED
 - [x] **Routes/Resolvers Separation**: Implement clean architecture with business logic separation ✅ COMPLETED
   - [x] Create `/resolvers/` directory for business logic functions
