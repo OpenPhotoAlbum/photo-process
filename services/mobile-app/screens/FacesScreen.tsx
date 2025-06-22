@@ -46,7 +46,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'trained' | 'untrained' | 'high_potential'>('all');
+  const [filter, setFilter] = useState<'all' | 'trained' | 'untrained'>('all');
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [personImages, setPersonImages] = useState<any[]>([]);
   const [personFaces, setPersonFaces] = useState<any[]>([]);
@@ -65,6 +65,9 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
   const [unassignedFaces, setUnassignedFaces] = useState<any[]>([]);
   const [loadingUnassigned, setLoadingUnassigned] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showCreatePerson, setShowCreatePerson] = useState(false);
+  const [newPersonName, setNewPersonName] = useState('');
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('all');
 
   const fetchPersons = async (isRefresh = false) => {
     try {
@@ -100,7 +103,25 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
   const fetchUnassignedFaces = async () => {
     try {
       setLoadingUnassigned(true);
-      const response = await fetch(`${API_BASE}/api/faces/unassigned?limit=200`);
+      
+      // Build query parameters with age filter
+      const params = new URLSearchParams({
+        limit: '1000'
+      });
+      
+      // Add age filter if selected
+      if (selectedAgeGroup !== 'all') {
+        if (selectedAgeGroup === '80-100') {
+          params.append('ageMin', '80');
+          // Don't set maxAge for 80+ to include all ages above 80
+        } else {
+          const [minAge, maxAge] = selectedAgeGroup.split('-').map(Number);
+          if (minAge !== undefined) params.append('ageMin', minAge.toString());
+          if (maxAge !== undefined) params.append('ageMax', maxAge.toString());
+        }
+      }
+      
+      const response = await fetch(`${API_BASE}/api/faces/unassigned?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch unassigned faces: ${response.status}`);
@@ -121,7 +142,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     if (mainView === 'unassigned') {
       fetchUnassignedFaces();
     }
-  }, [mainView]);
+  }, [mainView, selectedAgeGroup]);
 
   // Auto-select person if provided
   useEffect(() => {
@@ -228,9 +249,6 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
       case 'untrained':
         filtered = persons.filter(p => p.recognition_status === 'untrained');
         break;
-      case 'high_potential':
-        filtered = persons.filter(p => (p.google_tag_count || 0) >= 20);
-        break;
       default:
         filtered = persons;
     }
@@ -324,7 +342,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     if ((person.face_count || 0) < 5) {
       Alert.alert(
         'Not Enough Faces',
-        `${person.name} needs at least 5 faces to train. Currently has ${person.face_count || 0} faces assigned.`,
+        `${person.name} needs at least 5 manually assigned faces to train.\n\nCurrently has ${person.face_count || 0} faces assigned.\n\n💡 Tip: Assign more faces by tapping on face thumbnails in photos.`,
         [{ text: 'OK' }]
       );
       return;
@@ -334,8 +352,8 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     const actionText = isRetraining ? 'Re-train' : 'Train';
     const confirmTitle = isRetraining ? 'Re-train Model?' : 'Train Model?';
     const confirmMessage = isRetraining 
-      ? `Re-train ${person.name}'s recognition model with ${person.face_count} faces?\n\nThis will update their existing model and may improve recognition accuracy.`
-      : `Train ${person.name}'s recognition model with ${person.face_count} faces?\n\nThis will enable automatic face recognition for this person.`;
+      ? `Re-train ${person.name}'s recognition model?\n\n🛡️ Only manually verified faces will be used\n📊 Up to 50 best faces will be selected\n🔄 This will update their existing model and may improve recognition accuracy.`
+      : `Train ${person.name}'s recognition model?\n\n🛡️ Only manually verified faces will be used\n📊 Up to 50 best faces will be selected\n🎯 This will enable automatic face recognition for this person.`;
 
     Alert.alert(
       confirmTitle,
@@ -360,10 +378,13 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
                 )
               );
 
-              const response = await fetch(`${API_BASE}/compreface/train`, {
+              const response = await fetch(`${API_BASE}/api/training/selective/${person.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ personId: person.id })
+                body: JSON.stringify({ 
+                  onlyManuallyAssigned: true,
+                  maxFacesPerPerson: 50
+                })
               });
 
               if (!response.ok) {
@@ -372,9 +393,12 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
               }
 
               const result = await response.json();
+              const facesUploaded = result.data?.facesUploaded || 0;
+              const facesSkipped = result.data?.facesSkipped || 0;
+              
               Alert.alert(
-                'Training Started', 
-                `${actionText}ing initiated for ${person.name}.\n\nTraining typically takes 1-2 minutes to complete.`,
+                'Training Complete', 
+                `${person.name} trained successfully!\n\n✅ ${facesUploaded} verified faces uploaded${facesSkipped > 0 ? `\n⚠️ ${facesSkipped} faces skipped (duplicates or errors)` : ''}\n\n🛡️ Only manually verified faces used for training.`,
                 [{ text: 'OK' }]
               );
               
@@ -571,6 +595,68 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     }
   };
 
+  const batchAssignToCurrentPerson = async () => {
+    if (!selectedPerson || selectedFaces.size === 0) return;
+
+    Alert.alert(
+      'Assign Faces',
+      `Assign ${selectedFaces.size} face${selectedFaces.size > 1 ? 's' : ''} to ${selectedPerson.name}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Assign',
+          onPress: async () => {
+            try {
+              await batchAssignFaces(selectedPerson.id, selectedPerson.name);
+              
+              // Close the batch modal
+              setShowBatchModal(false);
+              
+              // Refresh the current person's face list if viewing them
+              if (selectedPerson) {
+                fetchPersonFaces(selectedPerson.id);
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to assign faces. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const createAndAssignNewPerson = async () => {
+    if (!newPersonName.trim()) return;
+
+    try {
+      // Create new person
+      const createResponse = await fetch(`${API_BASE}/api/persons`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newPersonName.trim() })
+      });
+
+      if (!createResponse.ok) {
+        throw new Error('Failed to create person');
+      }
+
+      const newPerson = await createResponse.json();
+      
+      // Assign selected faces to new person
+      await batchAssignFaces(newPerson.id, newPersonName.trim());
+      
+      // Reset create form state
+      setShowCreatePerson(false);
+      setNewPersonName('');
+      
+      // Close assign modal
+      setShowAssignModal(false);
+      
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create person and assign faces. Please try again.');
+    }
+  };
+
   const renderFilterButtons = () => (
     <ScrollView 
       horizontal 
@@ -580,7 +666,6 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     >
       {[
         { key: 'all', label: 'All', count: persons.length },
-        { key: 'high_potential', label: 'High Potential', count: persons.filter(p => (p.google_tag_count || 0) >= 20).length },
         { key: 'untrained', label: 'Untrained', count: persons.filter(p => p.recognition_status === 'untrained').length },
         { key: 'trained', label: 'Trained', count: persons.filter(p => p.recognition_status === 'trained').length },
       ].map(({ key, label, count }) => (
@@ -910,7 +995,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
             ) : (
               <View style={styles.trainingRequirement}>
                 <Text style={styles.trainingRequirementText}>
-                  Need {5 - (selectedPerson.face_count || 0)} more faces to enable training
+                  Need {5 - (selectedPerson.face_count || 0)} more manually assigned faces to enable training
                 </Text>
               </View>
             )}
@@ -933,7 +1018,6 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
               <View style={styles.imagesSectionHeader}>
                 <Text style={styles.sectionTitle}>
                   Face Crops ({filteredData.length})
-                  {!showAutoFaces && !showManualFaces && ' - Select Auto/Manual to view'}
                 </Text>
                 
                 {/* Assignment Method Toggles */}
@@ -1043,6 +1127,19 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
             </View>
             
             <View style={styles.batchActionsGrid}>
+              {selectedPerson && (
+                <TouchableOpacity
+                  style={[styles.batchActionButton, styles.assignActionButton]}
+                  onPress={() => batchAssignToCurrentPerson()}
+                >
+                  <Text style={styles.batchActionIcon}>✅</Text>
+                  <Text style={styles.batchActionText}>Assign to {selectedPerson.name}</Text>
+                  <Text style={styles.batchActionDescription}>
+                    Assign selected faces to {selectedPerson.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              
               <TouchableOpacity
                 style={[styles.batchActionButton, styles.deleteActionButton]}
                 onPress={batchDeleteFaces}
@@ -1192,6 +1289,53 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
           contentContainerStyle={styles.assignPersonList}
           showsVerticalScrollIndicator={true}
         />
+        
+        {/* Create New Person Section */}
+        <View style={styles.createPersonSection}>
+          {!showCreatePerson ? (
+            <TouchableOpacity
+              style={styles.createPersonButton}
+              onPress={() => setShowCreatePerson(true)}
+            >
+              <Text style={styles.createPersonButtonText}>
+                + Create New Person
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.createPersonForm}>
+              <TextInput
+                style={styles.createPersonInput}
+                placeholder="Enter person name"
+                value={newPersonName}
+                onChangeText={setNewPersonName}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={createAndAssignNewPerson}
+              />
+              <View style={styles.createPersonActions}>
+                <TouchableOpacity
+                  style={styles.createPersonCancelButton}
+                  onPress={() => {
+                    setShowCreatePerson(false);
+                    setNewPersonName('');
+                  }}
+                >
+                  <Text style={styles.createPersonCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.createPersonConfirmButton,
+                    !newPersonName.trim() && styles.disabledCreateButton
+                  ]}
+                  onPress={createAndAssignNewPerson}
+                  disabled={!newPersonName.trim()}
+                >
+                  <Text style={styles.createPersonConfirmText}>Create & Assign</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
       </SafeAreaView>
     </Modal>
   );
@@ -1284,6 +1428,44 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
       ) : (
         /* Unassigned Faces View */
         <>
+          {/* Age Filter Controls */}
+          <View style={styles.ageFilterContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.ageFilterScroll}
+            >
+              {[
+                { key: 'all', label: 'All Ages' },
+                { key: '0-10', label: '0-10' },
+                { key: '10-20', label: '10-20' },
+                { key: '20-30', label: '20-30' },
+                { key: '30-40', label: '30-40' },
+                { key: '40-50', label: '40-50' },
+                { key: '50-60', label: '50-60' },
+                { key: '60-70', label: '60-70' },
+                { key: '70-80', label: '70-80' },
+                { key: '80-100', label: '80+' },
+              ].map(ageGroup => (
+                <TouchableOpacity
+                  key={ageGroup.key}
+                  style={[
+                    styles.ageFilterButton,
+                    selectedAgeGroup === ageGroup.key && styles.ageFilterButtonActive
+                  ]}
+                  onPress={() => setSelectedAgeGroup(ageGroup.key)}
+                >
+                  <Text style={[
+                    styles.ageFilterText,
+                    selectedAgeGroup === ageGroup.key && styles.ageFilterTextActive
+                  ]}>
+                    {ageGroup.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
           {/* Multiselect controls for unassigned faces */}
           <View style={styles.multiselectControls}>
             <View style={styles.multiselectRow}>
@@ -1912,6 +2094,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333',
   },
+  assignActionButton: {
+    borderColor: '#00cc44',
+  },
   deleteActionButton: {
     borderColor: '#ff3333',
   },
@@ -2034,6 +2219,66 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
   },
+  createPersonSection: {
+    padding: 16,
+    backgroundColor: '#1a1a1a',
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+  },
+  createPersonButton: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  createPersonButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  createPersonForm: {
+    gap: 12,
+  },
+  createPersonInput: {
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#2a2a2a',
+    color: '#fff',
+  },
+  createPersonActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  createPersonCancelButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+    alignItems: 'center',
+  },
+  createPersonCancelText: {
+    color: '#999',
+    fontSize: 16,
+  },
+  createPersonConfirmButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+  },
+  createPersonConfirmText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledCreateButton: {
+    opacity: 0.6,
+  },
   assignPersonItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2081,5 +2326,38 @@ const styles = StyleSheet.create({
   assignPersonImagePlaceholderText: {
     fontSize: 20,
     opacity: 0.5,
+  },
+  
+  // Age Filter styles
+  ageFilterContainer: {
+    backgroundColor: '#1a1a1a',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  ageFilterScroll: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  ageFilterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#333',
+    borderWidth: 1,
+    borderColor: '#555',
+  },
+  ageFilterButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  ageFilterText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  ageFilterTextActive: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });

@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 
 // Define available API endpoints
 export const API_ENDPOINTS = {
-  development: 'http://192.168.40.103:9000',    // Local development
+  development: 'http://192.168.40.6:9000',      // Local development (updated IP)
   production: 'https://api.theyoungs.photos',   // Cloudflare tunnel for production
   fallback: 'https://theyoungs.photos'          // Fallback endpoint
 };

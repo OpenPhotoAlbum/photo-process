@@ -10,6 +10,7 @@ import {
   Alert,
   TextInput,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import { FaceData } from '../types/FaceTypes';
 import { API_BASE } from '../config';
@@ -18,6 +19,7 @@ interface Person {
   id: number;
   name: string;
   face_count: number;
+  sample_face_image?: string;
 }
 
 interface PersonSelectionModalProps {
@@ -55,38 +57,26 @@ export const PersonSelectionModal: React.FC<PersonSelectionModalProps> = ({
       const data = await response.json();
       const fetchedPersons = data.persons || [];
       
-      // Custom sorting: Top 10 by face count, then alphabetical
-      const sortedPersons = [...fetchedPersons].sort((a, b) => {
-        const aFaceCount = a.face_count || 0;
-        const bFaceCount = b.face_count || 0;
-        
-        // If both have faces or both don't have faces, compare face counts
-        if ((aFaceCount > 0 && bFaceCount > 0) || (aFaceCount === 0 && bFaceCount === 0)) {
-          if (aFaceCount !== bFaceCount) {
-            return bFaceCount - aFaceCount; // Higher face count first
-          }
-          // If face counts are equal, sort alphabetically
-          return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-        }
-        
-        // People with faces come before people without faces
-        return bFaceCount - aFaceCount;
-      });
+      // Priority people (always at the top)
+      const priorityNames = ['Stephen Young', 'Cayce', 'Henry', 'Margaret', 'Amelia Rose'];
       
-      // Separate top 10 by face count and the rest
-      const personsWithFaces = sortedPersons.filter(p => (p.face_count || 0) > 0);
-      const personsWithoutFaces = sortedPersons.filter(p => (p.face_count || 0) === 0);
+      // Separate priority people from others
+      const priorityPersons = priorityNames.map(name => 
+        fetchedPersons.find(p => p.name === name)
+      ).filter(Boolean); // Remove any undefined entries
       
-      // Get top 10 by face count
-      const top10ByFaceCount = personsWithFaces.slice(0, 10);
-      const remainingWithFaces = personsWithFaces.slice(10);
+      // Get remaining people (not in priority list)
+      const remainingPersons = fetchedPersons.filter(p => 
+        !priorityNames.includes(p.name)
+      );
       
-      // Sort remaining persons alphabetically
-      const remainingAlphabetical = [...remainingWithFaces, ...personsWithoutFaces]
-        .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+      // Sort remaining people alphabetically
+      const alphabeticalPersons = remainingPersons.sort((a, b) => 
+        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+      );
       
-      // Combine: top 10 by face count + remaining alphabetical
-      const finalSortedPersons = [...top10ByFaceCount, ...remainingAlphabetical];
+      // Combine: priority people first, then alphabetical
+      const finalSortedPersons = [...priorityPersons, ...alphabeticalPersons];
       
       setPersons(finalSortedPersons);
     } catch (error) {
@@ -105,18 +95,24 @@ export const PersonSelectionModal: React.FC<PersonSelectionModalProps> = ({
 
     try {
       setAssigning(true);
+      const requestBody = { name: newPersonName.trim() };
+      console.log('Creating person with request:', { 
+        url: `${API_BASE}/api/persons`,
+        body: requestBody 
+      });
+      
       const response = await fetch(`${API_BASE}/api/persons`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: newPersonName.trim(),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Create person error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
       }
 
       const newPerson = await response.json();
@@ -171,9 +167,26 @@ export const PersonSelectionModal: React.FC<PersonSelectionModalProps> = ({
       onPress={() => assignFaceToPerson(item.id, item.name)}
       disabled={assigning}
     >
-      <View style={styles.personInfo}>
-        <Text style={styles.personName}>{item.name}</Text>
-        <Text style={styles.faceCount}>{item.face_count} faces</Text>
+      <View style={styles.personItemLeft}>
+        <View style={styles.faceImageContainer}>
+          {item.sample_face_image ? (
+            <Image
+              source={{ uri: `${API_BASE}${item.sample_face_image}` }}
+              style={styles.faceImage}
+              onError={() => {
+                // Handle image load error by falling back to placeholder
+              }}
+            />
+          ) : (
+            <View style={styles.placeholderFace}>
+              <Text style={styles.placeholderText}>👤</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.personInfo}>
+          <Text style={styles.personName}>{item.name}</Text>
+          <Text style={styles.faceCount}>{item.face_count} faces</Text>
+        </View>
       </View>
       <Text style={styles.selectButton}>Select</Text>
     </TouchableOpacity>
@@ -343,6 +356,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  personItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  faceImageContainer: {
+    marginRight: 12,
+  },
+  faceImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  placeholderFace: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 18,
+    color: '#666',
   },
   personInfo: {
     flex: 1,
