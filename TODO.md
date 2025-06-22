@@ -12,6 +12,23 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [ ] Verify database consistency after cleanup
   - **Context**: Unknown source of excessive faces, need clean slate approach
 
+### 🔍 Critical System Audits
+- [ ] **Audit Automatic Face Assignment Systems**: Find all jobs/cron/automatic systems that assign faces
+  - [ ] Use MCP search_codebase tool to search for automatic face assignment code
+  - [ ] Check all services and infrastructure for scheduled jobs
+  - [ ] Review cron jobs, background workers, and queue processors
+  - [ ] Document all automatic face assignment configurations
+  - [ ] Identify any unintended automatic assignments causing data issues
+  - **Goal**: Complete visibility into what's automatically assigning faces
+
+- [ ] **Fix CompreFace Consistency Warning Spam**: Resolve false warnings during face uploads
+  - [ ] Investigate consistency check timing in face upload process
+  - [ ] Currently warns "Cayce has 737 faces in DB but 20 in CompreFace" during uploads
+  - [ ] Defer consistency checks until after bulk operations complete
+  - [ ] Only check totals after re-training or batch assignments finish
+  - [ ] Reduce log noise from premature consistency warnings
+  - **Context**: False warnings occur because we check counts before CompreFace finishes processing
+
 ### 🧠 Claude Brain Drift Detection Mastery
 - [ ] **Learn and Setup Claude Brain Drift Detection System**: Master the automated codebase monitoring system
   - [ ] Understand how drift detection monitors file changes across the entire project
@@ -63,6 +80,17 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [ ] Memory notifications ("On this day 3 years ago")
   - [ ] Smart reminders ("Haven't backed up in 3 days")
   - [ ] System updates (sync status, storage warnings)
+
+### 🖼️ Extended Image Format Support
+- [ ] **Support Additional Image Formats**: Expand beyond current supported formats
+  - [ ] Current formats: .jpg, .jpeg, .png, .webp, .tiff, .bmp
+  - [ ] Audit SMB source directory for unsupported image types
+  - [ ] Test system handling of new formats (HEIC, RAW formats, GIF, etc.)
+  - [ ] Create or download sample images for formats not in SMB
+  - [ ] Update image processing pipeline to handle new formats
+  - [ ] Consider format conversion strategies for incompatible types
+  - [ ] Test face detection and object recognition on new formats
+  - **Goal**: Comprehensive image format support for all user photos
 
 ### 🗂️ Google Takeout Standalone Processor
 - [ ] **Standalone Google Takeout Import System**: Independent service for processing new Google Takeout archives
