@@ -10,7 +10,7 @@ Modern microservices platform architecture with Docker orchestration:
 photo-process/
 ├── VISION.md                    # Product vision and goals
 ├── docker-compose.platform.yml # Main Docker orchestration
-├── claude_brain/               # MCP server for Claude Code integration (6GB embeddings)
+├── claude_brain/               # MCP server + drift detection (6GB semantic embeddings)
 ├── services/                   # Microservices
 │   ├── api/                   # TypeScript API service (worker threads, FileTracker)
 │   ├── mobile-app/            # React Native mobile app (auto-upload, face recognition)
@@ -110,10 +110,13 @@ npm run test:unit              # Unit tests
 npm run test:integration       # Integration tests
 npm run test:coverage         # Coverage report
 
-# Claude Brain MCP Integration
+# Claude Brain MCP Integration (Semantic Codebase Search + Drift Detection)
 npm run mcp:start              # Start MCP server for Claude Code integration
 npm run mcp:test               # Test MCP server (show help)
-npm run mcp:start-simple       # Start simple MCP server version
+npm run mcp:rebuild            # Rebuild embeddings database with current codebase
+npm run mcp:check-drift        # Check for changes since last database update
+npm run mcp:auto-update        # Check drift and auto-rebuild if needed
+npm run mcp:monitor            # Start continuous drift monitoring service
 
 # Monitoring & Logging (Elasticsearch/Kibana)
 npm run logs:start             # Start Elasticsearch and Kibana monitoring stack
@@ -145,6 +148,7 @@ Core principles:
 - **Screenshot Detection**: Automatic identification and classification of screenshots
 - **Astrophotography Detection**: Specialized detection for night sky and space photography
 - **FileTracker System**: Database-driven file discovery replaces slow directory scanning
+- **Claude Brain MCP**: Semantic codebase search with automated drift detection and Claude Code integration
 
 ### ✅ **Mobile Application**
 - **Photo Grid**: Infinite scroll gallery with thumbnail optimization and dominant color backgrounds
