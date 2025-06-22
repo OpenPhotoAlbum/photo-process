@@ -168,7 +168,7 @@ export interface FaceSimilarity {
     face_a_id: number;
     face_b_id: number;
     similarity_score: number;
-    comparison_method?: 'embedding_distance' | 'compreface_api' | 'manual' | 'bbox_intersection';
+    comparison_method?: 'embedding_distance' | 'compreface_api' | 'manual' | 'bbox_intersection' | 'compreface_verification';
     calculated_at?: Date;
 }
 

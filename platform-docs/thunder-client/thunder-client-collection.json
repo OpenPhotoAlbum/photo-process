@@ -1,8 +1,8 @@
 {
   "client": "Thunder Client",
   "collectionName": "Photo Processing API",
-  "dateExported": "2025-06-21T12:00:00.000Z",
-  "version": "1.1",
+  "dateExported": "2025-06-22T16:00:00.000Z",
+  "version": "1.2",
   "folders": [
     {
       "_id": "core-system",
@@ -54,8 +54,15 @@
       "sortNum": 70000
     },
     {
+      "_id": "intelligent-clustering",
+      "name": "🤖 Intelligent Clustering",
+      "containerId": "",
+      "created": "2025-06-22T12:00:00.000Z",
+      "sortNum": 75000
+    },
+    {
       "_id": "face-clustering",
-      "name": "🧩 Face Clustering",
+      "name": "🧩 Face Clustering (Legacy)",
       "containerId": "",
       "created": "2025-01-14T12:00:00.000Z",
       "sortNum": 80000
@@ -66,6 +73,20 @@
       "containerId": "",
       "created": "2025-01-14T12:00:00.000Z",
       "sortNum": 90000
+    },
+    {
+      "_id": "selective-training",
+      "name": "🎯 Selective Training",
+      "containerId": "",
+      "created": "2025-06-22T12:00:00.000Z",
+      "sortNum": 95000
+    },
+    {
+      "_id": "compreface-cleanup",
+      "name": "🧹 CompreFace Cleanup",
+      "containerId": "",
+      "created": "2025-06-22T12:00:00.000Z",
+      "sortNum": 97000
     },
     {
       "_id": "junk-management",
@@ -101,6 +122,13 @@
       "containerId": "",
       "created": "2025-06-20T12:00:00.000Z",
       "sortNum": 135000
+    },
+    {
+      "_id": "auto-scanner",
+      "name": "🤖 Auto Scanner Control",
+      "containerId": "",
+      "created": "2025-06-22T12:00:00.000Z",
+      "sortNum": 140000
     }
   ],
   "requests": [
@@ -112,6 +140,18 @@
       "url": "{{baseUrl}}/",
       "method": "GET",
       "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "health-check",
+      "colId": "",
+      "containerId": "core-system",
+      "name": "Health Check",
+      "url": "{{apiBase}}/health",
+      "method": "GET",
+      "sortNum": 15000,
       "headers": [],
       "params": [],
       "tests": []
@@ -147,6 +187,54 @@
       "tests": []
     },
     {
+      "_id": "sync-persons-compreface",
+      "colId": "",
+      "containerId": "core-system",
+      "name": "Sync Persons to CompreFace",
+      "url": "{{apiBase}}/system/sync-persons-compreface",
+      "method": "POST",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "sync-existing-faces",
+      "colId": "",
+      "containerId": "core-system",
+      "name": "Sync Existing Faces to CompreFace",
+      "url": "{{apiBase}}/system/sync-existing-faces-compreface",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "preview-auto-face-cleanup",
+      "colId": "",
+      "containerId": "core-system",
+      "name": "Preview Auto Face Cleanup",
+      "url": "{{apiBase}}/system/preview-auto-face-cleanup",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "cleanup-auto-faces",
+      "colId": "",
+      "containerId": "core-system",
+      "name": "Cleanup Auto Faces from CompreFace",
+      "url": "{{apiBase}}/system/cleanup-auto-faces",
+      "method": "POST",
+      "sortNum": 70000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
       "_id": "scan-status",
       "colId": "",
       "containerId": "scanning-jobs",
@@ -174,6 +262,28 @@
           "isDisabled": true
         }
       ],
+      "tests": []
+    },
+    {
+      "_id": "start-scan-post",
+      "colId": "",
+      "containerId": "scanning-jobs",
+      "name": "Start Scan (POST)",
+      "url": "{{baseUrl}}/scan",
+      "method": "POST",
+      "sortNum": 25000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"limit\": 50\n}",
+        "form": []
+      },
+      "params": [],
       "tests": []
     },
     {
@@ -207,7 +317,18 @@
       "method": "GET", 
       "sortNum": 40000,
       "headers": [],
-      "params": [],
+      "params": [
+        {
+          "name": "status",
+          "value": "running",
+          "isDisabled": true
+        },
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
       "tests": []
     },
     {
@@ -280,6 +401,18 @@
       "tests": []
     },
     {
+      "_id": "image-details",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Get Image Details",
+      "url": "{{apiBase}}/gallery/{{imageId}}",
+      "method": "GET",
+      "sortNum": 15000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
       "_id": "image-faces",
       "colId": "",
       "containerId": "gallery-media",
@@ -287,6 +420,18 @@
       "url": "{{apiBase}}/gallery/{{imageId}}/faces",
       "method": "GET",
       "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "delete-image",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Delete Image (Move to Trash)",
+      "url": "{{apiBase}}/gallery/{{imageId}}",
+      "method": "DELETE",
+      "sortNum": 25000,
       "headers": [],
       "params": [],
       "tests": []
@@ -307,6 +452,72 @@
           "isDisabled": true
         }
       ],
+      "tests": []
+    },
+    {
+      "_id": "serve-face-image",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Serve Face Image",
+      "url": "{{baseUrl}}/media/face/{{faceId}}",
+      "method": "GET",
+      "sortNum": 35000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-trash",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Get Trash Items",
+      "url": "{{apiBase}}/trash",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "restore-image",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Restore Image from Trash",
+      "url": "{{apiBase}}/trash/{{imageId}}/restore",
+      "method": "POST",
+      "sortNum": 45000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "permanently-delete",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Permanently Delete Image",
+      "url": "{{apiBase}}/trash/{{imageId}}",
+      "method": "DELETE",
+      "sortNum": 50000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "available-cities",
+      "colId": "",
+      "containerId": "gallery-media",
+      "name": "Get Available Cities",
+      "url": "{{apiBase}}/filters/cities",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [],
       "tests": []
     },
     {
@@ -409,6 +620,42 @@
       "sortNum": 20000,
       "headers": [],
       "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-person-images",
+      "colId": "",
+      "containerId": "person-management",
+      "name": "Get Person Images",
+      "url": "{{apiBase}}/persons/{{personId}}/images",
+      "method": "GET",
+      "sortNum": 25000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "get-person-faces",
+      "colId": "",
+      "containerId": "person-management",
+      "name": "Get Person Faces",
+      "url": "{{apiBase}}/persons/{{personId}}/faces",
+      "method": "GET",
+      "sortNum": 27000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
       "tests": []
     },
     {
@@ -667,6 +914,28 @@
       "tests": []
     },
     {
+      "_id": "auto-recognize-image",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Auto-Recognize Faces in Image",
+      "url": "{{apiBase}}/faces/auto-recognize-image",
+      "method": "POST",
+      "sortNum": 95000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"imageId\": 123,\n  \"minConfidence\": 0.9\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
       "_id": "cleanup-orphaned-faces",
       "colId": "",
       "containerId": "face-recognition",
@@ -691,6 +960,28 @@
       "tests": []
     },
     {
+      "_id": "train-person-model",
+      "colId": "",
+      "containerId": "face-recognition",
+      "name": "Train Person Model (Mobile Compatible)",
+      "url": "{{baseUrl}}/compreface/train",
+      "method": "POST",
+      "sortNum": 120000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1,\n  \"onlyManuallyAssigned\": true,\n  \"allowDuplicateUploads\": false\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
       "_id": "suggest-persons",
       "colId": "",
       "containerId": "enhanced-faces",
@@ -707,6 +998,28 @@
       "body": {
         "type": "json",
         "raw": "{\n  \"faceIds\": [123, 124],\n  \"maxSuggestions\": 3,\n  \"minConfidence\": 0.7\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "find-similar-unassigned",
+      "colId": "",
+      "containerId": "enhanced-faces",
+      "name": "Find Similar Unassigned Faces",
+      "url": "{{apiBase}}/faces/find-similar-unassigned",
+      "method": "POST",
+      "sortNum": 15000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1,\n  \"similarityThreshold\": 0.8,\n  \"limit\": 50\n}",
         "form": []
       },
       "params": [],
@@ -826,10 +1139,199 @@
       "tests": []
     },
     {
+      "_id": "perform-intelligent-clustering",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Perform Intelligent Clustering",
+      "url": "{{apiBase}}/clustering/intelligent",
+      "method": "POST",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-clustering-stats",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Get Clustering Statistics",
+      "url": "{{apiBase}}/clustering/stats",
+      "method": "GET",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-recognition-suggestions",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Get Recognition Suggestions",
+      "url": "{{apiBase}}/clustering/recognition-suggestions",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "1000",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "assign-recognition-suggestions",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Assign Recognition Suggestions",
+      "url": "{{apiBase}}/clustering/assign-recognition-suggestions",
+      "method": "POST",
+      "sortNum": 40000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-batch-assignment-suggestions",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Get Batch Assignment Suggestions",
+      "url": "{{apiBase}}/clustering/batch-assignment-suggestions",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1,\n  \"recentlyAssignedFaceId\": 123,\n  \"maxSuggestions\": 10\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "batch-assign-suggested-faces",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Batch Assign Suggested Faces",
+      "url": "{{apiBase}}/clustering/batch-assign",
+      "method": "POST",
+      "sortNum": 60000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1,\n  \"faceIds\": [123, 124, 125],\n  \"source\": \"intelligent_clustering\"\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-unknown-clusters",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Get Unknown Clusters",
+      "url": "{{apiBase}}/clustering/unknown-clusters",
+      "method": "GET",
+      "sortNum": 70000,
+      "headers": [],
+      "params": [
+        {
+          "name": "minClusterSize",
+          "value": "3",
+          "isDisabled": true
+        },
+        {
+          "name": "limit",
+          "value": "20",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "get-detailed-unknown-clusters",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Get Detailed Unknown Clusters",
+      "url": "{{apiBase}}/clustering/unknown-clusters-detailed",
+      "method": "GET",
+      "sortNum": 80000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "10",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "test-verification-clustering",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Test Verification Clustering",
+      "url": "{{apiBase}}/clustering/test-verification",
+      "method": "GET",
+      "sortNum": 90000,
+      "headers": [],
+      "params": [
+        {
+          "name": "sampleSize",
+          "value": "20",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "reset-compreface-sync-status",
+      "colId": "",
+      "containerId": "intelligent-clustering",
+      "name": "Reset CompreFace Sync Status",
+      "url": "{{apiBase}}/clustering/reset-sync-status",
+      "method": "POST",
+      "sortNum": 100000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personId\": 1,\n  \"dryRun\": false\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
       "_id": "start-clustering",
       "colId": "",
       "containerId": "face-clustering",
-      "name": "Start Face Clustering",
+      "name": "Start Face Clustering (Legacy)",
       "url": "{{apiBase}}/clustering/start",
       "method": "POST",
       "sortNum": 10000,
@@ -848,10 +1350,10 @@
       "tests": []
     },
     {
-      "_id": "clustering-stats",
+      "_id": "clustering-stats-legacy",
       "colId": "",
       "containerId": "face-clustering",
-      "name": "Get Clustering Statistics",
+      "name": "Get Clustering Statistics (Legacy)",
       "url": "{{apiBase}}/clustering/stats",
       "method": "GET",
       "sortNum": 20000,
@@ -863,7 +1365,7 @@
       "_id": "face-clusters",
       "colId": "",
       "containerId": "face-clustering",
-      "name": "Get Face Clusters",
+      "name": "Get Face Clusters (Legacy)",
       "url": "{{apiBase}}/clusters",
       "method": "GET",
       "sortNum": 30000,
@@ -891,7 +1393,7 @@
       "_id": "cluster-faces",
       "colId": "",
       "containerId": "face-clustering",
-      "name": "Get Cluster Faces",
+      "name": "Get Cluster Faces (Legacy)",
       "url": "{{apiBase}}/clusters/{{clusterId}}/faces",
       "method": "GET",
       "sortNum": 40000,
@@ -903,7 +1405,7 @@
       "_id": "assign-cluster-to-person",
       "colId": "",
       "containerId": "face-clustering",
-      "name": "Assign Cluster to Person",
+      "name": "Assign Cluster to Person (Legacy)",
       "url": "{{apiBase}}/clusters/{{clusterId}}/assign",
       "method": "POST",
       "sortNum": 50000,
@@ -925,7 +1427,7 @@
       "_id": "rebuild-clusters",
       "colId": "",
       "containerId": "face-clustering",
-      "name": "Rebuild Clusters",
+      "name": "Rebuild Clusters (Legacy)",
       "url": "{{apiBase}}/clustering/rebuild",
       "method": "POST",
       "sortNum": 60000,
@@ -1104,6 +1606,238 @@
       "tests": []
     },
     {
+      "_id": "batch-train-selective",
+      "colId": "",
+      "containerId": "selective-training",
+      "name": "Batch Train Selective",
+      "url": "{{apiBase}}/training/selective/batch",
+      "method": "POST",
+      "sortNum": 10000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"personIds\": [1, 2, 3],\n  \"maxFacesPerPerson\": 50,\n  \"onlyManuallyAssigned\": true,\n  \"clearExisting\": true\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "train-person-selective",
+      "colId": "",
+      "containerId": "selective-training",
+      "name": "Train Person Selective",
+      "url": "{{apiBase}}/training/selective/{{personId}}",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"maxFaces\": 50,\n  \"onlyManuallyAssigned\": true,\n  \"clearExisting\": true,\n  \"allowDuplicateUploads\": false\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-person-training-stats",
+      "colId": "",
+      "containerId": "selective-training",
+      "name": "Get Person Training Stats",
+      "url": "{{apiBase}}/training/selective/{{personId}}/stats",
+      "method": "GET",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "reset-person-training",
+      "colId": "",
+      "containerId": "selective-training",
+      "name": "Reset Person Training",
+      "url": "{{apiBase}}/training/selective/{{personId}}/reset",
+      "method": "POST",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-manually-assigned-faces",
+      "colId": "",
+      "containerId": "selective-training",
+      "name": "Get Manually Assigned Faces",
+      "url": "{{apiBase}}/training/selective/{{personId}}/manual-faces",
+      "method": "GET",
+      "sortNum": 50000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "get-person-training-log",
+      "colId": "",
+      "containerId": "selective-training",
+      "name": "Get Person Training Log",
+      "url": "{{apiBase}}/training/selective/{{personId}}/log",
+      "method": "GET",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [
+        {
+          "name": "limit",
+          "value": "50",
+          "isDisabled": true
+        }
+      ],
+      "tests": []
+    },
+    {
+      "_id": "set-auto-training",
+      "colId": "",
+      "containerId": "selective-training",
+      "name": "Set Auto Training",
+      "url": "{{apiBase}}/training/selective/{{personId}}/auto-training",
+      "method": "POST",
+      "sortNum": 70000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"enabled\": true\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "get-compreface-cleanup-stats",
+      "colId": "",
+      "containerId": "compreface-cleanup",
+      "name": "Get CompreFace Cleanup Stats",
+      "url": "{{apiBase}}/clustering/cleanup-stats",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "comprehensive-compreface-cleanup",
+      "colId": "",
+      "containerId": "compreface-cleanup",
+      "name": "Comprehensive CompreFace Cleanup",
+      "url": "{{apiBase}}/clustering/comprehensive-cleanup",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "type": "json",
+        "raw": "{\n  \"dryRun\": false,\n  \"resetDatabaseSync\": true,\n  \"preservePersons\": true\n}",
+        "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "auto-scanner-status",
+      "colId": "",
+      "containerId": "auto-scanner",
+      "name": "Get Auto Scanner Status",
+      "url": "{{apiBase}}/auto-scanner/status",
+      "method": "GET",
+      "sortNum": 10000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "pause-auto-scanner",
+      "colId": "",
+      "containerId": "auto-scanner",
+      "name": "Pause Auto Scanner",
+      "url": "{{apiBase}}/auto-scanner/pause",
+      "method": "POST",
+      "sortNum": 20000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "resume-auto-scanner",
+      "colId": "",
+      "containerId": "auto-scanner",
+      "name": "Resume Auto Scanner",
+      "url": "{{apiBase}}/auto-scanner/resume",
+      "method": "POST",
+      "sortNum": 30000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "check-scan-allowed",
+      "colId": "",
+      "containerId": "auto-scanner",
+      "name": "Check Scan Allowed",
+      "url": "{{apiBase}}/auto-scanner/check",
+      "method": "GET",
+      "sortNum": 40000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "stop-auto-scanner",
+      "colId": "",
+      "containerId": "auto-scanner",
+      "name": "Stop Auto Scanner Container",
+      "url": "{{apiBase}}/auto-scanner/stop",
+      "method": "POST",
+      "sortNum": 50000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "start-auto-scanner",
+      "colId": "",
+      "containerId": "auto-scanner",
+      "name": "Start Auto Scanner Container",
+      "url": "{{apiBase}}/auto-scanner/start",
+      "method": "POST",
+      "sortNum": 60000,
+      "headers": [],
+      "params": [],
+      "tests": []
+    },
+    {
       "_id": "screenshot-candidates",
       "colId": "",
       "containerId": "junk-management",
@@ -1215,7 +1949,7 @@
       ],
       "body": {
         "type": "json",
-        "raw": "{\n  \"limit\": 100,\n  \"minConfidence\": 0.9,\n  \"autoAssign\": true\n}",
+        "raw": "{\n  \"limit\": 100,\n  \"confidenceThreshold\": 0.75,\n  \"imageIds\": []\n}",
         "form": []
       },
       "params": [],
@@ -1237,7 +1971,7 @@
       ],
       "body": {
         "type": "json",
-        "raw": "{\n  \"limit\": 100,\n  \"overwrite\": false,\n  \"size\": 256,\n  \"quality\": 85\n}",
+        "raw": "{\n  \"imageIds\": [],\n  \"limit\": 100,\n  \"overwrite\": false\n}",
         "form": []
       },
       "params": [],
@@ -1259,7 +1993,7 @@
       ],
       "body": {
         "type": "json",
-        "raw": "{\n  \"olderThanDays\": 7,\n  \"keepCompleted\": 10\n}",
+        "raw": "{\n  \"olderThanHours\": 24\n}",
         "form": []
       },
       "params": [],
@@ -1305,6 +2039,29 @@
         "type": "json",
         "raw": "{\n  \"path\": \"/path/to/local/image.jpg\",\n  \"dateTaken\": \"2023-12-01T10:30:00.000Z\"\n}",
         "form": []
+      },
+      "params": [],
+      "tests": []
+    },
+    {
+      "_id": "upload-photo",
+      "colId": "",
+      "containerId": "image-processing",
+      "name": "Upload Photo",
+      "url": "{{apiBase}}/process/upload",
+      "method": "POST",
+      "sortNum": 25000,
+      "headers": [],
+      "body": {
+        "type": "formdata",
+        "raw": "",
+        "form": [
+          {
+            "name": "photo",
+            "value": "",
+            "type": "file"
+          }
+        ]
       },
       "params": [],
       "tests": []
@@ -1562,6 +2319,10 @@
         {
           "name": "clusterId",
           "value": "789"
+        },
+        {
+          "name": "albumId",
+          "value": "1"
         },
         {
           "name": "jobId",

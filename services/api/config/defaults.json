@@ -24,9 +24,9 @@
     "objectDetection": {
       "enabled": true,
       "confidence": {
-        "detection": 0.75,
-        "search": 0.5,
-        "highQuality": 0.85
+        "detection": 0.9,
+        "search": 0.8,
+        "highQuality": 0.95
       },
       "batchSize": 2,
       "imageResize": {
@@ -37,18 +37,18 @@
     "faceDetection": {
       "enabled": true,
       "confidence": {
-        "detection": 0.8,
-        "review": 0.75,
+        "detection": 0.9,
+        "review": 0.9,
         "autoAssign": 1.00,
-        "gender": 0.7,
-        "age": 0.7
+        "gender": 0.9,
+        "age": 0.9
       }
     },
     "faceRecognition": {
       "confidence": {
-        "review": 0.85,
+        "review": 0.9,
         "autoAssign": 0.99,
-        "similarity": 0.85
+        "similarity": 0.9
       },
       "workflow": {
         "enableAutoAssignment": true,

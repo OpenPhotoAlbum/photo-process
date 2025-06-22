@@ -23,6 +23,21 @@ This file tracks completed features, fixes, and milestones for the Photo Managem
 
 ## 📅 Chronological Achievements
 
+### June 22, 2025
+- ✅ **Auto-Scanner Control and Selective Assignment System**: Complete auto-scanner infrastructure overhaul with intelligent face recognition controls
+  - **Achievement**: Implemented comprehensive auto-scanner control interface with pause/resume/status capabilities
+  - **Control Interface**: RESTful endpoints for auto-scanner management (`/api/auto-scanner/status`, `/pause`, `/resume`, `/check`)
+  - **State Management**: File-based control state with graceful pause/resume functionality
+  - **Configuration System**: New `autoScanner` config section with dedicated settings separate from manual workflow
+  - **Selective Assignment**: Auto-assignment only for previously trained people with ≥90% confidence (vs 70% manual threshold)
+  - **Training Requirements**: Only assigns faces to people who have manual training data uploaded to CompreFace
+  - **Assignment Tracking**: Uses `assigned_by: 'auto_scanner'` to differentiate from manual (`'user'`) and background (`'auto_recognition'`) assignments
+  - **Safe Defaults**: Reduced batch size from 500→10 and interval from 60→300 seconds to prevent overwhelming
+  - **Shell Script Integration**: Auto-scanner service checks control state before processing each batch
+  - **Root Cause Resolution**: Fixed the core issue of excessive auto-assignments (Margaret: 2,304 faces → now selective)
+  - **Files**: `services/api/resolvers/auto-scanner.ts`, `config/defaults.json`, `services/auto-scanner/auto-scanner.sh`, `services/api/util/process-source.ts`
+  - **Impact**: Auto-scanner now processes photos intelligently without overwhelming face assignments while maintaining useful automation
+
 ### June 21, 2025
 - ✅ **Comprehensive Documentation System**: Complete documentation ecosystem with MCP and monitoring guides
   - **Achievement**: Comprehensive documentation across docs-site, ACHIEVEMENTS.md, CLAUDE.md, and README.md

@@ -21,11 +21,27 @@ get_file_tracker_stats() {
     curl -s "${API_URL}/scan/status" | grep -o '"file_tracker":{[^}]*}' | grep -o '"pending":[0-9]*' | cut -d':' -f2
 }
 
+# Function to check if scanning is allowed
+check_scan_allowed() {
+    ALLOWED_RESPONSE=$(curl -s "${API_URL}/api/auto-scanner/check")
+    ALLOWED=$(echo "$ALLOWED_RESPONSE" | grep -o '"allowed":[^,]*' | cut -d':' -f2 | tr -d ' ')
+    echo "$ALLOWED"
+}
+
 # Function to start a scan batch
 start_scan_batch() {
-    echo "$(date): Starting new scan batch with limit: ${BATCH_SIZE}"
-    RESPONSE=$(curl -s -X GET "${API_URL}/scan?limit=${BATCH_SIZE}&workers=true")
-    echo "$(date): Scan response: ${RESPONSE}"
+    # Check if scanning is allowed
+    ALLOWED=$(check_scan_allowed)
+    
+    if [ "$ALLOWED" = "true" ]; then
+        echo "$(date): Starting new scan batch with limit: ${BATCH_SIZE}"
+        RESPONSE=$(curl -s -X GET "${API_URL}/scan?limit=${BATCH_SIZE}&workers=true")
+        echo "$(date): Scan response: ${RESPONSE}"
+        return 0
+    else
+        echo "$(date): Auto-scanner is paused, skipping batch"
+        return 1
+    fi
 }
 
 # Track last scan time
@@ -62,9 +78,13 @@ while true; do
         continue
     fi
     
-    # Start a new batch
-    start_scan_batch
-    LAST_SCAN_TIME=$(date +%s)
+    # Start a new batch (only if allowed)
+    if start_scan_batch; then
+        LAST_SCAN_TIME=$(date +%s)
+    else
+        # If paused, wait longer before checking again
+        echo "$(date): Auto-scanner paused, waiting ${SCAN_INTERVAL} seconds..."
+    fi
     
     # Wait for batch to process (simplified approach)
     echo "$(date): Waiting ${SCAN_INTERVAL} seconds for batch to process..."

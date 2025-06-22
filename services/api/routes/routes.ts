@@ -6,6 +6,8 @@ import * as Jobs from './jobs';
 import * as Process from './process';
 import * as Geolocation from './geolocation';
 import * as SelectiveTraining from './selective-training';
+import * as AutoScanner from '../resolvers/auto-scanner';
+import * as IntelligentClustering from '../resolvers/intelligent-clustering';
 import { configManager } from '../util/config-manager';
 
 export const setupRoutes = (app: Express) => {
@@ -25,6 +27,14 @@ export const setupRoutes = (app: Express) => {
     app.get('/scan/status', routes.Scan.ScanStatusResolver);
     app.get('/scan', routes.Scan.ScanStartResolver);
     app.post('/scan', routes.Scan.ScanStartResolver);  // Support POST for auto-scanner
+
+    // Auto-scanner control endpoints
+    app.get('/api/auto-scanner/status', AutoScanner.getAutoScannerStatus as any);
+    app.post('/api/auto-scanner/pause', AutoScanner.pauseAutoScanner as any);
+    app.post('/api/auto-scanner/resume', AutoScanner.resumeAutoScanner as any);
+    app.get('/api/auto-scanner/check', AutoScanner.checkScanAllowed as any);
+    app.post('/api/auto-scanner/stop', AutoScanner.stopAutoScannerContainer as any);
+    app.post('/api/auto-scanner/start', AutoScanner.startAutoScannerContainer as any);
 
     // Gallery API routes (database-based)  
     app.get('/api/gallery', routes.Gallery.GalleryListResolver);
@@ -75,17 +85,18 @@ export const setupRoutes = (app: Express) => {
     app.post('/api/faces/:faceId/review', routes.Persons.reviewFaceAssignment as any);
     app.get('/api/faces/:faceId/similar', routes.Persons.getSimilarFaces as any);
     
-    // Face clustering API routes
-    app.post('/api/clustering/start', routes.Persons.startFaceClustering as any);
-    app.get('/api/clustering/stats', routes.Persons.getClusteringStats as any);
-    app.get('/api/clusters', routes.Persons.getFaceClusters as any);
-    app.get('/api/clusters/:clusterId/faces', routes.Persons.getClusterFaces as any);
-    app.post('/api/clusters/:clusterId/assign', routes.Persons.assignClusterToPerson as any);
-    app.post('/api/clustering/rebuild', routes.Persons.rebuildClusters as any);
+    // Legacy Face clustering API routes (disabled in favor of intelligent clustering)
+    // app.post('/api/clustering/start', routes.Persons.startFaceClustering as any);
+    // app.get('/api/clustering/stats', routes.Persons.getClusteringStats as any);
+    // app.get('/api/clusters', routes.Persons.getFaceClusters as any);
+    // app.get('/api/clusters/:clusterId/faces', routes.Persons.getClusterFaces as any);
+    // app.post('/api/clusters/:clusterId/assign', routes.Persons.assignClusterToPerson as any);
+    // app.post('/api/clustering/rebuild', routes.Persons.rebuildClusters as any);
     
     // Enhanced face assignment API routes
     app.post('/api/faces/bulk-assign', routes.Persons.bulkAssignFaces as any);
     app.post('/api/faces/suggest-persons', routes.Persons.suggestPersonsForFaces as any);
+    app.post('/api/faces/find-similar-unassigned', routes.Persons.findSimilarUnassignedFaces as any);
     app.put('/api/faces/:faceId/reassign', routes.Persons.reassignFace as any);
     app.get('/api/assignment/workflow', routes.Persons.getAssignmentWorkflow as any);
     
@@ -121,6 +132,20 @@ export const setupRoutes = (app: Express) => {
     
     // Auto-recognition endpoint
     app.post('/api/faces/auto-recognize-image', routes.Persons.autoRecognizeFaces as any);
+    
+    // Intelligent Face Clustering API routes
+    app.post('/api/clustering/intelligent', IntelligentClustering.performIntelligentClustering as any);
+    app.get('/api/clustering/recognition-suggestions', IntelligentClustering.getRecognitionSuggestions as any);
+    app.post('/api/clustering/assign-recognition-suggestions', IntelligentClustering.assignRecognitionSuggestions as any);
+    app.post('/api/clustering/batch-assignment-suggestions', IntelligentClustering.getBatchAssignmentSuggestions as any);
+    app.post('/api/clustering/batch-assign', IntelligentClustering.batchAssignSuggestedFaces as any);
+    app.get('/api/clustering/unknown-clusters', IntelligentClustering.getUnknownClusters as any);
+    app.get('/api/clustering/unknown-clusters-detailed', IntelligentClustering.getDetailedUnknownClusters as any);
+    app.get('/api/clustering/test-verification', IntelligentClustering.testVerificationClustering as any);
+    app.post('/api/clustering/reset-sync-status', IntelligentClustering.resetComprefaceSyncStatus as any);
+    app.get('/api/clustering/stats', IntelligentClustering.getClusteringStats as any);
+    app.get('/api/clustering/cleanup-stats', IntelligentClustering.getComprefaceCleanupStats as any);
+    app.post('/api/clustering/comprehensive-cleanup', IntelligentClustering.comprehensiveComprefaceCleanup as any);
     
     // Image processing API routes
     app.post('/api/process/image', Process.processImage as any);

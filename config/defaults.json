@@ -47,7 +47,8 @@
     "faceRecognition": {
       "confidence": {
         "review": 0.85,
-        "autoAssign": 0.99,
+        "autoAssign": 0.70,
+        "highConfidence": 0.99,
         "similarity": 0.85
       },
       "workflow": {
@@ -85,6 +86,20 @@
     "scanBatchSize": 2
   },
   
+  "autoScanner": {
+    "faceRecognition": {
+      "enabled": true,
+      "requirePreviousTraining": true,
+      "confidence": {
+        "autoAssign": 0.90
+      }
+    },
+    "processing": {
+      "batchSize": 10,
+      "intervalSeconds": 300
+    }
+  },
+
   "features": {
     "enableFaceRecognition": true,
     "enableObjectDetection": true,
@@ -138,6 +153,13 @@
       "galleryPageSize": "Number of items per page in gallery views",
       "searchLimit": "Maximum number of search results to return",
       "scanBatchSize": "Number of photos to process simultaneously during scanning"
+    },
+    "autoScanner": {
+      "faceRecognition.enabled": "Enable automatic face recognition during auto-scanner processing",
+      "faceRecognition.requirePreviousTraining": "Only auto-assign faces to people who have been previously trained in CompreFace",
+      "faceRecognition.confidence.autoAssign": "Min confidence required for auto-assignment during scanning (higher than manual workflow)",
+      "processing.batchSize": "Number of images to process per auto-scanner batch",
+      "processing.intervalSeconds": "Seconds to wait between auto-scanner batches"
     },
     "features": {
       "enableApiConfig": "Enable admin panel API for runtime configuration changes"

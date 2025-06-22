@@ -12,9 +12,15 @@ import {
   Modal,
   SafeAreaView,
   ScrollView,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { API_BASE } from '../config';
+import ClusteringScreen from './ClusteringScreen';
+import RecognitionSuggestionsScreen from './RecognitionSuggestionsScreen';
+import UnknownClustersScreen from './UnknownClustersScreen';
 
 const screenWidth = Dimensions.get('window').width;
 const personItemWidth = (screenWidth - 30) / 2;
@@ -60,14 +66,17 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
   const [selectedFaces, setSelectedFaces] = useState<Set<number>>(new Set());
   const [showBatchModal, setShowBatchModal] = useState(false);
   
-  // Main view state: 'people' or 'unassigned'
-  const [mainView, setMainView] = useState<'people' | 'unassigned'>('people');
+  // Main view state: 'people', 'unassigned', or 'clustering'
+  const [mainView, setMainView] = useState<'people' | 'unassigned' | 'clustering'>('people');
   const [unassignedFaces, setUnassignedFaces] = useState<any[]>([]);
   const [loadingUnassigned, setLoadingUnassigned] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showCreatePerson, setShowCreatePerson] = useState(false);
   const [newPersonName, setNewPersonName] = useState('');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('all');
+  
+  // Clustering navigation state
+  const [clusteringView, setClusteringView] = useState<'dashboard' | 'suggestions' | 'unknown-clusters'>('dashboard');
 
   const fetchPersons = async (isRefresh = false) => {
     try {
@@ -352,8 +361,8 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
     const actionText = isRetraining ? 'Re-train' : 'Train';
     const confirmTitle = isRetraining ? 'Re-train Model?' : 'Train Model?';
     const confirmMessage = isRetraining 
-      ? `Re-train ${person.name}'s recognition model?\n\n🛡️ Only manually verified faces will be used\n📊 Up to 50 best faces will be selected\n🔄 This will update their existing model and may improve recognition accuracy.`
-      : `Train ${person.name}'s recognition model?\n\n🛡️ Only manually verified faces will be used\n📊 Up to 50 best faces will be selected\n🎯 This will enable automatic face recognition for this person.`;
+      ? `Re-train ${person.name}'s recognition model?\n\n🛡️ Only manually verified faces will be used\n📊 All ${person.face_count} assigned faces will be trained\n🔄 This will update their existing model and may improve recognition accuracy.`
+      : `Train ${person.name}'s recognition model?\n\n🛡️ Only manually verified faces will be used\n📊 All ${person.face_count} assigned faces will be trained\n🎯 This will enable automatic face recognition for this person.`;
 
     Alert.alert(
       confirmTitle,
@@ -383,7 +392,8 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                   onlyManuallyAssigned: true,
-                  maxFacesPerPerson: 50
+                  allowDuplicateUploads: false // Prevent duplicate uploads to CompreFace
+                  // No maxFacesPerPerson limit - use all manually assigned faces
                 })
               });
 
@@ -1225,6 +1235,11 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
       onRequestClose={() => setShowAssignModal(false)}
     >
       <SafeAreaView style={styles.assignModalContainer}>
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
         <View style={styles.assignModalHeader}>
           <TouchableOpacity 
             onPress={() => setShowAssignModal(false)}
@@ -1336,6 +1351,7 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
             </View>
           )}
         </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   );
@@ -1394,6 +1410,18 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
             Unassigned ({unassignedFaces.length})
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.viewToggleButton, mainView === 'clustering' && styles.viewToggleButtonActive]}
+          onPress={() => {
+            setMainView('clustering');
+            setIsSelectMode(false);
+            setSelectedFaces(new Set());
+          }}
+        >
+          <Text style={[styles.viewToggleText, mainView === 'clustering' && styles.viewToggleTextActive]}>
+            AI Clustering
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {mainView === 'people' ? (
@@ -1422,6 +1450,49 @@ export const FacesScreen: React.FC<FacesScreenProps> = ({ onClose, onSelectPhoto
                   colors={['#007AFF']}
                 />
               }
+            />
+          )}
+        </>
+      ) : mainView === 'clustering' ? (
+        /* AI Clustering View */
+        <>
+          {clusteringView === 'dashboard' ? (
+            <ClusteringScreen 
+              embedded={true}
+              navigation={{
+                navigate: (screen: string) => {
+                  if (screen === 'RecognitionSuggestions') {
+                    setClusteringView('suggestions');
+                  } else if (screen === 'UnknownClusters') {
+                    setClusteringView('unknown-clusters');
+                  }
+                }
+              }}
+            />
+          ) : clusteringView === 'suggestions' ? (
+            <RecognitionSuggestionsScreen 
+              embedded={true}
+              navigation={{
+                navigate: (screen: string) => {
+                  // Handle navigation within clustering
+                },
+                goBack: () => {
+                  setClusteringView('dashboard');
+                }
+              }}
+            />
+          ) : (
+            /* Unknown Clusters View */
+            <UnknownClustersScreen 
+              embedded={true}
+              navigation={{
+                navigate: (screen: string) => {
+                  // Handle navigation within unknown clusters
+                },
+                goBack: () => {
+                  setClusteringView('dashboard');
+                }
+              }}
             />
           )}
         </>
@@ -2131,7 +2202,8 @@ const styles = StyleSheet.create({
   },
   viewToggleButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     alignItems: 'center',
     borderRadius: 6,
   },
@@ -2140,8 +2212,9 @@ const styles = StyleSheet.create({
   },
   viewToggleText: {
     color: '#999',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
+    textAlign: 'center',
   },
   viewToggleTextActive: {
     color: '#fff',
@@ -2240,13 +2313,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   createPersonInput: {
-    borderWidth: 1,
-    borderColor: '#333',
+    borderWidth: 2,
+    borderColor: '#007AFF',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     backgroundColor: '#2a2a2a',
     color: '#fff',
+    minHeight: 44, // Ensure proper touch target
   },
   createPersonActions: {
     flexDirection: 'row',

@@ -94,6 +94,21 @@ export interface ConfigSchema {
         scanBatchSize: number;
     };
     
+    // Auto Scanner Configuration
+    autoScanner: {
+        faceRecognition: {
+            enabled: boolean;
+            requirePreviousTraining: boolean;
+            confidence: {
+                autoAssign: number;     // Min confidence for auto-assignment during scanning
+            };
+        };
+        processing: {
+            batchSize: number;
+            intervalSeconds: number;
+        };
+    };
+
     // Feature Flags
     features: {
         enableFaceRecognition: boolean;
@@ -517,6 +532,10 @@ export class EnhancedConfigManager {
     
     public getFeatures() {
         return this.config.features;
+    }
+    
+    public getAutoScanner() {
+        return this.config.autoScanner;
     }
     
     // Runtime configuration updates (for admin panel)

@@ -503,83 +503,115 @@ export const storeImageDataHashed = async (
             }
         }
         
-        // Auto-recognize faces using trained models
-        try {
-            logger.info(`Running auto-recognition for image ${imageId}`);
-            const { recognizeFacesFromImage } = await import('./compreface');
-            
-            // Get the processed image path for recognition
-            const imagePath = `${configManager.getStorage().processedDir}/media/${fileInfo.relativePath}`;
-            
-            // Get unassigned faces for this image
-            const unassignedFaces = await db('detected_faces')
-                .where('image_id', imageId)
-                .whereNull('person_id')
-                .where('detection_confidence', '>=', 0.8);
+        // Selective automatic face recognition for auto-scanner
+        const autoScannerConfig = configManager.getAutoScanner();
+        
+        if (autoScannerConfig.faceRecognition.enabled) {
+            try {
+                logger.info(`Running selective auto-recognition for image ${imageId}`);
+                const { recognizeFacesFromImage } = await import('./compreface');
                 
-            if (unassignedFaces.length > 0) {
-                logger.info(`Found ${unassignedFaces.length} unassigned faces for auto-recognition`);
+                // Get the processed image path for recognition
+                const imagePath = `${configManager.getStorage().processedDir}/media/${fileInfo.relativePath}`;
                 
-                const recognitionResult = await recognizeFacesFromImage(imagePath);
-                let assignedCount = 0;
-                
-                if (recognitionResult && recognitionResult.result) {
-                    for (const result of recognitionResult.result) {
-                        if (result.subjects && result.subjects.length > 0) {
-                            const bestMatch = result.subjects[0];
-                            const confidence = bestMatch.similarity;
-                            
-                            if (confidence >= 0.7) {
-                                // Find matching face by coordinates
-                                const box = result.box;
-                                const matchingFace = unassignedFaces.find(face => {
-                                    const tolerance = 50;
-                                    return Math.abs(face.x_min - box.x_min) < tolerance &&
-                                           Math.abs(face.y_min - box.y_min) < tolerance &&
-                                           Math.abs(face.x_max - box.x_max) < tolerance &&
-                                           Math.abs(face.y_max - box.y_max) < tolerance;
-                                });
+                // Get unassigned faces for this image
+                const unassignedFaces = await db('detected_faces')
+                    .where('image_id', imageId)
+                    .whereNull('person_id')
+                    .where('detection_confidence', '>=', 0.8);
+                    
+                if (unassignedFaces.length > 0) {
+                    logger.info(`Found ${unassignedFaces.length} unassigned faces for selective auto-recognition`);
+                    
+                    const recognitionResult = await recognizeFacesFromImage(imagePath);
+                    let assignedCount = 0;
+                    
+                    if (recognitionResult && recognitionResult.result) {
+                        for (const result of recognitionResult.result) {
+                            if (result.subjects && result.subjects.length > 0) {
+                                const bestMatch = result.subjects[0];
+                                const confidence = bestMatch.similarity;
                                 
-                                if (matchingFace) {
+                                // Use auto-scanner specific confidence threshold (0.90)
+                                if (confidence >= autoScannerConfig.faceRecognition.confidence.autoAssign) {
                                     // Find person by CompreFace subject ID
                                     const person = await db('persons')
                                         .where('compreface_subject_id', bestMatch.subject)
                                         .first();
                                         
                                     if (person) {
-                                        await FaceRepository.assignFaceToPerson(
-                                            matchingFace.id, 
-                                            person.id, 
-                                            confidence, 
-                                            'auto_recognition'
-                                        );
+                                        // Check if person has been previously trained (if required)
+                                        let canAutoAssign = true;
                                         
-                                        await db('detected_faces')
-                                            .where('id', matchingFace.id)
-                                            .update({ 
-                                                compreface_synced: true,
-                                                assigned_at: new Date(),
-                                                assigned_by: 'auto_recognition'
+                                        if (autoScannerConfig.faceRecognition.requirePreviousTraining) {
+                                            // Check if person has trained faces (uploaded to CompreFace)
+                                            const trainedFaceCount = await db('detected_faces')
+                                                .where('person_id', person.id)
+                                                .where('assigned_by', 'user')
+                                                .whereNotNull('compreface_uploaded_at')
+                                                .count('id as count')
+                                                .first();
+                                                
+                                            canAutoAssign = trainedFaceCount ? Number(trainedFaceCount.count) > 0 : false;
+                                            
+                                            if (!canAutoAssign) {
+                                                logger.info(`Skipping auto-assignment to ${person.name} - no previous training found`);
+                                            }
+                                        }
+                                        
+                                        if (canAutoAssign) {
+                                            // Find matching face by coordinates
+                                            const box = result.box;
+                                            const matchingFace = unassignedFaces.find(face => {
+                                                const tolerance = 50;
+                                                return Math.abs(face.x_min - box.x_min) < tolerance &&
+                                                       Math.abs(face.y_min - box.y_min) < tolerance &&
+                                                       Math.abs(face.x_max - box.x_max) < tolerance &&
+                                                       Math.abs(face.y_max - box.y_max) < tolerance;
                                             });
-                                        
-                                        assignedCount++;
-                                        logger.info(`Auto-assigned face ${matchingFace.id} to ${person.name} (${(confidence * 100).toFixed(1)}% confidence)`);
+                                            
+                                            if (matchingFace) {
+                                                await FaceRepository.assignFaceToPerson(
+                                                    matchingFace.id, 
+                                                    person.id, 
+                                                    confidence, 
+                                                    'auto_scanner'
+                                                );
+                                                
+                                                await db('detected_faces')
+                                                    .where('id', matchingFace.id)
+                                                    .update({ 
+                                                        compreface_synced: true,
+                                                        assigned_at: new Date(),
+                                                        assigned_by: 'auto_scanner'
+                                                    });
+                                                
+                                                assignedCount++;
+                                                logger.info(`Auto-assigned face ${matchingFace.id} to ${person.name} (${(confidence * 100).toFixed(1)}% confidence) - auto-scanner`);
+                                            }
+                                        }
                                     }
+                                } else {
+                                    logger.debug(`Face confidence ${(confidence * 100).toFixed(1)}% below auto-scanner threshold ${(autoScannerConfig.faceRecognition.confidence.autoAssign * 100).toFixed(1)}%`);
                                 }
                             }
                         }
                     }
-                }
-                
-                if (assignedCount > 0) {
-                    logger.info(`Auto-recognition completed: ${assignedCount}/${unassignedFaces.length} faces assigned`);
+                    
+                    if (assignedCount > 0) {
+                        logger.info(`Selective auto-recognition completed: ${assignedCount}/${unassignedFaces.length} faces assigned`);
+                    } else {
+                        logger.info(`Selective auto-recognition completed: no faces met criteria for auto-assignment`);
+                    }
                 } else {
-                    logger.info(`Auto-recognition completed: no faces could be matched with sufficient confidence`);
+                    logger.info(`No unassigned faces found for auto-recognition`);
                 }
+            } catch (autoRecognitionError) {
+                logger.warn(`Selective auto-recognition failed for image ${imageId}:`, autoRecognitionError);
+                // Don't fail the entire processing pipeline if auto-recognition fails
             }
-        } catch (autoRecognitionError) {
-            logger.warn(`Auto-recognition failed for image ${imageId}:`, autoRecognitionError);
-            // Don't fail the entire processing pipeline if auto-recognition fails
+        } else {
+            logger.info(`Auto-scanner face recognition disabled in configuration for image ${imageId}`);
         }
     }
 

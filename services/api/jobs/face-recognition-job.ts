@@ -85,7 +85,7 @@ export const faceRecognitionJobHandler: JobHandler<FaceRecognitionJobData> = asy
                             const topSubject = bestMatch.subjects[0];
                             const confidence = topSubject.similarity;
                             
-                            if (confidence >= faceRecognitionConfig.confidence.autoAssign) {
+                            if (confidence >= (faceRecognitionConfig.confidence as any).highConfidence || confidence >= 0.99) {
                                 // High confidence - automatically assign
                                 const { FaceRepository, PersonRepository } = await import('../models/database');
                                 const person = await PersonRepository.getPersonByComprefaceId(topSubject.subject);

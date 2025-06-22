@@ -5,21 +5,44 @@ This file tracks current development priorities and tasks for the Photo Manageme
 ## 🔥 High Priority
 
 ### 🚨 Critical CompreFace Data Issues
-- [ ] **Margaret CompreFace Cleanup**: Investigate and fix Margaret's 3,000+ faces in CompreFace UI
-  - [ ] Use cleanup scripts to clear all her CompreFace UI images
-  - [ ] Clear appropriate database columns across all tables  
-  - [ ] Re-upload only manually associated faces using selective training
-  - [ ] Verify database consistency after cleanup
-  - **Context**: Unknown source of excessive faces, need clean slate approach
+- [x] **Margaret CompreFace Cleanup**: Investigate and fix Margaret's 3,000+ faces in CompreFace UI ✅ COMPLETED
+  - [x] Use cleanup scripts to clear all her CompreFace UI images
+  - [x] Clear appropriate database columns across all tables  
+  - [x] Re-upload only manually associated faces using selective training
+  - [x] Verify database consistency after cleanup
+  - ✅ **Results**: Margaret cleaned (2,304 → 0 faces), ready for manual re-assignment
+  - **Context**: Auto-scanner was the source (1,978 auto-assignments + 326 manual)
 
 ### 🔍 Critical System Audits
-- [ ] **Audit Automatic Face Assignment Systems**: Find all jobs/cron/automatic systems that assign faces
-  - [ ] Use MCP search_codebase tool to search for automatic face assignment code
-  - [ ] Check all services and infrastructure for scheduled jobs
-  - [ ] Review cron jobs, background workers, and queue processors
-  - [ ] Document all automatic face assignment configurations
-  - [ ] Identify any unintended automatic assignments causing data issues
-  - **Goal**: Complete visibility into what's automatically assigning faces
+- [x] **Audit Automatic Face Assignment Systems**: Find all jobs/cron/automatic systems that assign faces ✅ COMPLETED
+  - [x] Use MCP search_codebase tool to search for automatic face assignment code
+  - [x] Check all services and infrastructure for scheduled jobs
+  - [x] Review cron jobs, background workers, and queue processors
+  - [x] Document all automatic face assignment configurations
+  - [x] Identify any unintended automatic assignments causing data issues
+  - ✅ **Results**: Found auto-scanner Docker service as primary culprit (see below)
+
+### 🚨 Critical Auto-Scanner Infrastructure Issues
+- [ ] **Auto-Scanner Service Analysis & Remediation**: Address discovered auto-scanner problems
+  - **🔍 CRITICAL FINDINGS:**
+    - **Rogue Processing**: Auto-scanner was running with BATCH_SIZE=500 (not configured 50)
+    - **Massive Auto-Assignments**: Processed 500 images every 60 seconds for 3+ hours
+    - **Data Pollution**: Margaret had 1,978 auto-assignments vs 326 manual (85.8% auto-pollution)
+    - **Configuration Mismatch**: Docker env showed BATCH_SIZE=500 despite compose file default of 50
+    - **No Control Mechanism**: No way to pause/control auto-scanner during manual operations
+  - **📋 IMMEDIATE ACTIONS NEEDED:**
+    - [ ] Investigate why auto-scanner batch size was 500 instead of 50
+    - [ ] Audit configuration loading and environment variable precedence
+    - [ ] Create auto-scanner control interface (pause/resume/status)
+    - [ ] Add safeguards to prevent interference with manual face management
+    - [ ] Implement auto-scanner coordination with selective training workflows
+    - [ ] Add configuration validation and limits (max batch size, frequency limits)
+    - [ ] Create auto-scanner impact assessment tool for cleanup planning
+  - **🎯 STRATEGIC DECISIONS NEEDED:**
+    - [ ] Determine if auto-scanner should be permanently disabled during manual face management
+    - [ ] Design workflow coordination between auto-scanner and manual operations
+    - [ ] Establish auto-scanner governance and monitoring protocols
+  - **Context**: Auto-scanner caused 85% data pollution requiring massive cleanup operations
 
 - [ ] **Fix CompreFace Consistency Warning Spam**: Resolve false warnings during face uploads
   - [ ] Investigate consistency check timing in face upload process
@@ -445,12 +468,41 @@ This file tracks current development priorities and tasks for the Photo Manageme
   - [ ] Selection state management and smooth user experience
   - [ ] Integration with existing delete and album APIs
 
+### 🧠 Enhanced Face Clustering & Batch Assignment System
+- [ ] **Intelligent Two-Phase Face Clustering**: Revolutionary clustering system leveraging CompreFace Recognition + Verification
+  - [ ] **Phase 1: Recognition-Based Suggestions** - Use trained models to identify faces for existing people
+    - [ ] Scan all unassigned faces against trained CompreFace models (Henry, Margaret, etc.)
+    - [ ] Return high-confidence suggestions for batch assignment (85%+ confidence)
+    - [ ] Leverage improving models - as Henry gets 20→100 faces, system finds more Henry faces automatically
+    - [ ] Create batch suggestion UI: "Found 147 faces that look like Henry - assign all?"
+  - [ ] **Phase 2: Verification-Based Clustering** - Group truly unknown faces using face similarity
+    - [ ] Use CompreFace Verification API to compare faces without training requirements
+    - [ ] Create clusters of similar unknown faces that might be the same person
+    - [ ] Enable batch person creation: "Create 'Unknown Person 1' for these 15 similar faces?"
+    - [ ] Replace current random similarity algorithm with real face embeddings
+  - [ ] **Smart Classification System**:
+    - [ ] "Probably Known" - unassigned faces matching trained people with high confidence
+    - [ ] "Truly Unknown" - faces that don't match any trained person
+    - [ ] "Clustered Unknowns" - groups of similar unknown faces for new person creation
+  - [ ] **Batch Assignment Workflow Integration**:
+    - [ ] When user assigns face to person, immediately suggest similar faces from same cluster
+    - [ ] Leverage existing cluster data for instant suggestions instead of real-time computation
+    - [ ] Progressive learning - each assignment improves future suggestions
+  - [ ] **Technical Implementation**:
+    - [ ] Create `EnhancedFaceClusteringService` with CompreFace Verification integration
+    - [ ] Add batch processing with rate limiting to avoid overwhelming CompreFace
+    - [ ] Smart face image validation and quality filtering (detection_confidence >= 0.8)
+    - [ ] Background job system for processing large datasets
+    - [ ] Hybrid approach: Recognition for known people, Verification for unknowns
+  - **Goal**: Transform 1,000 manual face assignments into ~20 batch decisions
+  - **Impact**: Revolutionary workflow efficiency - leverages trained models + groups unknowns intelligently
+  - **Example**: 1,000 unassigned faces → 147 Henry suggestions + 63 Margaret suggestions + 5 unknown clusters
+
 ### 🔧 Technical Improvements
 - [ ] Add linting setup and configuration for the platform
 - [ ] Add comprehensive API error handling and validation
 - [ ] Implement advanced search with filters for objects, faces, dates
 - [ ] Add smart album auto-generation based on content analysis
-- [ ] Optimize face clustering to use CompreFace recognition for better accuracy
 
 ## 📋 Low Priority
 

@@ -97,7 +97,11 @@ export class SelectiveTrainingService {
             }
 
             if (!options.allowDuplicateUploads) {
-                facesQuery = facesQuery.where('compreface_synced', false);
+                // Only include faces that haven't been synced yet (false or null)
+                facesQuery = facesQuery.where(function() {
+                    this.where('compreface_synced', false)
+                        .orWhereNull('compreface_synced');
+                });
             }
 
             const eligibleFaces = await facesQuery.select('*');

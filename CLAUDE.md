@@ -65,6 +65,14 @@ sleep 3 && curl -s http://localhost:9000/api/persons/unidentified?limit=1 > /dev
 - `npm run cleanup:fresh-start` - Complete system reset
 - `npm run cleanup:local-data` - Clean local processing data
 
+### Auto-Scanner Control (API Endpoints)
+- `GET /api/auto-scanner/status` - Get auto-scanner status and control state
+- `POST /api/auto-scanner/pause` - Pause auto-scanner processing
+- `POST /api/auto-scanner/resume` - Resume auto-scanner processing  
+- `GET /api/auto-scanner/check` - Check if scanning is allowed (used by auto-scanner service)
+- `POST /api/auto-scanner/stop` - Stop auto-scanner Docker container
+- `POST /api/auto-scanner/start` - Start auto-scanner Docker container
+
 ### Logging Commands
 - `npm run logs:processing` - Monitor photo processing logs
 - `npm run logs:api` - Monitor API request/response logs

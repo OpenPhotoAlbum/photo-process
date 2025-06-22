@@ -24,26 +24,6 @@ const config = {
     }
   },
 
-  test: {
-    client: 'mysql2',
-    useNullAsDefault: true,
-    connection: {
-      host: process.env.MYSQL_HOST || 'localhost',
-      port: parseInt(process.env.MYSQL_PORT || '3306'),
-      user: process.env.MYSQL_USER || 'test',
-      password: process.env.MYSQL_PASSWORD || 'test_password',
-      database: process.env.MYSQL_DATABASE || 'photo_process_test',
-      multipleStatements: true,
-    },
-    migrations: {
-      directory: path.join(__dirname, '../../infrastructure/database/migrations'),
-      tableName: 'knex_migrations'
-    },
-    seeds: {
-      directory: path.join(__dirname, '../../infrastructure/database/seeds')
-    }
-  },
-
   production: {
     client: 'mysql2',
     useNullAsDefault: true,

@@ -1992,6 +1992,161 @@ export const suggestPersonsForFaces = asyncHandler(async (req: Request, res: Res
     });
 });
 
+// Find similar unassigned faces after manual assignment (for batch suggestion workflow)
+export const findSimilarUnassignedFaces = asyncHandler(async (req: Request, res: Response) => {
+    const { personId, recentlyAssignedFaceId, maxSuggestions = 5, minConfidence = 0.75 } = req.body;
+    
+    validateRequired(personId, 'Person ID');
+    validateRequired(recentlyAssignedFaceId, 'Recently assigned face ID');
+    
+    const personIdNum = validatePersonId(personId);
+    const faceIdNum = validateFaceId(recentlyAssignedFaceId);
+    
+    req.logger.info('Finding similar unassigned faces for batch suggestion', {
+        personId: personIdNum,
+        recentlyAssignedFaceId: faceIdNum,
+        maxSuggestions,
+        minConfidence
+    });
+    
+    // Get the person details
+    const person = await PersonRepository.getPersonWithFaceCount(personIdNum);
+    if (!person) {
+        throw new AppError('Person not found', 404);
+    }
+    
+    // Get the recently assigned face details
+    const recentlyAssignedFace = await FaceRepository.getFaceById(faceIdNum);
+    if (!recentlyAssignedFace) {
+        throw new AppError('Recently assigned face not found', 404);
+    }
+    
+    try {
+        // Use CompreFace to find similar faces
+        const { recognizeFacesFromImage } = await import('../util/compreface');
+        
+        // Get unassigned faces from recent images (last 50 processed images)
+        const recentUnassignedFaces = await db('detected_faces as df')
+            .join('images as i', 'df.image_id', 'i.id')
+            .whereNull('df.person_id')
+            .whereNotNull('df.face_image_path')
+            .where('df.detection_confidence', '>=', 0.8)
+            .orderBy('i.date_processed', 'desc')
+            .limit(100) // Check last 100 unassigned faces
+            .select('df.*', 'i.relative_media_path', 'i.filename');
+        
+        if (recentUnassignedFaces.length === 0) {
+            return res.json({
+                success: true,
+                suggestions: [],
+                message: 'No recent unassigned faces found',
+                person: person,
+                recentlyAssignedFace: {
+                    id: recentlyAssignedFace.id,
+                    faceUrl: getFaceUrl(recentlyAssignedFace),
+                    confidence: recentlyAssignedFace.detection_confidence
+                }
+            });
+        }
+        
+        // Process faces in batches to find similarities using CompreFace
+        const suggestions = [];
+        const batchSize = 10;
+        
+        for (let i = 0; i < recentUnassignedFaces.length && suggestions.length < maxSuggestions; i += batchSize) {
+            const batch = recentUnassignedFaces.slice(i, i + batchSize);
+            
+            for (const face of batch) {
+                if (suggestions.length >= maxSuggestions) break;
+                
+                try {
+                    // Get the full face image path
+                    const processedDir = configManager.getStorage().processedDir;
+                    const fullFacePath = path.join(processedDir, 'faces', face.relative_face_path || path.basename(face.face_image_path));
+                    
+                    if (!fs.existsSync(fullFacePath)) {
+                        continue;
+                    }
+                    
+                    // Use CompreFace to recognize this face
+                    const recognitionResult = await recognizeFacesFromImage(fullFacePath);
+                    
+                    if (recognitionResult?.result && recognitionResult.result.length > 0) {
+                        const result = recognitionResult.result[0];
+                        if (result.subjects && result.subjects.length > 0) {
+                            const bestMatch = result.subjects[0];
+                            
+                            // Check if the best match is our target person
+                            if (bestMatch.subject === person.compreface_subject_id && 
+                                bestMatch.similarity >= minConfidence) {
+                                
+                                suggestions.push({
+                                    faceId: face.id,
+                                    imageId: face.image_id,
+                                    faceUrl: getFaceUrl(face),
+                                    confidence: bestMatch.similarity,
+                                    detectionConfidence: face.detection_confidence,
+                                    image: {
+                                        filename: face.filename || 'Unknown',
+                                        mediaUrl: face.relative_media_path ? `/media/${face.relative_media_path}` : ''
+                                    },
+                                    coordinates: {
+                                        x_min: face.x_min,
+                                        y_min: face.y_min,
+                                        x_max: face.x_max,
+                                        y_max: face.y_max
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } catch (faceError) {
+                    req.logger.warn('Error processing face for similarity', {
+                        faceId: face.id,
+                        error: faceError
+                    });
+                    // Continue with next face
+                }
+            }
+        }
+        
+        // Sort suggestions by confidence
+        suggestions.sort((a, b) => b.confidence - a.confidence);
+        
+        req.logger.info('Found similar unassigned faces', {
+            personId: personIdNum,
+            personName: person.name,
+            suggestionsFound: suggestions.length,
+            averageConfidence: suggestions.length > 0 ? 
+                (suggestions.reduce((sum, s) => sum + s.confidence, 0) / suggestions.length).toFixed(3) : 0
+        });
+        
+        res.json({
+            success: true,
+            suggestions: suggestions.slice(0, maxSuggestions),
+            person: person,
+            recentlyAssignedFace: {
+                id: recentlyAssignedFace.id,
+                faceUrl: getFaceUrl(recentlyAssignedFace),
+                confidence: recentlyAssignedFace.detection_confidence,
+                image: {
+                    filename: 'Face Image',
+                    mediaUrl: ''
+                }
+            },
+            parameters: {
+                maxSuggestions,
+                minConfidence,
+                facesChecked: recentUnassignedFaces.length
+            }
+        });
+        
+    } catch (error) {
+        req.logger.error('Error finding similar unassigned faces', { error, personId: personIdNum });
+        throw new AppError('Failed to find similar faces', 500);
+    }
+});
+
 // Reassign face from one person to another
 export const reassignFace = asyncHandler(async (req: Request, res: Response) => {
     const { faceId } = req.params;
