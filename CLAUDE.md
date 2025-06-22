@@ -76,12 +76,29 @@ sleep 3 && curl -s http://localhost:9000/api/persons/unidentified?limit=1 > /dev
 - `npm run mcp:start` - Start Claude Brain MCP server for Claude Code integration
 - `npm run mcp:start-simple` - Start simple MCP server version
 - `npm run mcp:test` - Test MCP server (show help message)
+- `npm run mcp:inject` - Rebuild embeddings database with current codebase
+- `npm run mcp:rebuild` - Same as inject (rebuild database)
+- `npm run mcp:check-drift` - Check for changes since last database update
+- `npm run mcp:auto-update` - Check for drift and auto-rebuild if needed
+- `npm run mcp:monitor` - Start continuous drift monitoring service
+- `npm run mcp:monitor-once` - Run single drift check and update if needed
+- `npm run mcp:update-cache` - Update drift detection cache
+- `npm run mcp:cleanup-db` - Clean unwanted files from existing database
 
 **Claude Brain Integration**: Provides semantic codebase search tools to Claude Code:
 - **search_codebase**: Natural language search across entire project (6GB indexed database)
 - **search_by_file_type**: Filter search by file extensions (.ts, .py, .js, etc.)
 - **Database**: 6GB embeddings.db with full project codebase semantically indexed
 - **Architecture**: Python MCP server in `claude_brain/` directory with virtual environment
+
+**IMPORTANT**: Always prefer using `search_codebase` MCP tool over standard search tools (Grep, Glob, Task) when possible to prevent excessive token usage and get more relevant semantic results. The MCP tool provides natural language search with context-aware results.
+
+**Drift Detection**: Automated system monitors file changes and keeps database current:
+- **File Monitoring**: Tracks changes to all trackable files (code, docs, configs)
+- **Smart Filtering**: Uses `.brainignore` to exclude unwanted files (logs, binaries, node_modules)
+- **Automatic Updates**: Can trigger rebuilds when significant drift is detected
+- **Continuous Monitoring**: Optional background service for real-time drift detection
+- **Cache System**: Maintains file state cache for efficient change detection
 
 ### Monitoring & Logging Commands
 - `npm run logs:start` - Start Elasticsearch and Kibana monitoring stack

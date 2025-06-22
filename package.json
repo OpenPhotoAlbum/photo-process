@@ -74,7 +74,15 @@
     "logs:setup-auto": "./infrastructure/logging/setup-auto-logging.sh",
     "mcp:start": "npm run --prefix ./claude_brain start-mcp",
     "mcp:start-simple": "npm run --prefix ./claude_brain start-mcp-simple",
-    "mcp:test": "npm run --prefix ./claude_brain test-server"
+    "mcp:test": "npm run --prefix ./claude_brain test-server",
+    "mcp:inject": "cd ./claude_brain && ./venv/bin/python claude_brain.py ingest /mnt/hdd/photo-process",
+    "mcp:rebuild": "cd ./claude_brain && ./venv/bin/python claude_brain.py ingest /mnt/hdd/photo-process",
+    "mcp:check-drift": "cd ./claude_brain && ./venv/bin/python drift_monitor.py --check",
+    "mcp:update-cache": "cd ./claude_brain && ./venv/bin/python drift_monitor.py --update-cache",
+    "mcp:auto-update": "cd ./claude_brain && ./venv/bin/python drift_monitor.py --auto-update",
+    "mcp:monitor": "cd ./claude_brain && ./venv/bin/python schedule_monitor.py",
+    "mcp:monitor-once": "cd ./claude_brain && ./venv/bin/python schedule_monitor.py --once",
+    "mcp:cleanup-db": "cd ./claude_brain && ./venv/bin/python cleanup_database.py"
   },
   "dependencies": {
     "chalk": "^5.4.1",
